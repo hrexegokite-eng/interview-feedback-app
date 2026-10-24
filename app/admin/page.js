@@ -212,68 +212,70 @@ export default function Admin() {
   const list = cands.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name].join(' '))].join(' ').toLowerCase().includes(s)));
 
   return (
-    <div className="wide">
-      <div className="bar">
-        <div className="brand" style={{ margin: 0, gap: 14 }}><Logo h={48} /><span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>Interview Feedback</span></div>
-        <div className="me">
-          <button className="btn ghost" onClick={() => router.push('/portal')} title="Back to Workspace Portal" style={{ fontSize: 13, padding: '6px 12px' }}>
-            ← All Modules
-          </button>
-          <Av name={me.email} small />
-          <span>{me.email}</span>
-          <button className="btn ghost" onClick={logout}>Sign out</button>
+    <div className="page-shell">
+      <div className="shell-panel" style={{ padding: 18 }}>
+        <div className="bar">
+          <div className="brand" style={{ margin: 0, gap: 14 }}><Logo h={48} /><span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>Interview Feedback</span></div>
+          <div className="me">
+            <button className="btn ghost" onClick={() => router.push('/portal')} title="Back to Workspace Portal" style={{ fontSize: 13, padding: '6px 12px' }}>
+              ← All Modules
+            </button>
+            <Av name={me.email} small />
+            <span>{me.email}</span>
+            <button className="btn ghost" onClick={logout}>Sign out</button>
+          </div>
         </div>
-      </div>
 
-      <div className="stats">
-        {stats.map(([l, st, c, t, f]) => (
-          <button key={l} className="stat" onClick={() => { setTab(t); setFilt(f); setQ(''); }}>
-            <div className="n">{cnt(st)}</div><div className="l"><i style={{ background: c }} />{l}</div>
-          </button>
-        ))}
-      </div>
+        <div className="stats">
+          {stats.map(([l, st, c, t, f]) => (
+            <button key={l} className="stat" onClick={() => { setTab(t); setFilt(f); setQ(''); }}>
+              <div className="n">{cnt(st)}</div><div className="l"><i style={{ background: c }} />{l}</div>
+            </button>
+          ))}
+        </div>
 
-      <div className="seg" role="tablist">
-        {tabs.map(([k, l, c]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k !== 'other') setFilt('all'); setQ(''); }}>{l}{c != null && <b>{c}</b>}</button>
-        ))}
-      </div>
+        <div className="seg" role="tablist">
+          {tabs.map(([k, l, c]) => (
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k !== 'other') setFilt('all'); setQ(''); }}>{l}{c != null && <b>{c}</b>}</button>
+          ))}
+        </div>
 
-      {tab === 'schedule' ? <Schedule cands={cands} reload={load} flash={flash} open={open} /> : (
-        <>
-          <div className="tools">
-            <div className="sbox"><Icon n="search" s={16} /><input placeholder="Search name, role or notes" value={q} onChange={(e) => setQ(e.target.value)} /></div>
-            {tab === 'other' && (
-              <div className="seg" style={{ margin: 0 }}>
-                {[['all', 'All'], ['hold', 'Hold'], ['reject', 'Rejected']].map(([k, l]) => <button key={k} role="tab" aria-selected={filt === k} onClick={() => setFilt(k)}>{l}</button>)}
-              </div>
-            )}
-          </div>
-          <div className="card">
-            {list.length ? list.map((c) => {
-              const d = lastDone(c);
-              return (
-                <div key={c.id} className="row" data-id={c.id} style={{ alignItems: 'flex-start' }} onClick={() => open(c.id)}>
-                  <Av name={c.name} small />
-                  <div className="grow">
-                    <b>{c.name}</b> <span className={'badge ' + c.status} style={{ marginLeft: 6 }}>{LBL[c.status]}</span>
-                    <div className="sm mut">{[c.role, c.rounds.length + (c.rounds.length > 1 ? ' rounds' : ' round'), d.interviewer ? 'by ' + d.interviewer : '', rel(d.submitted_at)].filter(Boolean).join(' · ')}</div>
-                    {d.note && <div className="note">{d.note}</div>}
-                  </div>
-                  <div className="acts" onClick={(e) => e.stopPropagation()}>
-                    <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>
-                    {['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlist' : LBL[k]}</button>)}
-                    <DelBtn onConfirm={() => remove(c.id)} />
-                  </div>
+        {tab === 'schedule' ? <Schedule cands={cands} reload={load} flash={flash} open={open} /> : (
+          <>
+            <div className="tools">
+              <div className="sbox"><Icon n="search" s={16} /><input placeholder="Search name, role or notes" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+              {tab === 'other' && (
+                <div className="seg" style={{ margin: 0 }}>
+                  {[['all', 'All'], ['hold', 'Hold'], ['reject', 'Rejected']].map(([k, l]) => <button key={k} role="tab" aria-selected={filt === k} onClick={() => setFilt(k)}>{l}</button>)}
                 </div>
-              );
-            }) : <Empty t={s ? 'No matches' : 'Nothing here yet'} s={s ? 'Try a different search.' : 'Candidates appear once an interviewer submits feedback.'} />}
-          </div>
-        </>
-      )}
+              )}
+            </div>
+            <div className="card">
+              {list.length ? list.map((c) => {
+                const d = lastDone(c);
+                return (
+                  <div key={c.id} className="row" data-id={c.id} style={{ alignItems: 'flex-start' }} onClick={() => open(c.id)}>
+                    <Av name={c.name} small />
+                    <div className="grow">
+                      <b>{c.name}</b> <span className={'badge ' + c.status} style={{ marginLeft: 6 }}>{LBL[c.status]}</span>
+                      <div className="sm mut">{[c.role, c.rounds.length + (c.rounds.length > 1 ? ' rounds' : ' round'), d.interviewer ? 'by ' + d.interviewer : '', rel(d.submitted_at)].filter(Boolean).join(' · ')}</div>
+                      {d.note && <div className="note">{d.note}</div>}
+                    </div>
+                    <div className="acts" onClick={(e) => e.stopPropagation()}>
+                      <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>
+                      {['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlist' : LBL[k]}</button>)}
+                      <DelBtn onConfirm={() => remove(c.id)} />
+                    </div>
+                  </div>
+                );
+              }) : <Empty t={s ? 'No matches' : 'Nothing here yet'} s={s ? 'Try a different search.' : 'Candidates appear once an interviewer submits feedback.'} />}
+            </div>
+          </>
+        )}
 
-      {profile && <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} />}
-      <div className={'toast' + (toast ? ' on' : '')}>{toast}</div>
+        {profile && <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} />}
+        <div className={'toast' + (toast ? ' on' : '')}>{toast}</div>
+      </div>
     </div>
   );
 }

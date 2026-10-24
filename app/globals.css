@@ -2,35 +2,35 @@
    DESIGN TOKENS – light & dark
 ═══════════════════════════════════════════ */
 :root {
-  --bg: #f4f4f1;
-  --bg2: #eeeee9;
-  --card: #ffffff;
-  --card2: #f9f9f7;
-  --ink: #131316;
-  --ink2: #3a3a40;
-  --mut: #72717a;
-  --line: #e4e3de;
-  --soft: #efefe9;
-  --acc: #4f46e5;
-  --acc2: #6366f1;
-  --accb: #eceafd;
-  --inv: #ffffff;
-  --ok: #15803d;
-  --okb: #dcfce7;
-  --hd: #a16207;
-  --hdb: #fef9c3;
-  --no: #b91c1c;
-  --nob: #fee2e2;
-  --sh: 0 1px 2px rgba(15,15,25,.04), 0 4px 16px rgba(15,15,25,.06), 0 0 0 1px rgba(15,15,25,.04);
-  --sh-md: 0 2px 4px rgba(15,15,25,.04), 0 12px 32px rgba(15,15,25,.1), 0 0 0 1px rgba(15,15,25,.05);
-  --sh-lg: 0 8px 16px rgba(15,15,25,.06), 0 32px 72px rgba(15,15,25,.18);
+  --bg: #11181d;
+  --bg2: #1a2128;
+  --card: #171f26;
+  --card2: #1e2a32;
+  --ink: #edf7f5;
+  --ink2: #d6e7e5;
+  --mut: #90a7a1;
+  --line: rgba(128, 156, 150, 0.18);
+  --soft: #1d2b33;
+  --acc: #14b8a6;
+  --acc2: #2dd4bf;
+  --accb: rgba(20, 184, 166, 0.12);
+  --inv: #06110f;
+  --ok: #4ade80;
+  --okb: rgba(16, 185, 129, 0.14);
+  --hd: #fbbf24;
+  --hdb: rgba(251, 191, 36, 0.12);
+  --no: #f87171;
+  --nob: rgba(239, 68, 68, 0.12);
+  --sh: 0 1px 2px rgba(0,0,0,.15), 0 12px 28px rgba(0,0,0,.25), 0 0 0 1px rgba(255,255,255,.02);
+  --sh-md: 0 2px 4px rgba(0,0,0,.18), 0 16px 42px rgba(0,0,0,.28), 0 0 0 1px rgba(255,255,255,.02);
+  --sh-lg: 0 10px 16px rgba(0,0,0,.22), 0 32px 80px rgba(0,0,0,.32);
   --radius: 14px;
   --radius-sm: 9px;
   --radius-lg: 20px;
   --dur: 180ms;
   --ease: cubic-bezier(.22,.68,0,1.2);
   --ease-std: cubic-bezier(.4,0,.2,1);
-  color-scheme: light;
+  color-scheme: dark;
   box-sizing: border-box;
 }
 
@@ -95,7 +95,8 @@
 html, body { margin: 0; }
 
 body {
-  background: var(--bg);
+  min-height: 100vh;
+  background: radial-gradient(circle at top, rgba(20, 184, 166, 0.08), transparent 30%), var(--bg);
   color: var(--ink);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 15px;
@@ -104,6 +105,39 @@ body {
   -moz-osx-font-smoothing: grayscale;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.page-shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 18px 56px;
+}
+
+.shell-panel {
+  background: rgba(16, 23, 29, 0.96);
+  border: 1px solid rgba(20, 184, 166, 0.34);
+  border-radius: 18px;
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.06), 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.page-shell .card,
+.page-shell .stat,
+.page-shell .bar,
+.page-shell .seg,
+.page-shell .tools {
+  background: rgba(22, 30, 36, 0.92);
+}
+
+.login-wrap {
+  min-height: calc(100vh - 80px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.login-panel {
+  width: min(100%, 760px);
+  padding: 32px 24px 26px;
 }
 
 button { font: inherit; color: inherit; cursor: pointer; border: none; }

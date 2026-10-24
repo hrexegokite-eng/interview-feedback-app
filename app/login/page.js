@@ -64,31 +64,32 @@ function LoginForm() {
   }
 
   return (
-    <div className="narrow">
-      <div className="center" style={{ paddingBottom: 24 }}>
-        <Logo h={72} style={{ margin: '0 auto 26px' }} />
-        <h1>Hiring dashboard</h1>
-        <p className="mut" style={{ marginTop: 8 }}>Sign in to manage interviews.</p>
-      </div>
+    <div className="login-wrap">
+      <div className="shell-panel login-panel">
+        <div className="center" style={{ paddingBottom: 24 }}>
+          <Logo h={72} style={{ margin: '0 auto 26px' }} />
+          <h1>Hiring dashboard</h1>
+          <p className="mut" style={{ marginTop: 8 }}>Sign in to manage interviews.</p>
+        </div>
 
-      <div className="card">
-        {/* Google sign-in button */}
-        <button
-          type="button"
-          className="btn google full"
-          disabled={googleBusy}
-          onClick={handleGoogleClick}
-          style={{ margin: 0, justifyContent: 'center' }}
-        >
-          {googleBusy ? (
-            <><span className="btn-spinner" aria-hidden="true" />Connecting to Google…</>
-          ) : (
-            <><GoogleIcon />Continue with Google</>
-          )}
-        </button>
+        <div className="card" style={{ background: 'rgba(17, 24, 29, 0.9)' }}>
+          {/* Google sign-in button */}
+          <button
+            type="button"
+            className="btn google full"
+            disabled={googleBusy}
+            onClick={handleGoogleClick}
+            style={{ margin: 0, justifyContent: 'center' }}
+          >
+            {googleBusy ? (
+              <><span className="btn-spinner" aria-hidden="true" />Connecting to Google…</>
+            ) : (
+              <><GoogleIcon />Continue with Google</>
+            )}
+          </button>
 
-        {err && <p className="err shake" style={{ marginTop: 16 }}>{err}</p>}
-      </div>
+          {err && <p className="err shake" style={{ marginTop: 16 }}>{err}</p>}
+        </div>
 
       {/* Google Dev / Setup Dialog */}
       {showDevGoogle && (
@@ -139,6 +140,7 @@ function LoginForm() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

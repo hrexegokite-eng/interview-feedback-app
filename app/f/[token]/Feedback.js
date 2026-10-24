@@ -128,42 +128,38 @@ export default function Feedback({ token }) {
   if (isSubmitted) {
     const decisionKey = pick || d.decision || 'proceed';
     return (
-      <div className="narrow" style={{ maxWidth: 480, margin: '0 auto', paddingTop: 20 }}>
-        {head}
+      <div className="narrow" style={{ maxWidth: 720, margin: '0 auto', paddingTop: 36 }}>
         <div
-          className="card"
           style={{
-            marginTop: 16,
-            padding: '36px 28px',
+            background: 'rgba(18, 24, 30, 0.95)',
+            border: '1px solid rgba(20, 184, 166, 0.34)',
+            borderRadius: 18,
+            boxShadow: '0 0 0 1px rgba(20, 184, 166, 0.08), 0 12px 30px rgba(0,0,0,0.28)',
+            padding: '28px 28px 22px',
             textAlign: 'center',
-            borderRadius: 14,
-            border: '1px solid rgba(16, 185, 129, 0.35)',
-            background: 'linear-gradient(180deg, var(--card), color-mix(in srgb, rgba(16, 185, 129, 0.05) 100%, var(--card)))',
-            boxShadow: '0 4px 24px rgba(16, 185, 129, 0.08)',
           }}
         >
-          {/* Always Green Success Checkmark */}
           <div
             style={{
-              width: 54,
-              height: 54,
+              width: 96,
+              height: 96,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
+              background: 'radial-gradient(circle at 30% 30%, #3ff2b0 0%, #18b58a 55%, #0d8b67 100%)',
               color: '#ffffff',
               display: 'grid',
               placeItems: 'center',
-              margin: '0 auto 18px',
-              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.35)',
+              margin: '0 auto 28px',
+              boxShadow: '0 0 0 12px rgba(20, 184, 166, 0.12), 0 14px 28px rgba(20, 184, 166, 0.24)',
             }}
           >
-            <Icon n="check" s={26} />
+            <Icon n="check" s={42} />
           </div>
 
-          <h1 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 10px', color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+          <h1 style={{ fontSize: 32, fontWeight: 700, margin: '0 0 18px', color: 'var(--ink)', letterSpacing: '-0.04em', lineHeight: 1.2 }}>
             Feedback Successfully Submitted
           </h1>
 
-          <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--mut)', margin: '0 auto 18px', maxWidth: 390 }}>
+          <p style={{ fontSize: 16, lineHeight: 1.7, color: 'var(--mut)', margin: '0 auto 22px', maxWidth: 620 }}>
             Thank you for taking the time to provide your evaluation! Your feedback for <b style={{ color: 'var(--ink)' }}>{d.candidate}</b> ({round}) has been securely recorded and shared with the recruitment team.
           </p>
 
@@ -171,22 +167,24 @@ export default function Feedback({ token }) {
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 6,
-              padding: '4px 12px',
-              borderRadius: 99,
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: '#10b981',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
-              fontSize: 12,
-              fontWeight: 500,
+              justifyContent: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              borderRadius: 999,
+              background: 'rgba(20, 184, 166, 0.12)',
+              color: '#5ce6b2',
+              border: '1px solid rgba(20, 184, 166, 0.26)',
+              fontSize: 14,
+              fontWeight: 600,
+              marginBottom: 24,
             }}
           >
-            <span>●</span>
-            <span>Recorded recommendation: <b>{LBL[decisionKey] || 'Submitted'}</b></span>
+            <span style={{ width: 8, height: 8, display: 'inline-block', borderRadius: '50%', background: '#5ce6b2', boxShadow: '0 0 10px rgba(92, 230, 178, 0.7)' }} />
+            <span>Recorded recommendation: <b style={{ color: '#94f5c6' }}>{LBL[decisionKey] || 'Submitted'}</b></span>
           </div>
 
-          <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--line)' }}>
-            <p className="sm mut" style={{ fontSize: 12, margin: 0 }}>
+          <div style={{ marginTop: 26, paddingTop: 22, borderTop: '1px solid var(--line)' }}>
+            <p className="sm mut" style={{ fontSize: 14, margin: 0, lineHeight: 1.8 }}>
               We appreciate your valuable contribution to the hiring process. You may safely close this window.
             </p>
           </div>

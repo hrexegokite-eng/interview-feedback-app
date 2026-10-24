@@ -36,37 +36,35 @@ export default function Portal() {
   const displayName = me?.name || me?.email?.split('@')[0] || 'Admin';
 
   return (
-    <div className="wide" style={{ maxWidth: 960, margin: '0 auto', paddingTop: 28 }}>
-      {/* Top Bar */}
-      <div className="bar" style={{ marginBottom: 36 }}>
-        <div className="brand" style={{ margin: 0, gap: 14 }}>
-          <Logo h={44} />
-          <span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
-            Go Kite Workspace
-          </span>
+    <div className="page-shell">
+      <div className="shell-panel" style={{ padding: 18 }}>
+        <div className="bar" style={{ marginBottom: 36 }}>
+          <div className="brand" style={{ margin: 0, gap: 14 }}>
+            <Logo h={44} />
+            <span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
+              Go Kite Workspace
+            </span>
+          </div>
+          <div className="me">
+            <Av name={me?.name || me?.email} small />
+            <span>{me?.email}</span>
+            <button className="btn ghost" onClick={logout}>Sign out</button>
+          </div>
         </div>
-        <div className="me">
-          <Av name={me?.name || me?.email} small />
-          <span>{me?.email}</span>
-          <button className="btn ghost" onClick={logout}>Sign out</button>
-        </div>
-      </div>
 
-      {/* Hero Welcome */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'inline-block', padding: '4px 12px', background: 'var(--accb)', color: 'var(--acc)', borderRadius: 20, fontSize: 12.5, fontWeight: 600, marginBottom: 12 }}>
-          Enterprise Portal
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'inline-block', padding: '4px 12px', background: 'var(--accb)', color: 'var(--acc)', borderRadius: 20, fontSize: 12.5, fontWeight: 600, marginBottom: 12 }}>
+            Enterprise Portal
+          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>
+            Welcome back, {displayName}
+          </h1>
+          <p className="mut" style={{ fontSize: 15, marginTop: 8 }}>
+            Select a workspace module below to access your tools and dashboards.
+          </p>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>
-          Welcome back, {displayName}
-        </h1>
-        <p className="mut" style={{ fontSize: 15, marginTop: 8 }}>
-          Select a workspace module below to access your tools and dashboards.
-        </p>
-      </div>
 
-      {/* Modules Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
         {/* Active Module: Interview Feedback */}
         <div
           role="button"
@@ -250,6 +248,7 @@ export default function Portal() {
           <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>
             Quarterly goals, 360-degree feedback, performance appraisals, and employee growth milestones.
           </p>
+        </div>
         </div>
       </div>
     </div>
