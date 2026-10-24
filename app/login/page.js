@@ -56,7 +56,7 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
-      router.replace('/admin');
+      router.replace('/portal');
     } catch (e) {
       setErr(e.message);
       setGoogleBusy(false);

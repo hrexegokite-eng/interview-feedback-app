@@ -69,7 +69,7 @@ export async function GET(req) {
       picture: profile.picture || '',
     });
 
-    const res = NextResponse.redirect(new URL('/admin', baseUrl));
+    const res = NextResponse.redirect(new URL('/portal', baseUrl));
     res.cookies.set('session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

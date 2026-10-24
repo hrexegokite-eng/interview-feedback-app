@@ -214,8 +214,15 @@ export default function Admin() {
   return (
     <div className="wide">
       <div className="bar">
-        <div className="brand" style={{ margin: 0, gap: 14 }}><Logo h={48} /><span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>Hiring dashboard</span></div>
-        <div className="me"><Av name={me.email} small /><span>{me.email}</span><button className="btn ghost" onClick={logout}>Sign out</button></div>
+        <div className="brand" style={{ margin: 0, gap: 14 }}><Logo h={48} /><span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>Interview Feedback</span></div>
+        <div className="me">
+          <button className="btn ghost" onClick={() => router.push('/portal')} title="Back to Workspace Portal" style={{ fontSize: 13, padding: '6px 12px' }}>
+            ← All Modules
+          </button>
+          <Av name={me.email} small />
+          <span>{me.email}</span>
+          <button className="btn ghost" onClick={logout}>Sign out</button>
+        </div>
       </div>
 
       <div className="stats">
