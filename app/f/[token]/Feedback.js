@@ -290,14 +290,15 @@ export default function Feedback({ token }) {
         className="card"
         style={{
           marginTop: 14,
-          padding: '18px 20px',
-          borderRadius: 12,
-          border: '1px solid var(--line)',
-          background: 'var(--card)',
+          padding: '22px 20px 18px',
+          borderRadius: 18,
+          border: '1px solid rgba(110, 231, 215, 0.18)',
+          background: 'linear-gradient(180deg, rgba(20, 27, 34, 0.98), rgba(15, 21, 27, 0.98))',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 30px rgba(0,0,0,0.18)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', letterSpacing: '0.01em' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.01em', textTransform: 'uppercase' }}>
             Recommendation
           </span>
           <span style={{ fontSize: 11.5, color: 'var(--mut)' }}>
@@ -305,7 +306,6 @@ export default function Feedback({ token }) {
           </span>
         </div>
 
-        {/* Minimal Options Switcher */}
         <div className="opts">
           {['proceed', 'hold', 'reject'].map((k, i) => (
             <button
@@ -314,6 +314,11 @@ export default function Feedback({ token }) {
               className={'opt ' + k}
               aria-pressed={pick === k}
               onClick={() => setPick(k)}
+              style={{
+                borderRadius: 14,
+                padding: '14px 14px',
+                minHeight: 74,
+              }}
             >
               <span className="ico-dot" />
               <span className="content">
@@ -325,10 +330,9 @@ export default function Feedback({ token }) {
           ))}
         </div>
 
-        {/* Notes & Suggestions */}
-        <div style={{ marginTop: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink)' }}>
+        <div style={{ marginTop: 22 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink)' }}>
               Notes (optional)
             </label>
             <span style={{ fontSize: 11, color: 'var(--mut)' }}>
@@ -339,23 +343,24 @@ export default function Feedback({ token }) {
             id="n"
             value={note}
             maxLength={1500}
-            rows={3}
+            rows={4}
             placeholder={PH[pick]}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submit(); }}
             style={{
               width: '100%',
-              borderRadius: 8,
-              fontSize: 13,
-              lineHeight: 1.5,
-              border: '1px solid var(--line)',
-              background: 'var(--soft)',
+              borderRadius: 14,
+              fontSize: 13.5,
+              lineHeight: 1.6,
+              border: '1px solid rgba(110, 231, 215, 0.14)',
+              background: 'linear-gradient(180deg, rgba(14,20,26,0.9), rgba(18,28,35,0.8))',
               color: 'var(--ink)',
-              padding: '10px 12px',
+              padding: '12px 14px',
               resize: 'vertical',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
             }}
           />
-          <div className="chips" style={{ marginTop: 8, gap: 6 }}>
+          <div className="chips" style={{ marginTop: 10, gap: 6 }}>
             {(CHIPS[pick] || []).map((t) => (
               <button
                 key={t}
@@ -364,12 +369,13 @@ export default function Feedback({ token }) {
                 onClick={() => setNote((n) => n + (n && !n.endsWith('\n') ? '\n' : '') + '• ' + t)}
                 style={{
                   cursor: 'pointer',
-                  border: '1px solid var(--line)',
-                  background: 'var(--card)',
+                  border: '1px solid rgba(110,231,215,0.12)',
+                  background: 'rgba(16,25,32,0.9)',
                   color: 'var(--ink2)',
                   fontSize: 11.5,
-                  padding: '3px 9px',
-                  borderRadius: 6,
+                  padding: '5px 10px',
+                  borderRadius: 999,
+                  transition: 'all 0.2s ease',
                 }}
               >
                 + {t}
@@ -378,18 +384,19 @@ export default function Feedback({ token }) {
           </div>
         </div>
 
-        {/* Minimal Classic Submit */}
         <button
           type="button"
           className="btn full primary"
           disabled={!pick || busy}
           onClick={submit}
           style={{
-            marginTop: 18,
-            padding: '11px 16px',
-            fontSize: 13.5,
-            fontWeight: 600,
-            borderRadius: 8,
+            marginTop: 22,
+            padding: '13px 18px',
+            fontSize: 14,
+            fontWeight: 700,
+            borderRadius: 12,
+            letterSpacing: '0.01em',
+            boxShadow: '0 10px 24px rgba(21, 180, 166, 0.22)',
           }}
         >
           {busy ? (
@@ -401,7 +408,7 @@ export default function Feedback({ token }) {
           )}
         </button>
 
-        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 10, fontSize: 11.5 }}>
+        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 12, fontSize: 11.5 }}>
           {msg || (pick ? 'Press ⌘/Ctrl + Enter to submit' : 'Choose Proceed, Hold, or Reject')}
         </p>
       </div>
