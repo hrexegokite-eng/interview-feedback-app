@@ -98,17 +98,73 @@ export default function Feedback({ token }) {
 
   const round = 'Round ' + d.round_no + (d.round_name && d.round_name !== 'Round ' + d.round_no ? ' · ' + d.round_name : '');
 
-  if (done) {
-    const [a, b] = COL[pick];
+  const isSubmitted = done || Boolean(d.decision);
+
+  if (isSubmitted) {
+    const decisionKey = pick || d.decision || 'proceed';
     return (
-      <div className="narrow">
+      <div className="narrow" style={{ maxWidth: 480, margin: '0 auto', paddingTop: 20 }}>
         {head}
-        <div className="card done" style={{ '--c': `var(--${a})`, '--c-b': `var(--${b})`, marginTop: 16 }}>
-          <div className="tick"><Icon n={ICO[pick]} s={30} /></div>
-          <h1 style={{ fontSize: 22 }}>Feedback recorded</h1>
-          <p className="mut" style={{ margin: '8px 0 16px' }}>Thanks — your recommendation for {d.candidate} ({round}) is saved.</p>
-          <span className={'badge ' + pick}>{LBL[pick]}</span>
-          <div style={{ marginTop: 24 }}><button className="btn ghost" onClick={() => setDone(false)}>Edit feedback</button></div>
+        <div
+          className="card"
+          style={{
+            marginTop: 16,
+            padding: '36px 28px',
+            textAlign: 'center',
+            borderRadius: 14,
+            border: '1px solid rgba(16, 185, 129, 0.35)',
+            background: 'linear-gradient(180deg, var(--card), color-mix(in srgb, rgba(16, 185, 129, 0.05) 100%, var(--card)))',
+            boxShadow: '0 4px 24px rgba(16, 185, 129, 0.08)',
+          }}
+        >
+          {/* Always Green Success Checkmark */}
+          <div
+            style={{
+              width: 54,
+              height: 54,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              color: '#ffffff',
+              display: 'grid',
+              placeItems: 'center',
+              margin: '0 auto 18px',
+              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.35)',
+            }}
+          >
+            <Icon n="check" s={26} />
+          </div>
+
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 10px', color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+            Feedback Successfully Submitted
+          </h1>
+
+          <p style={{ fontSize: 13.5, lineHeight: 1.6, color: 'var(--mut)', margin: '0 auto 18px', maxWidth: 390 }}>
+            Thank you for taking the time to provide your evaluation! Your feedback for <b style={{ color: 'var(--ink)' }}>{d.candidate}</b> ({round}) has been securely recorded and shared with the recruitment team.
+          </p>
+
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '4px 12px',
+              borderRadius: 99,
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: '#10b981',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              fontSize: 12,
+              fontWeight: 500,
+            }}
+          >
+            <span>●</span>
+            <span>Recorded recommendation: <b>{LBL[decisionKey] || 'Submitted'}</b></span>
+          </div>
+
+          <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--line)' }}>
+            <p className="sm mut" style={{ fontSize: 12, margin: 0 }}>
+              We appreciate your valuable contribution to the hiring process. You may safely close this window.
+            </p>
+          </div>
         </div>
       </div>
     );
