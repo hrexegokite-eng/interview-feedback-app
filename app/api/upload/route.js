@@ -1,7 +1,7 @@
 import { getAdmin, bad } from '@/lib/auth';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
-import crypto from 'crypto';
+import { sql } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   if (!(await getAdmin())) return bad('Unauthorized', 401);
@@ -16,25 +16,23 @@ export async function POST(req) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
     const originalName = file.name || 'resume.pdf';
-    const ext = path.extname(originalName) || '.pdf';
-    const cleanBase = path.basename(originalName, ext).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const uniqueName = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}-${cleanBase}${ext}`;
-    const filePath = path.join(uploadDir, uniqueName);
+    const mimeType = file.type || 'application/pdf';
+    const hex = buffer.toString('hex');
 
-    await writeFile(filePath, buffer);
+    const rows = await sql`
+      INSERT INTO uploads (filename, mime_type, size, data)
+      VALUES (${originalName}, ${mimeType}, ${file.size}, decode(${hex}, 'hex'))
+      RETURNING id
+    `;
 
     return Response.json({
-      url: `/uploads/${uniqueName}`,
+      url: `/api/uploads/${rows[0].id}`,
       filename: originalName,
       size: file.size,
     });
   } catch (err) {
     console.error('File upload error:', err);
-    return bad('Failed to upload file.', 500);
+    return bad('Failed to upload file: ' + (err.message || String(err)), 500);
   }
 }
