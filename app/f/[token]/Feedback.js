@@ -1,6 +1,30 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Icon, Av, Logo, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
+
+function playSuccessSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [
+      { freq: 523.25, start: 0, dur: 0.15 },    // C5
+      { freq: 659.25, start: 0.12, dur: 0.15 },  // E5
+      { freq: 783.99, start: 0.24, dur: 0.25 },  // G5
+    ];
+    notes.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + start + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur);
+    });
+    setTimeout(() => ctx.close(), 1000);
+  } catch (_) {}
+}
 
 const CHIPS = {
   proceed: ['Strong communicator', 'Solid technical depth', 'Great culture fit', 'Ready for next round'],
@@ -79,6 +103,7 @@ export default function Feedback({ token }) {
     setMsg('');
     try {
       await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note } });
+      playSuccessSound();
       setDone(true);
     } catch (e) {
       setMsg(e.message);
