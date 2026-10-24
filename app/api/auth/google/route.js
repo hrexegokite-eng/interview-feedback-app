@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 
 function getRedirectUri(req) {
+  if (process.env.APP_URL) {
+    const base = process.env.APP_URL.replace(/\/+$/, '');
+    return `${base}/api/auth/google/callback`;
+  }
   const proto = req.headers.get('x-forwarded-proto') || (req.nextUrl.protocol ? req.nextUrl.protocol.replace(':', '') : 'http');
   const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
   return `${proto}://${host}/api/auth/google/callback`;
