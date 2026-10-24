@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 
+function getRedirectUri(req) {
+  const proto = req.headers.get('x-forwarded-proto') || (req.nextUrl.protocol ? req.nextUrl.protocol.replace(':', '') : 'http');
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+  return `${proto}://${host}/api/auth/google/callback`;
+}
+
 export async function GET(req) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${req.nextUrl.origin}/api/auth/google/callback`;
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+  const redirectUri = getRedirectUri(req);
 
   if (!clientId) {
     return NextResponse.json({
