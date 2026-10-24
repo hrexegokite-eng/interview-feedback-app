@@ -145,10 +145,20 @@ export default function Admin() {
   const [q, setQ] = useState('');
   const [prof, setProf] = useState(null);
   const [toast, setToast] = useState('');
+  const [loadErr, setLoadErr] = useState('');
 
   const flash = useCallback((m) => { setToast(m); setTimeout(() => setToast(''), 2200); }, []);
   const load = useCallback(async () => {
-    try { setCands(await api('/api/candidates')); } catch (e) { if (e.status === 401) router.replace('/login'); }
+    try {
+      setCands(await api('/api/candidates'));
+      setLoadErr('');
+    } catch (e) {
+      if (e.status === 401) {
+        router.replace('/login');
+      } else {
+        setLoadErr(e.message || 'Failed to load candidates data');
+      }
+    }
   }, [router]);
 
   useEffect(() => {
@@ -174,6 +184,19 @@ export default function Admin() {
   async function remove(id) {
     try { await api('/api/candidates/' + id, { method: 'DELETE' }); setProf(null); flash('Candidate removed'); load(); }
     catch (e) { flash(e.message); }
+  }
+
+  if (loadErr) {
+    return (
+      <div className="narrow center" style={{ paddingTop: 80 }}>
+        <Logo h={56} style={{ margin: '0 auto 20px' }} />
+        <h2>Unable to load dashboard data</h2>
+        <p className="err shake" style={{ marginTop: 14 }}>{loadErr}</p>
+        <button className="btn primary" onClick={() => { setLoadErr(''); load(); }} style={{ marginTop: 20 }}>
+          Retry
+        </button>
+      </div>
+    );
   }
 
   if (!me || !cands) return <LoadingSkeleton />;

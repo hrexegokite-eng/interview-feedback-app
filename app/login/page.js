@@ -1,7 +1,7 @@
 'use client';
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Logo, Icon, api } from '@/components/ui';
+import { Logo, Icon } from '@/components/ui';
 
 function GoogleIcon() {
   return (
@@ -17,10 +17,7 @@ function GoogleIcon() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState('');
-  const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [googleStatus, setGoogleStatus] = useState(null);
   const [showDevGoogle, setShowDevGoogle] = useState(false);
@@ -36,27 +33,12 @@ function LoginForm() {
       .catch(() => {});
   }, [searchParams]);
 
-  async function submit(e) {
-    e.preventDefault();
-    setBusy(true);
-    setErr('');
-    try {
-      await api('/api/auth/login', { method: 'POST', body: { email, password: pw } });
-      router.replace('/admin');
-    } catch (x) {
-      setErr(x.message);
-      setBusy(false);
-    }
-  }
-
   async function handleGoogleClick() {
     setErr('');
     if (googleStatus?.configured) {
-      // Real Google OAuth redirect
       setGoogleBusy(true);
       window.location.href = '/api/auth/google';
     } else {
-      // Show dev Google dialog
       setShowDevGoogle(true);
     }
   }
@@ -94,7 +76,7 @@ function LoginForm() {
         <button
           type="button"
           className="btn google full"
-          disabled={googleBusy || busy}
+          disabled={googleBusy}
           onClick={handleGoogleClick}
           style={{ margin: 0, justifyContent: 'center' }}
         >
@@ -105,30 +87,7 @@ function LoginForm() {
           )}
         </button>
 
-        <div className="sep"><span>or continue with email</span></div>
-
-        <form onSubmit={submit}>
-          <label htmlFor="em">Email</label>
-          <input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
-          <div className="f">
-            <label htmlFor="pw">Password</label>
-            <input id="pw" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" required />
-          </div>
-          <button className="btn full primary" disabled={busy || googleBusy}>
-            {busy ? <><span className="btn-spinner" aria-hidden="true" />Signing in…</> : <><Icon n="lock" s={16} />Sign in with password</>}
-          </button>
-          {err && <p className="err shake">{err}</p>}
-          <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid var(--line)', textAlign: 'center' }}>
-            <button
-              type="button"
-              className="btn ghost"
-              style={{ fontSize: 12, padding: '5px 12px', borderRadius: 99 }}
-              onClick={() => { setEmail('admin@gokite.com'); setPw('admin'); }}
-            >
-              Fill demo credentials (admin@gokite.com)
-            </button>
-          </div>
-        </form>
+        {err && <p className="err shake" style={{ marginTop: 16 }}>{err}</p>}
       </div>
 
       {/* Google Dev / Setup Dialog */}
