@@ -373,6 +373,19 @@ label {
   margin: 0 0 6px;
 }
 
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+}
+
+.field-icon {
+  color: var(--ink);
+  opacity: 1;
+  flex-shrink: 0;
+}
+
 input, textarea {
   width: 100%;
   font: inherit;
@@ -604,16 +617,17 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   -webkit-backdrop-filter: blur(8px);
   z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
+  padding: 24px 20px 28px;
+  overflow-y: auto;
   animation: ovfadein .2s var(--ease-std);
 }
 @keyframes ovfadein { from { opacity: 0; } }
 
 .pn {
   width: min(660px, 100%);
-  max-height: min(90vh, 920px);
+  max-height: calc(100vh - 56px);
   background: var(--bg);
   overflow: auto;
   padding: 24px 24px calc(28px + env(safe-area-inset-bottom, 0px));
@@ -785,18 +799,21 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
 .meet-link {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 12.5px; font-weight: 600;
-  color: #0284c7;
-  background: rgba(14,165,233,.1);
-  border: 1.5px solid rgba(14,165,233,.3);
+  color: #7dd3fc;
+  background: rgba(14,165,233,.12);
+  border: 1.5px solid rgba(56,189,248,.4);
   border-radius: 99px;
   padding: 5px 13px;
   text-decoration: none;
   transition: all var(--dur) var(--ease-std);
   white-space: nowrap;
 }
+.meet-link svg, .cv-link svg, .field-icon {
+  width: 13px; height: 13px;
+}
 .meet-link:hover {
   background: rgba(14,165,233,.18);
-  border-color: rgba(14,165,233,.55);
+  border-color: rgba(125,211,252,.7);
   transform: translateY(-1px);
   box-shadow: 0 3px 12px rgba(14,165,233,.25);
 }
@@ -806,7 +823,7 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   display: inline-flex; align-items: center; gap: 7px;
   font-size: 12.5px; font-weight: 500;
   color: var(--ink2);
-  background: var(--soft);
+  background: rgba(255,255,255,.02);
   border: 1px solid var(--line);
   border-radius: 99px;
   padding: 5px 13px;
@@ -815,7 +832,7 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   white-space: nowrap;
 }
 .cv-link:hover {
-  background: var(--line);
+  background: rgba(255,255,255,.04);
   transform: translateY(-1px);
   box-shadow: var(--sh);
 }

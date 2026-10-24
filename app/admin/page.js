@@ -311,10 +311,7 @@ function Schedule({ cands, reload, flash, open }) {
         <div className="f"><label htmlFor="iv">Interviewer</label><input id="iv" placeholder="e.g. Rahul Mehta" value={f.interviewer} onChange={on('interviewer')} /></div>
         <div className="f"><label htmlFor="wh">Date &amp; time</label><input id="wh" type="datetime-local" value={f.when} onChange={on('when')} /></div>
         <div className="f">
-          <label htmlFor="ml">
-            <Icon n="video" s={13} style={{ verticalAlign: 'middle', marginRight: 5 }} />
-            Google Meet link (optional)
-          </label>
+          <label htmlFor="ml">Google Meet link (optional)</label>
           <input id="ml" type="url" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={f.meetLink} onChange={on('meetLink')} />
         </div>
         <div className="f">
@@ -344,8 +341,8 @@ function Schedule({ cands, reload, flash, open }) {
                   <div className="sm mut">{[rname(r), c.role, r.interviewer, fmt(r.scheduled_at)].filter(Boolean).join(' · ')}</div>
                   {(r.meet_link || r.cv_url) && (
                     <div className="resource-bar" onClick={(e) => e.stopPropagation()}>
-                      {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} />Join Meet</a>}
-                      {r.cv_url && <a href={r.cv_url} target="_blank" rel="noreferrer" className="cv-link"><Icon n="file" s={13} />{r.cv_filename || 'View CV'}</a>}
+                      {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} className="field-icon" />Join Meet</a>}
+                      {r.cv_url && <a href={r.cv_url} target="_blank" rel="noreferrer" className="cv-link"><Icon n="file" s={13} className="field-icon" />{r.cv_filename || 'View CV'}</a>}
                     </div>
                   )}
                 </div>
@@ -406,8 +403,8 @@ function Profile({ c, close, reload, flash, move, remove }) {
                   {/* Meet link & CV links */}
                   {(r.meet_link || r.cv_url) && (
                     <div className="resource-bar">
-                      {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} />Join Meet</a>}
-                      {r.cv_url && <a href={r.cv_url} target="_blank" rel="noreferrer" className="cv-link"><Icon n="file" s={13} />{r.cv_filename || 'View CV'}</a>}
+                      {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} className="field-icon" />Join Meet</a>}
+                      {r.cv_url && <a href={r.cv_url} target="_blank" rel="noreferrer" className="cv-link"><Icon n="file" s={13} className="field-icon" />{r.cv_filename || 'View CV'}</a>}
                     </div>
                   )}
                   {r.note ? <div className="note">{r.note}</div> : r.decision ? <p className="sm mut" style={{ marginTop: 8 }}>No notes added.</p> : null}
@@ -425,10 +422,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
               <div className="f"><label htmlFor="pi">Interviewer</label><input id="pi" value={f.interviewer} onChange={on('interviewer')} /></div>
               <div className="f"><label htmlFor="pw">Date &amp; time</label><input id="pw" type="datetime-local" value={f.when} onChange={on('when')} /></div>
               <div className="f">
-                <label htmlFor="pm">
-                  <Icon n="video" s={13} style={{ verticalAlign: 'middle', marginRight: 5 }} />
-                  Google Meet link (optional)
-                </label>
+                <label htmlFor="pm">Google Meet link (optional)</label>
                 <input id="pm" type="url" placeholder="https://meet.google.com/xxx-xxxx-xxx" value={f.meetLink} onChange={on('meetLink')} />
               </div>
               <div className="f">
