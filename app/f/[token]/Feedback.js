@@ -115,74 +115,57 @@ export default function Feedback({ token }) {
   }
 
   return (
-    <div className="narrow" style={{ maxWidth: 640, margin: '0 auto' }}>
+    <div className="narrow" style={{ maxWidth: 490, margin: '0 auto', paddingTop: 8 }}>
       {head}
 
-      {/* Candidate Profile Card */}
+      {/* Candidate Profile Summary */}
       <div
         className="card"
         style={{
-          marginTop: 16,
-          padding: 24,
-          background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 22%, var(--card)))',
-          border: '1.5px solid var(--line)',
-          borderRadius: 20,
-          boxShadow: 'var(--sh-md)',
+          marginTop: 12,
+          padding: '16px 18px',
+          borderRadius: 12,
+          border: '1px solid var(--line)',
+          background: 'var(--card)',
         }}
       >
-        <div className="who" style={{ alignItems: 'center', gap: 16 }}>
-          <Av name={d.candidate} style={{ width: 52, height: 52, fontSize: 18 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <Av name={d.candidate} small style={{ width: 38, height: 38, fontSize: 14 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
                 {d.candidate}
-              </h1>
+              </span>
               <span
                 style={{
-                  display: 'inline-block',
-                  padding: '3px 10px',
-                  borderRadius: 99,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  background: 'var(--accb)',
-                  color: 'var(--acc)',
-                  border: '1px solid color-mix(in srgb, var(--acc) 30%, transparent)',
+                  fontSize: 11,
+                  fontWeight: 500,
+                  padding: '1px 7px',
+                  borderRadius: 4,
+                  background: 'var(--soft)',
+                  color: 'var(--mut)',
+                  border: '1px solid var(--line)',
                 }}
               >
                 {round}
               </span>
             </div>
-            <p className="mut sm" style={{ marginTop: 4, fontSize: 14 }}>
-              {d.role || 'Candidate'}
-            </p>
+            <div style={{ fontSize: 12.5, color: 'var(--mut)', marginTop: 2 }}>
+              {[d.role || 'Candidate', d.interviewer ? 'by ' + d.interviewer : '', d.scheduled_at ? fmt(d.scheduled_at) : ''].filter(Boolean).join(' · ')}
+            </div>
           </div>
         </div>
 
-        <div className="chips" style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
-          {d.scheduled_at && (
-            <span className="chip" style={{ fontSize: 12.5, fontWeight: 500 }}>
-              <Icon n="cal" s={14} style={{ color: 'var(--acc)' }} />
-              <b>Interview:</b> {fmt(d.scheduled_at)}
-            </span>
-          )}
-          {d.interviewer && (
-            <span className="chip" style={{ fontSize: 12.5, fontWeight: 500 }}>
-              <Icon n="user" s={14} style={{ color: 'var(--acc)' }} />
-              <b>Interviewer:</b> {d.interviewer}
-            </span>
-          )}
-        </div>
-
-        {/* Resources for the interviewer */}
+        {/* Action Links (Meet & CV) */}
         {(d.meet_link || d.cv_url) && (
           <div
             style={{
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: 10,
-              marginTop: 14,
-              paddingTop: 14,
-              borderTop: '1px dashed var(--line)',
+              gap: 12,
+              marginTop: 12,
+              paddingTop: 12,
+              borderTop: '1px solid var(--line)',
+              fontSize: 12.5,
             }}
           >
             {d.meet_link && (
@@ -190,22 +173,16 @@ export default function Feedback({ token }) {
                 href={d.meet_link}
                 target="_blank"
                 rel="noreferrer"
-                className="btn"
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                  color: '#ffffff',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  padding: '9px 16px',
-                  borderRadius: 12,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 5,
+                  color: 'var(--acc)',
                   textDecoration: 'none',
-                  boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
+                  fontWeight: 500,
                 }}
               >
-                <Icon n="video" s={16} /> Join Google Meet
+                <Icon n="video" s={13} /> Join Meet ↗
               </a>
             )}
             {d.cv_url && (
@@ -213,41 +190,43 @@ export default function Feedback({ token }) {
                 href={d.cv_url}
                 target="_blank"
                 rel="noreferrer"
-                className="btn ghost"
                 style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  padding: '9px 16px',
-                  borderRadius: 12,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 8,
+                  gap: 5,
+                  color: 'var(--ink)',
                   textDecoration: 'none',
-                  border: '1.5px solid color-mix(in srgb, var(--acc) 35%, var(--line))',
-                  background: 'var(--card)',
+                  fontWeight: 500,
                 }}
               >
-                <Icon n="file" s={15} style={{ color: 'var(--acc)' }} />
-                <span>{d.cv_filename || 'View Attached CV / Resume'}</span>
-                <Icon n="download" s={13} style={{ opacity: 0.7 }} />
+                <Icon n="file" s={13} /> {d.cv_filename || 'View CV'} ↗
               </a>
             )}
           </div>
         )}
       </div>
 
-      {/* Decision Form Card */}
-      <div className="card" style={{ marginTop: 20, padding: 26, borderRadius: 20, boxShadow: 'var(--sh-md)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
-            Your recommendation
-          </h2>
-          <span style={{ fontSize: 12, color: 'var(--mut)' }}>
-            Press keys 1, 2, or 3
+      {/* Decision Card */}
+      <div
+        className="card"
+        style={{
+          marginTop: 14,
+          padding: '18px 20px',
+          borderRadius: 12,
+          border: '1px solid var(--line)',
+          background: 'var(--card)',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)', letterSpacing: '0.01em' }}>
+            Recommendation
+          </span>
+          <span style={{ fontSize: 11.5, color: 'var(--mut)' }}>
+            Keys 1 · 2 · 3
           </span>
         </div>
 
-        {/* Options Switcher */}
+        {/* Minimal Options Switcher */}
         <div className="opts">
           {['proceed', 'hold', 'reject'].map((k, i) => (
             <button
@@ -257,28 +236,23 @@ export default function Feedback({ token }) {
               aria-pressed={pick === k}
               onClick={() => setPick(k)}
             >
-              <span className="ico">
-                <Icon n={ICO[k]} s={20} />
-              </span>
+              <span className="ico-dot" />
               <span className="content">
                 <b>{LBL[k]}</b>
                 <span className="d">{DESC[k]}</span>
               </span>
               <kbd>{i + 1}</kbd>
-              <span className="switch-radio" aria-hidden="true">
-                <span className="switch-radio-dot" />
-              </span>
             </button>
           ))}
         </div>
 
-        {/* Notes & Chips */}
-        <div className="f" style={{ marginTop: 22 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <label htmlFor="n" style={{ fontWeight: 600, fontSize: 14 }}>
-              Evaluation notes
+        {/* Notes & Suggestions */}
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--ink)' }}>
+              Notes (optional)
             </label>
-            <span style={{ fontSize: 12, color: 'var(--mut)' }}>
+            <span style={{ fontSize: 11, color: 'var(--mut)' }}>
               {note.length} / 1500
             </span>
           </div>
@@ -286,22 +260,23 @@ export default function Feedback({ token }) {
             id="n"
             value={note}
             maxLength={1500}
-            rows={4}
+            rows={3}
             placeholder={PH[pick]}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submit(); }}
             style={{
-              marginTop: 8,
-              borderRadius: 14,
-              fontSize: 14,
-              lineHeight: 1.6,
-              border: '1.5px solid var(--line)',
-              background: 'var(--card2)',
+              width: '100%',
+              borderRadius: 8,
+              fontSize: 13,
+              lineHeight: 1.5,
+              border: '1px solid var(--line)',
+              background: 'var(--soft)',
               color: 'var(--ink)',
-              padding: '14px 16px',
+              padding: '10px 12px',
+              resize: 'vertical',
             }}
           />
-          <div className="chips" style={{ marginTop: 10, gap: 8 }}>
+          <div className="chips" style={{ marginTop: 8, gap: 6 }}>
             {(CHIPS[pick] || []).map((t) => (
               <button
                 key={t}
@@ -311,12 +286,11 @@ export default function Feedback({ token }) {
                 style={{
                   cursor: 'pointer',
                   border: '1px solid var(--line)',
-                  background: 'var(--soft)',
-                  color: 'var(--ink)',
-                  fontSize: 12.5,
-                  padding: '6px 12px',
-                  borderRadius: 99,
-                  transition: 'all 0.18s ease',
+                  background: 'var(--card)',
+                  color: 'var(--ink2)',
+                  fontSize: 11.5,
+                  padding: '3px 9px',
+                  borderRadius: 6,
                 }}
               >
                 + {t}
@@ -325,42 +299,31 @@ export default function Feedback({ token }) {
           </div>
         </div>
 
-        {/* Submit Button */}
+        {/* Minimal Classic Submit */}
         <button
           type="button"
           className="btn full primary"
           disabled={!pick || busy}
           onClick={submit}
           style={{
-            marginTop: 22,
-            padding: 15,
-            fontSize: 15,
+            marginTop: 18,
+            padding: '11px 16px',
+            fontSize: 13.5,
             fontWeight: 600,
-            borderRadius: 14,
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            ...(pick === 'proceed'
-              ? { background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', boxShadow: '0 6px 22px rgba(16, 185, 129, 0.42)' }
-              : pick === 'hold'
-              ? { background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#ffffff', boxShadow: '0 6px 22px rgba(245, 158, 11, 0.42)' }
-              : pick === 'reject'
-              ? { background: 'linear-gradient(135deg, #dc2626, #ef4444)', color: '#ffffff', boxShadow: '0 6px 22px rgba(239, 68, 68, 0.42)' }
-              : {}),
+            borderRadius: 8,
           }}
         >
           {busy ? (
-            <><span className="btn-spinner" aria-hidden="true" />Recording recommendation…</>
+            <><span className="btn-spinner" aria-hidden="true" />Saving…</>
           ) : pick ? (
-            <>
-              <Icon n={ICO[pick]} s={18} />
-              Submit recommendation: {LBL[pick]}
-            </>
+            `Submit · ${LBL[pick]}`
           ) : (
-            'Select a recommendation above'
+            'Select a recommendation'
           )}
         </button>
 
-        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 12 }}>
-          {msg || (pick ? 'Cmd/Ctrl + Enter to submit instantly' : 'Choose a recommendation to enable submission.')}
+        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 10, fontSize: 11.5 }}>
+          {msg || (pick ? 'Press ⌘/Ctrl + Enter to submit' : 'Choose Proceed, Hold, or Reject')}
         </p>
       </div>
     </div>
