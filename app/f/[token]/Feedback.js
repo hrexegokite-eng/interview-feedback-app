@@ -115,59 +115,253 @@ export default function Feedback({ token }) {
   }
 
   return (
-    <div className="narrow">
+    <div className="narrow" style={{ maxWidth: 640, margin: '0 auto' }}>
       {head}
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="who"><Av name={d.candidate} />
-          <div><h1 style={{ fontSize: 20 }}>{d.candidate}</h1><p className="mut sm">{d.role || 'Candidate'}</p></div>
+
+      {/* Candidate Profile Card */}
+      <div
+        className="card"
+        style={{
+          marginTop: 16,
+          padding: 24,
+          background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 22%, var(--card)))',
+          border: '1.5px solid var(--line)',
+          borderRadius: 20,
+          boxShadow: 'var(--sh-md)',
+        }}
+      >
+        <div className="who" style={{ alignItems: 'center', gap: 16 }}>
+          <Av name={d.candidate} style={{ width: 52, height: 52, fontSize: 18 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: '-0.01em', color: 'var(--ink)' }}>
+                {d.candidate}
+              </h1>
+              <span
+                style={{
+                  display: 'inline-block',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: 'var(--accb)',
+                  color: 'var(--acc)',
+                  border: '1px solid color-mix(in srgb, var(--acc) 30%, transparent)',
+                }}
+              >
+                {round}
+              </span>
+            </div>
+            <p className="mut sm" style={{ marginTop: 4, fontSize: 14 }}>
+              {d.role || 'Candidate'}
+            </p>
+          </div>
         </div>
-        <div className="chips">
-          <span className="chip" style={{ background: 'var(--accb)', color: 'var(--acc)' }}>{round}</span>
-          {d.scheduled_at && <span className="chip"><Icon n="cal" s={13} />{fmt(d.scheduled_at)}</span>}
-          {d.interviewer && <span className="chip"><Icon n="user" s={13} />{d.interviewer}</span>}
+
+        <div className="chips" style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
+          {d.scheduled_at && (
+            <span className="chip" style={{ fontSize: 12.5, fontWeight: 500 }}>
+              <Icon n="cal" s={14} style={{ color: 'var(--acc)' }} />
+              <b>Interview:</b> {fmt(d.scheduled_at)}
+            </span>
+          )}
+          {d.interviewer && (
+            <span className="chip" style={{ fontSize: 12.5, fontWeight: 500 }}>
+              <Icon n="user" s={14} style={{ color: 'var(--acc)' }} />
+              <b>Interviewer:</b> {d.interviewer}
+            </span>
+          )}
         </div>
+
         {/* Resources for the interviewer */}
         {(d.meet_link || d.cv_url) && (
-          <div className="resource-bar">
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 10,
+              marginTop: 14,
+              paddingTop: 14,
+              borderTop: '1px dashed var(--line)',
+            }}
+          >
             {d.meet_link && (
-              <a href={d.meet_link} target="_blank" rel="noreferrer" className="meet-link">
-                <Icon n="video" s={14} /> Join Google Meet
+              <a
+                href={d.meet_link}
+                target="_blank"
+                rel="noreferrer"
+                className="btn"
+                style={{
+                  background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                  color: '#ffffff',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  padding: '9px 16px',
+                  borderRadius: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  textDecoration: 'none',
+                  boxShadow: '0 4px 14px rgba(37,99,235,0.35)',
+                }}
+              >
+                <Icon n="video" s={16} /> Join Google Meet
               </a>
             )}
             {d.cv_url && (
-              <a href={d.cv_url} target="_blank" rel="noreferrer" className="cv-link">
-                <Icon n="file" s={14} /> {d.cv_filename || 'View CV / Resume'}
+              <a
+                href={d.cv_url}
+                target="_blank"
+                rel="noreferrer"
+                className="btn ghost"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  padding: '9px 16px',
+                  borderRadius: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  textDecoration: 'none',
+                  border: '1.5px solid color-mix(in srgb, var(--acc) 35%, var(--line))',
+                  background: 'var(--card)',
+                }}
+              >
+                <Icon n="file" s={15} style={{ color: 'var(--acc)' }} />
+                <span>{d.cv_filename || 'View Attached CV / Resume'}</span>
+                <Icon n="download" s={13} style={{ opacity: 0.7 }} />
               </a>
             )}
           </div>
         )}
       </div>
-      <div className="card">
-        <h2>Your recommendation</h2>
+
+      {/* Decision Form Card */}
+      <div className="card" style={{ marginTop: 20, padding: 26, borderRadius: 20, boxShadow: 'var(--sh-md)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
+            Your recommendation
+          </h2>
+          <span style={{ fontSize: 12, color: 'var(--mut)' }}>
+            Press keys 1, 2, or 3
+          </span>
+        </div>
+
+        {/* Options Switcher */}
         <div className="opts">
           {['proceed', 'hold', 'reject'].map((k, i) => (
-            <button key={k} className={'opt ' + k} aria-pressed={pick === k} onClick={() => setPick(k)}>
-              <span className="ico"><Icon n={ICO[k]} /></span>
-              <span><b>{LBL[k]}</b><span className="d">{DESC[k]}</span></span>
+            <button
+              key={k}
+              type="button"
+              className={'opt ' + k}
+              aria-pressed={pick === k}
+              onClick={() => setPick(k)}
+            >
+              <span className="ico">
+                <Icon n={ICO[k]} s={20} />
+              </span>
+              <span className="content">
+                <b>{LBL[k]}</b>
+                <span className="d">{DESC[k]}</span>
+              </span>
               <kbd>{i + 1}</kbd>
+              <span className="switch-radio" aria-hidden="true">
+                <span className="switch-radio-dot" />
+              </span>
             </button>
           ))}
         </div>
-        <div className="f">
-          <label htmlFor="n">Notes</label>
-          <textarea id="n" value={note} maxLength={1500} placeholder={PH[pick]} onChange={(e) => setNote(e.target.value)}
-            onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submit(); }} />
-          <div className="chips">
+
+        {/* Notes & Chips */}
+        <div className="f" style={{ marginTop: 22 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <label htmlFor="n" style={{ fontWeight: 600, fontSize: 14 }}>
+              Evaluation notes
+            </label>
+            <span style={{ fontSize: 12, color: 'var(--mut)' }}>
+              {note.length} / 1500
+            </span>
+          </div>
+          <textarea
+            id="n"
+            value={note}
+            maxLength={1500}
+            rows={4}
+            placeholder={PH[pick]}
+            onChange={(e) => setNote(e.target.value)}
+            onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') submit(); }}
+            style={{
+              marginTop: 8,
+              borderRadius: 14,
+              fontSize: 14,
+              lineHeight: 1.6,
+              border: '1.5px solid var(--line)',
+              background: 'var(--card2)',
+              color: 'var(--ink)',
+              padding: '14px 16px',
+            }}
+          />
+          <div className="chips" style={{ marginTop: 10, gap: 8 }}>
             {(CHIPS[pick] || []).map((t) => (
-              <button key={t} className="chip" onClick={() => setNote((n) => n + (n && !n.endsWith('\n') ? '\n' : '') + '• ' + t)}>+ {t}</button>
+              <button
+                key={t}
+                type="button"
+                className="chip"
+                onClick={() => setNote((n) => n + (n && !n.endsWith('\n') ? '\n' : '') + '• ' + t)}
+                style={{
+                  cursor: 'pointer',
+                  border: '1px solid var(--line)',
+                  background: 'var(--soft)',
+                  color: 'var(--ink)',
+                  fontSize: 12.5,
+                  padding: '6px 12px',
+                  borderRadius: 99,
+                  transition: 'all 0.18s ease',
+                }}
+              >
+                + {t}
+              </button>
             ))}
           </div>
-          <div className="cnt">{note.length} / 1500</div>
         </div>
-        <button className="btn full primary" disabled={!pick || busy} onClick={submit}>
-          {busy ? <><span className="btn-spinner" aria-hidden="true" />Saving feedback…</> : <><Icon n="check" s={16} />Submit feedback</>}
+
+        {/* Submit Button */}
+        <button
+          type="button"
+          className="btn full primary"
+          disabled={!pick || busy}
+          onClick={submit}
+          style={{
+            marginTop: 22,
+            padding: 15,
+            fontSize: 15,
+            fontWeight: 600,
+            borderRadius: 14,
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            ...(pick === 'proceed'
+              ? { background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', boxShadow: '0 6px 22px rgba(16, 185, 129, 0.42)' }
+              : pick === 'hold'
+              ? { background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#ffffff', boxShadow: '0 6px 22px rgba(245, 158, 11, 0.42)' }
+              : pick === 'reject'
+              ? { background: 'linear-gradient(135deg, #dc2626, #ef4444)', color: '#ffffff', boxShadow: '0 6px 22px rgba(239, 68, 68, 0.42)' }
+              : {}),
+          }}
+        >
+          {busy ? (
+            <><span className="btn-spinner" aria-hidden="true" />Recording recommendation…</>
+          ) : pick ? (
+            <>
+              <Icon n={ICO[pick]} s={18} />
+              Submit recommendation: {LBL[pick]}
+            </>
+          ) : (
+            'Select a recommendation above'
+          )}
         </button>
-        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 10 }}>{msg || (pick ? '' : 'Choose a recommendation to submit.')}</p>
+
+        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 12 }}>
+          {msg || (pick ? 'Cmd/Ctrl + Enter to submit instantly' : 'Choose a recommendation to enable submission.')}
+        </p>
       </div>
     </div>
   );
