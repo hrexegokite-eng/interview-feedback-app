@@ -645,9 +645,9 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   z-index: 5;
   margin: 0 -18px;
   padding: 12px 18px;
-  background: rgba(13, 20, 27, 0.96);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 0;
 }
 
 .pn .who { margin-top: 16px !important; }
@@ -667,10 +667,9 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   max-height: 100vh;
   margin-left: auto;
   border: 0;
-  border-right: 0;
-  border-radius: 16px 0 0 16px;
-  background: linear-gradient(180deg, rgba(14, 22, 29, 0.995), rgba(8, 14, 19, 0.995));
-  box-shadow: -24px 0 70px rgba(0, 0, 0, 0.48), inset 1px 0 0 rgba(255, 255, 255, 0.035);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   padding: 0 22px 24px;
   scrollbar-width: thin;
   scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
