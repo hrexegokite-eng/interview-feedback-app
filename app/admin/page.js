@@ -382,7 +382,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
   return (
     <div className="ov profile-modal" onClick={(e) => e.target === e.currentTarget && close()}>
       <div className="pn profile-panel" role="dialog" aria-modal="true" aria-label="Candidate profile">
-        <div className="top"><span className="sm mut">Candidate profile</span><button className="btn ghost" onClick={close} aria-label="Close"><Icon n="x" s={14} /></button></div>
+        <div className="profile-header"><span className="sm mut">Candidate profile</span><button className="profile-close" onClick={close} aria-label="Close"><Icon n="x" s={14} /></button></div>
         <div className="who" style={{ marginTop: 18 }}>
           <Av name={c.name} />
           <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{c.role || 'Candidate'} · {R.length} {R.length === 1 ? 'round' : 'rounds'}</p></div>
