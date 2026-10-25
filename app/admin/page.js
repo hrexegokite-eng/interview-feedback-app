@@ -280,17 +280,22 @@ export default function Admin() {
 }
 
 function Schedule({ cands, reload, flash, open }) {
-  const blank = { name: '', role: '', roundName: '', interviewer: '', when: '', meetLink: '', cvUrl: '', cvFilename: '' };
+  const blank = { name: '', bcu: '', role: '', roundName: '', interviewer: '', when: '', meetLink: '', cvUrl: '', cvFilename: '' };
   const [f, setF] = useState(blank);
-  const [bad, setBad] = useState(false);
+  const [badName, setBadName] = useState(false);
+  const [badInterviewer, setBadInterviewer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function add(e) {
     e.preventDefault();
-    if (!f.name.trim()) { setBad(true); return; }
-    setBad(false); setBusy(true);
+    const nameMissing = !f.name.trim();
+    const interviewerMissing = !f.interviewer.trim();
+    setBadName(nameMissing);
+    setBadInterviewer(interviewerMissing);
+    if (nameMissing || interviewerMissing) return;
+    setBusy(true);
     try {
       const r = await api('/api/candidates', { method: 'POST', body: { ...f, when: toISO(f.when) } });
       const l = linkOf(r.token);
@@ -304,10 +309,11 @@ function Schedule({ cands, reload, flash, open }) {
     <div className="split">
       <form className="card" onSubmit={add}>
         <h2>Add candidate &amp; schedule Round 1</h2>
-        <div className="f"><label htmlFor="nm">Candidate name</label><input id="nm" className={bad ? 'bad' : ''} placeholder="e.g. Priya Sharma" autoComplete="off" value={f.name} onChange={on('name')} /></div>
+        <div className="f"><label htmlFor="nm">Candidate name <span className="req">*</span></label><input id="nm" required className={badName ? 'bad' : ''} placeholder="e.g. Priya Sharma" autoComplete="off" value={f.name} onChange={on('name')} /></div>
+        <div className="f"><label htmlFor="bcu">BCU</label><input id="bcu" placeholder="Enter BCU" value={f.bcu} onChange={on('bcu')} /></div>
         <div className="f"><label htmlFor="rl">Role</label><input id="rl" placeholder="e.g. Travel Consultant" value={f.role} onChange={on('role')} /></div>
         <div className="f"><label htmlFor="rn">Round name (optional)</label><input id="rn" placeholder="e.g. Screening" value={f.roundName} onChange={on('roundName')} /></div>
-        <div className="f"><label htmlFor="iv">Interviewer</label><input id="iv" placeholder="e.g. Rahul Mehta" value={f.interviewer} onChange={on('interviewer')} /></div>
+        <div className="f"><label htmlFor="iv">Interviewer name <span className="req">*</span></label><input id="iv" required className={badInterviewer ? 'bad' : ''} placeholder="e.g. Rahul Mehta" value={f.interviewer} onChange={on('interviewer')} /></div>
         <div className="f"><label htmlFor="wh">Date &amp; time</label><input id="wh" type="datetime-local" value={f.when} onChange={on('when')} /></div>
         <div className="f">
           <label htmlFor="ml">Google Meet link (optional)</label>
@@ -337,7 +343,7 @@ function Schedule({ cands, reload, flash, open }) {
                 <Av name={c.name} small />
                 <div className="grow">
                   <b>{c.name}</b>
-                  <div className="sm mut">{[rname(r), c.role, r.interviewer, fmt(r.scheduled_at)].filter(Boolean).join(' · ')}</div>
+                  <div className="sm mut">{[c.bcu ? 'BCU: ' + c.bcu : '', rname(r), c.role, r.interviewer, fmt(r.scheduled_at)].filter(Boolean).join(' · ')}</div>
                   {(r.meet_link || r.cv_url) && (
                     <div className="resource-bar" onClick={(e) => e.stopPropagation()}>
                       {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} className="field-icon" />Join Meet</a>}
@@ -363,12 +369,16 @@ function Profile({ c, close, reload, flash, move, remove }) {
   const pend = pending(c);
   const n = (R.length ? R[R.length - 1].round_no : 0) + 1;
   const [f, setF] = useState({ roundName: '', interviewer: '', when: '', meetLink: '', cvUrl: '', cvFilename: '' });
+  const [badInterviewer, setBadInterviewer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function next(e) {
     e.preventDefault();
+    const interviewerMissing = !f.interviewer.trim();
+    setBadInterviewer(interviewerMissing);
+    if (interviewerMissing) return;
     setBusy(true);
     try {
       const r = await api('/api/candidates/' + c.id + '/rounds', { method: 'POST', body: { ...f, when: toISO(f.when) } });
@@ -383,7 +393,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
       <div className="profile-header"><button className="profile-back" onClick={close} aria-label="Back to candidate list"><Icon n="x" s={14} />Back</button><span className="sm mut">Candidate profile</span></div>
         <div className="who" style={{ marginTop: 18 }}>
           <Av name={c.name} />
-          <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{c.role || 'Candidate'} · {R.length} {R.length === 1 ? 'round' : 'rounds'}</p></div>
+          <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{[c.bcu ? 'BCU: ' + c.bcu : '', c.role || 'Candidate', R.length + (R.length === 1 ? ' round' : ' rounds')].filter(Boolean).join(' · ')}</p></div>
           <span className={'badge ' + c.status} style={{ marginLeft: 'auto' }}>{LBL[c.status]}</span>
         </div>
         <div className="chips" style={{ marginTop: 16 }}>
@@ -417,7 +427,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
             <form onSubmit={next}>
               <h2>Schedule Round {n}</h2>
               <div className="f"><label htmlFor="pr">Round name (optional)</label><input id="pr" placeholder="e.g. Technical, Manager, HR" value={f.roundName} onChange={on('roundName')} /></div>
-              <div className="f"><label htmlFor="pi">Interviewer</label><input id="pi" value={f.interviewer} onChange={on('interviewer')} /></div>
+              <div className="f"><label htmlFor="pi">Interviewer name <span className="req">*</span></label><input id="pi" required className={badInterviewer ? 'bad' : ''} value={f.interviewer} onChange={on('interviewer')} /></div>
               <div className="f"><label htmlFor="pw">Date &amp; time</label><input id="pw" type="datetime-local" value={f.when} onChange={on('when')} /></div>
               <div className="f">
                 <label htmlFor="pm">Google Meet link (optional)</label>

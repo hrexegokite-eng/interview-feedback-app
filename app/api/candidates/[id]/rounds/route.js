@@ -9,6 +9,8 @@ export async function POST(req, { params }) {
   const { id } = await params;
   if (!UUID.test(id)) return bad('Invalid request.');
   const b = await req.json().catch(() => ({}));
+  const interviewer = (b.interviewer || '').trim();
+  if (!interviewer) return bad('Interviewer name is required.');
   const pending = await sql`select 1 from rounds where candidate_id = ${id}::uuid and decision is null limit 1`;
   if (pending.length) return bad('The current round is still awaiting feedback.', 409);
   const rows = await sql`

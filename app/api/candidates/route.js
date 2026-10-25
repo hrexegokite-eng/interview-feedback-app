@@ -6,7 +6,7 @@ import { getAdmin, bad } from '@/lib/auth';
 export async function GET() {
   if (!(await getAdmin())) return bad('Unauthorized', 401);
   const rows = await sql`
-    select c.id, c.name, c.role, c.status, c.created_at, c.updated_at,
+    select c.id, c.name, c.bcu, c.role, c.status, c.created_at, c.updated_at,
       coalesce(
         json_agg(json_build_object(
           'id', r.id, 'round_no', r.round_no, 'name', r.name,
@@ -29,10 +29,12 @@ export async function POST(req) {
   if (!(await getAdmin())) return bad('Unauthorized', 401);
   const b = await req.json().catch(() => ({}));
   const name = (b.name || '').trim();
+  const interviewer = (b.interviewer || '').trim();
   if (!name) return bad('Candidate name is required.');
+  if (!interviewer) return bad('Interviewer name is required.');
   const rows = await sql`
     with c as (
-      insert into candidates (name, role) values (${name}, ${(b.role || '').trim() || null})
+      insert into candidates (name, bcu, role) values (${name}, ${(b.bcu || '').trim() || null}, ${(b.role || '').trim() || null})
       returning id
     )
     insert into rounds (candidate_id, round_no, name, interviewer, scheduled_at, meet_link, cv_url, cv_filename)

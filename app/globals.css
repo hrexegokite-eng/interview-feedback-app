@@ -372,6 +372,10 @@ label {
   color: var(--ink2);
   margin: 0 0 6px;
 }
+.req {
+  color: var(--no);
+  margin-left: 2px;
+}
 
 .field-label {
   display: flex;
