@@ -655,6 +655,44 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
 .pn > .card:last-of-type {
   margin-top: 12px !important;
 }
+
+.profile-modal {
+  place-items: center;
+  padding: 16px;
+}
+.profile-panel {
+  width: min(720px, 100%);
+  height: min(740px, calc(100vh - 32px));
+  max-height: calc(100vh - 32px);
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(180deg, rgba(12, 19, 25, 0.99), rgba(8, 13, 18, 0.99));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+.profile-panel::-webkit-scrollbar { width: 6px; }
+.profile-panel::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.22); border-radius: 99px; }
+.profile-panel::-webkit-scrollbar-track { background: transparent; }
+.profile-panel .top:first-child {
+  margin-left: -18px;
+  margin-right: -18px;
+}
+.profile-panel > .who,
+.profile-panel > h2,
+.profile-panel > .tl,
+.profile-panel > .card,
+.profile-panel > .chips {
+  width: 100%;
+}
+.profile-panel > .tl { padding-right: 2px; }
+.profile-panel > .card {
+  background: rgba(17, 24, 31, 0.94);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+.profile-panel .rd .card { border-radius: 12px; }
+.profile-panel .f { margin-top: 14px; }
+.profile-panel input { min-height: 42px; }
 @keyframes pnin { from { transform: translateY(20px) scale(.97); opacity: 0; } }
 
 /* ═══════════════════════════════════════════
@@ -943,6 +981,12 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
     max-height: calc(100vh - 20px);
     width: 100%;
     border-radius: 14px;
+  }
+  .profile-modal { padding: 8px; }
+  .profile-panel {
+    height: calc(100vh - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 12px;
   }
   .split { grid-template-columns: 1fr; }
   .stats { grid-template-columns: 1fr 1fr; }
