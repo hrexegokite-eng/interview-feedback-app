@@ -23,9 +23,19 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 
 ## Getting Started
 
+For local development, `DATABASE_URL` can be left unset; the app uses a local PGlite database in `.pgdata`. A fresh local database starts empty.
+
 ```bash
 npm install
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
+
+## Production database
+
+Production requires a persistent PostgreSQL database. Create a database (for example, on Neon), then add its connection string as `DATABASE_URL` in the hosting provider's production environment variables. On Vercel, configure it under **Project Settings → Environment Variables** and redeploy. Do not rely on the local PGlite database for production: production requests fail clearly if `DATABASE_URL` is missing or invalid rather than silently using temporary storage.
+
+After deployment, verify the database connection at `/api/db-check`; it should report `Neon Serverless Postgres` and `status: connected`. Candidate, interview-round, and uploaded-file data are stored in that shared PostgreSQL database, so authorized users see the same records from different devices.
+
+The app no longer inserts sample candidates automatically. Existing records are not deleted when deploying this change; review and remove any old demo records from the production database separately if needed.
