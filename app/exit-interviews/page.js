@@ -19,6 +19,7 @@ export default function ExitInterviews() {
   const router = useRouter();
   const [me, setMe] = useState(null);
   const [forms, setForms] = useState(null);
+  const [employees, setEmployees] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -34,7 +35,12 @@ export default function ExitInterviews() {
 
   const load = useCallback(async () => {
     try {
-      setForms(await api('/api/exit-interviews'));
+      const [exitForms, employeeProfiles] = await Promise.all([
+        api('/api/exit-interviews'),
+        api('/api/exit-interviews/employees'),
+      ]);
+      setForms(exitForms);
+      setEmployees(employeeProfiles);
       setLoadError('');
     } catch (error) {
       if (error.status === 401) router.replace('/login');
@@ -139,6 +145,27 @@ export default function ExitInterviews() {
           </form>
 
           <div>
+            <div className="card">
+              <h2>Employee profiles</h2>
+              {!employees ? <p className="mut" style={{ marginTop: 16 }}>Loading employee profiles…</p> : employees.length === 0 ? (
+                <p className="mut" style={{ marginTop: 16 }}>Employee profiles are created when you create their first exit interview form.</p>
+              ) : employees.map((employee) => (
+                <button
+                  key={employee.id}
+                  type="button"
+                  className="row"
+                  style={{ width: '100%', textAlign: 'left', background: 'transparent', color: 'inherit' }}
+                  onClick={() => router.push(`/exit-employees/${employee.id}`)}
+                >
+                  <Av name={employee.name} small />
+                  <span className="grow">
+                    <b>{employee.name}</b>
+                    <span className="sm mut" style={{ display: 'block' }}>{employee.email} · {employee.interview_count} exit interview{employee.interview_count === 1 ? '' : 's'}</span>
+                  </span>
+                  <span aria-hidden="true" className="mut">→</span>
+                </button>
+              ))}
+            </div>
             <div className="card">
               <h2>Shared forms &amp; responses</h2>
               {!forms ? <p className="mut" style={{ marginTop: 16 }}>Loading forms…</p> : forms.length === 0 ? (

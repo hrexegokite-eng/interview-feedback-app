@@ -8,7 +8,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 - 📹 **Google Meet Integration**: Add Google Meet links per round; accessible by interviewers with one click.
 - 📄 **CV / Resume Upload**: Upload candidate resumes (PDF, DOC, images) attached directly to candidates and interview rounds.
 - 💬 **Interviewer Feedback Portal**: Dedicated tokenized feedback links (`/f/[token]`) for interviewers to record recommendations (Proceed, Hold, Reject) and notes.
-- 👋 **Exit Interviews**: Build employee-specific exit forms, share private response links, and review submitted feedback.
+- 👋 **Exit Interviews**: Build employee-specific exit forms, share private response links, and review submitted feedback in a separate employee profile and exit-interview history.
 - 🔒 **Authentication**: Admin dashboard authentication with **Google OAuth 2.0** (with dev fallback for local testing).
 - 📊 **Hiring Dashboard**: View candidate pipeline status (Scheduled, Shortlisted, On Hold, Rejected) with candidate profiles and timeline history.
 
