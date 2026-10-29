@@ -249,6 +249,59 @@ export default function Portal() {
             Quarterly goals, 360-degree feedback, performance appraisals, and employee growth milestones.
           </p>
         </div>
+
+        {/* Future Module Placeholder 3: Exit Form */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push('/exit-form')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/exit-form')}
+          className="card"
+          style={{
+            padding: 26,
+            borderRadius: 18,
+            border: '1px dashed var(--line)',
+            background: 'var(--card)',
+            opacity: 0.65,
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: 14,
+                background: 'var(--soft)',
+                display: 'grid',
+                placeItems: 'center',
+                color: 'var(--mut)',
+              }}
+            >
+              <Icon n="file" s={24} />
+            </div>
+            <span
+              style={{
+                padding: '4px 10px',
+                borderRadius: 99,
+                fontSize: 11.5,
+                fontWeight: 500,
+                background: 'var(--soft)',
+                color: 'var(--mut)',
+              }}
+            >
+              Coming Soon
+            </span>
+          </div>
+
+          <h2 style={{ fontSize: 19, fontWeight: 600, margin: '0 0 8px', color: 'var(--ink2)' }}>
+            Exit Form
+          </h2>
+
+          <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>
+            Manage employee exit requests, offboarding details, and clearance workflows.
+          </p>
+        </div>
         </div>
       </div>
     </div>
