@@ -138,50 +138,37 @@ export default function ExitFormDashboard() {
         reader.onerror = () => reject(new Error('Could not read the Go Kite logo for the PDF.'));
         reader.readAsDataURL(logoBlob);
       });
+      const sectionRow = (content) => [{
+        content,
+        colSpan: 2,
+        styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+      }];
       const rows = [
-        {
-          content: 'EMPLOYEE INFORMATION',
-          colSpan: 2,
-          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
-        },
+        sectionRow('EMPLOYEE INFORMATION'),
         ...EMPLOYEE_FIELDS.map(({ key, label }) => [
           label,
           key === 'dateOfJoining' || key === 'lastWorkingDay' ? dateValue(responses[key]) : responses[key] || '—',
         ]),
-        {
-          content: 'REASON FOR RESIGNATION',
-          colSpan: 2,
-          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
-        },
+        sectionRow('REASON FOR RESIGNATION'),
         ...FEEDBACK_FIELDS
           .filter(({ key }) => ['primaryReason', 'acceptedAnotherJob', 'newOpportunityAttraction', 'retentionSuggestions'].includes(key))
           .map(({ key, label }) => [label, responses[key] || '—']),
-        {
-          content: 'EMPLOYEE EXPERIENCE',
-          colSpan: 2,
-          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
-        },
+        sectionRow('EMPLOYEE EXPERIENCE'),
         ...EXPERIENCE_AREAS.map(({ key, label }) => {
           const rating = responses.experience?.[key];
           return [label, rating ? `${EXPERIENCE_SCALE[rating]} - ${rating}` : '—'];
         }),
-        {
-          content: 'FEEDBACK AND SUGGESTIONS',
-          colSpan: 2,
-          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
-        },
+        sectionRow('FEEDBACK AND SUGGESTIONS'),
         ...FEEDBACK_FIELDS
           .filter(({ key }) => ['likedMost', 'challenges', 'improvements', 'wouldRejoin'].includes(key))
           .map(({ key, label }) => [label, responses[key] || '—']),
-        {
-          content: 'EXIT FORMALITIES',
-          colSpan: 2,
-          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
-        },
+        sectionRow('EXIT FORMALITIES'),
         ...FEEDBACK_FIELDS
           .filter(({ key }) => ['knowledgeHandover', 'assetsReturned', 'pendingTasks'].includes(key))
           .map(({ key, label }) => [label, responses[key] || '—']),
-      ].map((row) => Array.isArray(row) ? row.map(clean) : { ...row, content: clean(row.content) });
+      ].map((row) => row.map((cell) => typeof cell === 'string'
+        ? clean(cell)
+        : { ...cell, content: clean(cell.content) }));
 
       doc.setProperties({
         title: `Exit profile - ${clean(responses.employeeName)}`,
@@ -201,8 +188,8 @@ export default function ExitFormDashboard() {
         head: [['Question', 'Response']],
         body: rows,
         theme: 'grid',
-        styles: { fontSize: 9, cellPadding: 2.5, overflow: 'linebreak' },
-        headStyles: { fillColor: [42, 62, 85] },
+        styles: { fontSize: 9, cellPadding: 2.5, overflow: 'linebreak', valign: 'middle' },
+        headStyles: { fillColor: [42, 62, 85], fontStyle: 'bold' },
         margin: { left: 14, right: 14, bottom: 18 },
         rowPageBreak: 'avoid',
       });
