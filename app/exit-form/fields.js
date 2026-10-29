@@ -17,6 +17,8 @@ export const EXPERIENCE_AREAS = [
   { key: 'workLifeBalance', label: 'Work-life balance' },
 ];
 
+export const EXPERIENCE_SCALE = { Excellent: 4, Good: 3, Average: 2, Poor: 1 };
+
 export const FEEDBACK_FIELDS = [
   { key: 'primaryReason', label: 'Primary reason for leaving' },
   { key: 'acceptedAnotherJob', label: 'Accepted another job offer' },

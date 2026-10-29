@@ -2,7 +2,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Logo, api } from '@/components/ui';
-import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS, FEEDBACK_FIELDS } from './fields';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS, EXPERIENCE_SCALE, FEEDBACK_FIELDS } from './fields';
 
 function displayDate(value) {
   if (!value) return '—';
@@ -52,7 +54,11 @@ function Review({ responses }) {
         {EXPERIENCE_AREAS.map(({ key, label }) => (
           <div key={key} className="exit-review-item">
             <span className="mut">{label}</span>
-            <strong>{responses.experience?.[key] || '—'}</strong>
+            <strong>
+              {responses.experience?.[key]
+                ? `${EXPERIENCE_SCALE[responses.experience[key]]} - ${responses.experience[key]}`
+                : '—'}
+            </strong>
           </div>
         ))}
       </div>
@@ -121,12 +127,17 @@ export default function ExitFormDashboard() {
     setDownloading(form.token);
     setError('');
     try {
-      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
-        import('jspdf'),
-        import('jspdf-autotable'),
-      ]);
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const clean = (value) => String(value || '—').replace(/[^\x20-\x7E]/g, ' ').trim() || '—';
+      const logoResponse = await fetch('/logo.png');
+      if (!logoResponse.ok) throw new Error('Could not load the Go Kite logo for the PDF.');
+      const logoBlob = await logoResponse.blob();
+      const logoDataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read the Go Kite logo for the PDF.'));
+        reader.readAsDataURL(logoBlob);
+      });
       const rows = [
         {
           content: 'EMPLOYEE INFORMATION',
@@ -150,7 +161,10 @@ export default function ExitFormDashboard() {
           colSpan: 2,
           styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
         },
-        ...EXPERIENCE_AREAS.map(({ key, label }) => [label, responses.experience?.[key] || '—']),
+        ...EXPERIENCE_AREAS.map(({ key, label }) => {
+          const rating = responses.experience?.[key];
+          return [label, rating ? `${EXPERIENCE_SCALE[rating]} - ${rating}` : '—'];
+        }),
         {
           content: 'FEEDBACK AND SUGGESTIONS',
           colSpan: 2,
@@ -173,14 +187,17 @@ export default function ExitFormDashboard() {
         title: `Exit profile - ${clean(responses.employeeName)}`,
         subject: 'Confidential employee exit form',
       });
+      doc.addImage(logoDataUrl, 'PNG', 14, 8, 22, 21);
       doc.setFontSize(18);
-      doc.text('Employee Exit Profile', 14, 18);
+      doc.text('Employee Exit Profile', 42, 16);
       doc.setFontSize(10);
-      doc.text(clean(responses.employeeName), 14, 25);
+      doc.text(clean(responses.employeeName), 42, 22);
       doc.setFontSize(8);
-      doc.text(`Submitted: ${displayDate(form.submitted_at)}`, 14, 30);
+      doc.text(`Submitted: ${displayDate(form.submitted_at)}`, 42, 27);
+      doc.setFontSize(8);
+      doc.text('Experience scale: 4=Excellent | 3=Good | 2=Average | 1=Poor', 14, 33);
       autoTable(doc, {
-        startY: 36,
+        startY: 38,
         head: [['Question', 'Response']],
         body: rows,
         theme: 'grid',

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Logo, api } from '@/components/ui';
-import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS } from '../fields';
+import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS, EXPERIENCE_SCALE } from '../fields';
 
 const INITIAL_FORM = {
   employeeName: '',
@@ -179,7 +179,9 @@ export default function EmployeeExitForm() {
                       <thead>
                         <tr>
                           <th scope="col">Criteria</th>
-                          {['Excellent', 'Good', 'Average', 'Poor'].map((rating) => <th key={rating} scope="col">{rating}</th>)}
+                          {['Excellent', 'Good', 'Average', 'Poor'].map((rating) => (
+                            <th key={rating} scope="col">{EXPERIENCE_SCALE[rating]} · {rating}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
