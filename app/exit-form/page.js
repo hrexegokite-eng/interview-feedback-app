@@ -10,6 +10,20 @@ function displayDate(value) {
   return new Date(dateOnly ? `${value}T00:00:00` : value).toLocaleDateString();
 }
 
+function dateValue(value) {
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? displayDate(value) : value || '—';
+}
+
+function initials(name) {
+  return String(name || 'Employee')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
+
 function Review({ responses }) {
   return (
     <div style={{ padding: '4px 0 16px' }}>
@@ -18,7 +32,7 @@ function Review({ responses }) {
         {EMPLOYEE_FIELDS.map(({ key, label }) => (
           <div key={key} className="exit-review-item">
             <span className="mut">{label}</span>
-            <strong>{key.includes('Day') || key === 'dateOfJoining' ? displayDate(responses[key]) : responses[key] || '—'}</strong>
+            <strong>{key === 'dateOfJoining' || key === 'lastWorkingDay' ? dateValue(responses[key]) : responses[key] || '—'}</strong>
           </div>
         ))}
       </div>
@@ -54,6 +68,8 @@ export default function ExitFormDashboard() {
   const [newLink, setNewLink] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [openProfile, setOpenProfile] = useState('');
+  const [downloading, setDownloading] = useState('');
 
   const loadForms = useCallback(async () => {
     try {
@@ -96,6 +112,100 @@ export default function ExitFormDashboard() {
       setNotice('Form link copied.');
     } catch {
       setError('Could not copy the link. Select and copy it manually.');
+    }
+  }
+
+  async function downloadPdf(form) {
+    const responses = form.responses;
+    if (!responses || downloading) return;
+    setDownloading(form.token);
+    setError('');
+    try {
+      const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+      ]);
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const clean = (value) => String(value || '—').replace(/[^\x20-\x7E]/g, ' ').trim() || '—';
+      const rows = [
+        {
+          content: 'EMPLOYEE INFORMATION',
+          colSpan: 2,
+          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+        },
+        ...EMPLOYEE_FIELDS.map(({ key, label }) => [
+          label,
+          key === 'dateOfJoining' || key === 'lastWorkingDay' ? dateValue(responses[key]) : responses[key] || '—',
+        ]),
+        {
+          content: 'REASON FOR RESIGNATION',
+          colSpan: 2,
+          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+        },
+        ...FEEDBACK_FIELDS
+          .filter(({ key }) => ['primaryReason', 'acceptedAnotherJob', 'newOpportunityAttraction', 'retentionSuggestions'].includes(key))
+          .map(({ key, label }) => [label, responses[key] || '—']),
+        {
+          content: 'EMPLOYEE EXPERIENCE',
+          colSpan: 2,
+          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+        },
+        ...EXPERIENCE_AREAS.map(({ key, label }) => [label, responses.experience?.[key] || '—']),
+        {
+          content: 'FEEDBACK AND SUGGESTIONS',
+          colSpan: 2,
+          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+        },
+        ...FEEDBACK_FIELDS
+          .filter(({ key }) => ['likedMost', 'challenges', 'improvements', 'wouldRejoin'].includes(key))
+          .map(({ key, label }) => [label, responses[key] || '—']),
+        {
+          content: 'EXIT FORMALITIES',
+          colSpan: 2,
+          styles: { fillColor: [30, 55, 75], textColor: 255, fontStyle: 'bold' },
+        },
+        ...FEEDBACK_FIELDS
+          .filter(({ key }) => ['knowledgeHandover', 'assetsReturned', 'pendingTasks'].includes(key))
+          .map(({ key, label }) => [label, responses[key] || '—']),
+      ].map((row) => Array.isArray(row) ? row.map(clean) : { ...row, content: clean(row.content) });
+
+      doc.setProperties({
+        title: `Exit profile - ${clean(responses.employeeName)}`,
+        subject: 'Confidential employee exit form',
+      });
+      doc.setFontSize(18);
+      doc.text('Employee Exit Profile', 14, 18);
+      doc.setFontSize(10);
+      doc.text(clean(responses.employeeName), 14, 25);
+      doc.setFontSize(8);
+      doc.text(`Submitted: ${displayDate(form.submitted_at)}`, 14, 30);
+      autoTable(doc, {
+        startY: 36,
+        head: [['Question', 'Response']],
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 2.5, overflow: 'linebreak' },
+        headStyles: { fillColor: [42, 62, 85] },
+        margin: { left: 14, right: 14, bottom: 18 },
+        rowPageBreak: 'avoid',
+      });
+
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let page = 1; page <= pageCount; page += 1) {
+        doc.setPage(page);
+        doc.setFontSize(8);
+        doc.text(`Confidential - Page ${page} of ${pageCount}`, 14, 287);
+      }
+
+      const filename = clean(responses.employeeName)
+        .replace(/[^a-z0-9]+/gi, '-')
+        .replace(/^-|-$/g, '')
+        .toLowerCase() || 'employee';
+      doc.save(`exit-profile-${filename}.pdf`);
+    } catch (e) {
+      setError(e.message || 'Could not generate the employee profile PDF.');
+    } finally {
+      setDownloading('');
     }
   }
 
@@ -145,42 +255,82 @@ export default function ExitFormDashboard() {
               {forms.map((form) => {
                 const submitted = !!form.submitted_at;
                 const employeeName = form.responses?.employeeName;
+                const employeeId = form.responses?.employeeId;
+                const department = form.responses?.department;
+                const designation = form.responses?.designation;
+                const lastWorkingDay = form.responses?.lastWorkingDay;
+                const isOpen = openProfile === form.token;
                 return (
-                  <details key={form.token} className="exit-record">
-                    <summary>
-                      <span>
-                        <strong>{employeeName || 'Employee form'}</strong>
-                        <span className={'exit-status' + (submitted ? ' submitted' : '')}>
-                          {submitted ? 'Submitted' : 'Awaiting response'}
-                        </span>
-                      </span>
-                      <span className="mut">{displayDate(form.submitted_at || form.created_at)}</span>
-                    </summary>
-                    {submitted ? (
-                      <Review responses={form.responses} />
-                    ) : (
-                      <div className="exit-pending">
-                        <p className="mut">This link has not been submitted yet.</p>
-                        <div className="exit-link-row">
-                          <input readOnly value={`${window.location.origin}/exit-form/${form.token}`} onFocus={(e) => e.target.select()} aria-label="Employee form link" />
-                          <button
-                            className="btn ghost"
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(`${window.location.origin}/exit-form/${form.token}`);
-                                setNotice('Form link copied.');
-                                setError('');
-                              } catch {
-                                setError('Could not copy the link. Select and copy it manually.');
-                              }
-                            }}
-                          >
-                            Copy link
-                          </button>
+                  <article key={form.token} className="exit-record">
+                    <div className="exit-profile-header">
+                      <div className="exit-profile-identity">
+                        <div className="exit-avatar" aria-hidden="true">{initials(employeeName)}</div>
+                        <div className="exit-profile-copy">
+                          <div className="exit-profile-name">
+                            <strong>{employeeName || 'Employee form'}</strong>
+                            <span className={'exit-status' + (submitted ? ' submitted' : '')}>
+                              {submitted ? 'Submitted' : 'Awaiting response'}
+                            </span>
+                          </div>
+                          <div className="mut exit-profile-meta">
+                            {[designation, department, employeeId && `ID: ${employeeId}`].filter(Boolean).join(' · ') || 'Employee details pending'}
+                          </div>
                         </div>
                       </div>
+                      <div className="exit-profile-actions">
+                        {submitted && (
+                          <button
+                            className="btn ghost"
+                            onClick={() => downloadPdf(form)}
+                            disabled={!!downloading}
+                          >
+                            {downloading === form.token ? 'Preparing PDF…' : 'Download PDF'}
+                          </button>
+                        )}
+                        <button
+                          className="btn ghost"
+                          aria-expanded={isOpen}
+                          onClick={() => setOpenProfile(isOpen ? '' : form.token)}
+                        >
+                          {isOpen ? 'Close profile' : 'View profile'}
+                        </button>
+                      </div>
+                    </div>
+                    {submitted ? (
+                      isOpen && (
+                        <div className="exit-profile-details">
+                          <div className="exit-profile-facts">
+                            <div><span className="mut">Last working day</span><strong>{dateValue(lastWorkingDay)}</strong></div>
+                            <div><span className="mut">Submitted</span><strong>{displayDate(form.submitted_at)}</strong></div>
+                          </div>
+                          <Review responses={form.responses} />
+                        </div>
+                      )
+                    ) : (
+                      isOpen && (
+                        <div className="exit-pending">
+                          <p className="mut">This link has not been submitted yet.</p>
+                          <div className="exit-link-row">
+                            <input readOnly value={`${window.location.origin}/exit-form/${form.token}`} onFocus={(e) => e.target.select()} aria-label="Employee form link" />
+                            <button
+                              className="btn ghost"
+                              onClick={async () => {
+                                try {
+                                  await navigator.clipboard.writeText(`${window.location.origin}/exit-form/${form.token}`);
+                                  setNotice('Form link copied.');
+                                  setError('');
+                                } catch {
+                                  setError('Could not copy the link. Select and copy it manually.');
+                                }
+                              }}
+                            >
+                              Copy link
+                            </button>
+                          </div>
+                        </div>
+                      )
                     )}
-                  </details>
+                  </article>
                 );
               })}
             </div>
