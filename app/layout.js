@@ -3,6 +3,11 @@ import './globals.css';
 export const metadata = {
   title: 'Go Kite · Interview Feedback',
   description: 'Interview scheduling and feedback for Go Kite Travel & Tours',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({ children }) {
