@@ -250,7 +250,7 @@ export default function Portal() {
           </p>
         </div>
 
-        {/* Future Module Placeholder 3: Exit Form */}
+        {/* Active Module: Exit Form */}
         <div
           role="button"
           tabIndex={0}
@@ -260,10 +260,23 @@ export default function Portal() {
           style={{
             padding: 26,
             borderRadius: 18,
-            border: '1px dashed var(--line)',
-            background: 'var(--card)',
-            opacity: 0.65,
+            border: '1.5px solid color-mix(in srgb, var(--acc) 45%, var(--line))',
+            background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 30%, var(--card)))',
+            boxShadow: 'var(--sh-md)',
             cursor: 'pointer',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.boxShadow = '0 12px 36px rgba(79,70,229,0.18)';
+            e.currentTarget.style.borderColor = 'var(--acc)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'var(--sh-md)';
+            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--acc) 45%, var(--line))';
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -272,10 +285,11 @@ export default function Portal() {
                 width: 52,
                 height: 52,
                 borderRadius: 14,
-                background: 'var(--soft)',
+                background: 'linear-gradient(135deg, var(--acc), var(--acc2))',
                 display: 'grid',
                 placeItems: 'center',
-                color: 'var(--mut)',
+                color: '#fff',
+                boxShadow: '0 4px 14px rgba(79,70,229,0.35)',
               }}
             >
               <Icon n="file" s={24} />
@@ -285,22 +299,32 @@ export default function Portal() {
                 padding: '4px 10px',
                 borderRadius: 99,
                 fontSize: 11.5,
-                fontWeight: 500,
-                background: 'var(--soft)',
-                color: 'var(--mut)',
+                fontWeight: 600,
+                background: 'var(--okb)',
+                color: 'var(--ok)',
+                border: '1px solid color-mix(in srgb, var(--ok) 30%, transparent)',
               }}
             >
-              Coming Soon
+              ● Active Module
             </span>
           </div>
 
-          <h2 style={{ fontSize: 19, fontWeight: 600, margin: '0 0 8px', color: 'var(--ink2)' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.01em' }}>
             Exit Form
           </h2>
 
-          <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>
+          <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: '0 0 22px' }}>
             Manage employee exit requests, offboarding details, and clearance workflows.
           </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--mut)' }}>
+              Employee offboarding & feedback
+            </span>
+            <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--acc)' }}>
+              Open Module →
+            </span>
+          </div>
         </div>
         </div>
       </div>
