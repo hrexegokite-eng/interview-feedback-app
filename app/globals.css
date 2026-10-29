@@ -1016,3 +1016,73 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   .row .acts { width: 100%; justify-content: flex-start; }
   .bar { position: static; margin-bottom: 18px; }
 }
+
+.exit-public-panel { padding: 18px; }
+.exit-public-content { max-width: 900px; margin: 0 auto; padding: 26px 8px 36px; }
+.exit-intro { margin-bottom: 26px; }
+.exit-intro h1 { margin: 8px 0; font-size: 30px; letter-spacing: -.025em; }
+.exit-kicker { color: var(--acc); font-size: 12px; font-weight: 600; }
+.exit-section { padding: 22px; margin: 18px 0; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--card) 86%, transparent); }
+.exit-section h2, .exit-section-title { margin: 0 0 16px; font-size: 18px; letter-spacing: -.01em; }
+.exit-section > .mut { margin: -10px 0 14px; font-size: 13px; }
+.exit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.exit-field.wide { grid-column: 1 / -1; }
+.exit-field label, .exit-choice legend { margin-bottom: 6px; color: var(--ink2); font-weight: 600; font-size: 13px; }
+.exit-field input, .exit-field textarea { width: 100%; }
+.exit-field textarea { min-height: 96px; }
+.exit-stack { display: grid; gap: 18px; }
+.exit-choice { min-width: 0; margin: 0; padding: 0; border: 0; }
+.exit-choice legend { margin-bottom: 8px; }
+.exit-options { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+.exit-option { display: inline-flex; align-items: center; gap: 7px; margin: 0; cursor: pointer; font-size: 14px; font-weight: 500; }
+.exit-option input[type="radio"], .exit-rating-table input[type="radio"] {
+  appearance: auto;
+  accent-color: var(--acc);
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.exit-rating-wrap { overflow-x: auto; }
+.exit-rating-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.exit-rating-table th, .exit-rating-table td { border: 1px solid var(--line); padding: 9px 10px; text-align: center; }
+.exit-rating-table thead th { background: var(--soft); font-weight: 600; }
+.exit-rating-table th:first-child { min-width: 190px; text-align: left; }
+.exit-rating-table tbody th { font-weight: 500; }
+.exit-rating-table td { width: 92px; }
+.exit-submit { min-width: 200px; }
+.exit-confidential { color: var(--mut); font-size: 12px; }
+.exit-success { padding: 75px 20px; }
+.exit-success h1 { margin: 0 0 10px; }
+.exit-message { color: var(--ok); font-size: 13px; margin: 12px 0; }
+.exit-message.error { color: var(--no); }
+.exit-link { max-width: 760px; margin: 18px 0 28px; }
+.exit-link label { display: block; margin-bottom: 6px; }
+.exit-link-row { display: flex; align-items: center; gap: 8px; }
+.exit-link-row input { min-width: 0; flex: 1; }
+.exit-section-title { margin-top: 30px; }
+.exit-record-list { display: grid; gap: 12px; }
+.exit-record { padding: 0 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.exit-record summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 64px; cursor: pointer; list-style: none; }
+.exit-record summary::-webkit-details-marker { display: none; }
+.exit-record summary > span:first-child { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.exit-status { border-radius: 99px; padding: 3px 9px; color: var(--hd); background: var(--hdb); font-size: 11px; font-weight: 600; }
+.exit-status.submitted { color: var(--ok); background: var(--okb); }
+.exit-subheading { margin: 20px 0 10px; font-size: 14px; }
+.exit-review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.exit-review-item { display: grid; gap: 2px; padding: 10px 12px; border-radius: 9px; background: var(--soft); overflow-wrap: anywhere; }
+.exit-review-item .mut { font-size: 11px; }
+.exit-review-item strong { white-space: pre-wrap; font-size: 13px; font-weight: 500; }
+.exit-pending { padding: 0 0 16px; }
+
+@media (max-width: 600px) {
+  .exit-public-panel { padding: 12px; }
+  .exit-public-content { padding: 18px 2px 24px; }
+  .exit-section { padding: 16px; }
+  .exit-grid, .exit-review-grid { grid-template-columns: 1fr; }
+  .exit-record summary { align-items: flex-start; flex-direction: column; justify-content: center; padding: 12px 0; }
+  .exit-link-row { align-items: stretch; flex-direction: column; }
+  .exit-link-row .btn { align-self: flex-start; }
+  .exit-rating-table { min-width: 610px; }
+}
