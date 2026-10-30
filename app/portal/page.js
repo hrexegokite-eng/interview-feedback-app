@@ -37,7 +37,7 @@ export default function Portal() {
 
   return (
     <div className="page-shell">
-      <div className="shell-panel" style={{ padding: 18 }}>
+      <div className="shell-panel workspace-panel">
         <div className="bar" style={{ marginBottom: 36 }}>
           <div className="brand" style={{ margin: 0, gap: 14 }}>
             <Logo h={44} />
@@ -64,7 +64,7 @@ export default function Portal() {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+        <div className="portal-grid">
         {/* Active Module: Interview Feedback */}
         <div
           role="button"

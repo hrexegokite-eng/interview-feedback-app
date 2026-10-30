@@ -3,11 +3,23 @@ import './globals.css';
 export const metadata = {
   title: 'Go Kite · Interview Feedback',
   description: 'Interview scheduling and feedback for Go Kite Travel & Tours',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Go Kite',
+  },
   icons: {
     icon: '/kite-icon.png',
     shortcut: '/kite-icon.png',
     apple: '/logo.png',
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0b1218',
 };
 
 export default function RootLayout({ children }) {

@@ -146,6 +146,7 @@ export default function Admin() {
   const [prof, setProf] = useState(null);
   const [toast, setToast] = useState('');
   const [loadErr, setLoadErr] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const flash = useCallback((m) => { setToast(m); setTimeout(() => setToast(''), 2200); }, []);
   const load = useCallback(async () => {
@@ -185,6 +186,93 @@ export default function Admin() {
     try { await api('/api/candidates/' + id, { method: 'DELETE' }); setProf(null); flash('Candidate removed'); load(); }
     catch (e) { flash(e.message); }
   }
+  async function exportFeedback(format) {
+    const records = cands.flatMap((candidate) => candidate.rounds
+      .filter((round) => round.decision)
+      .map((round) => ({
+        candidate: candidate.name,
+        bcu: candidate.bcu || '',
+        role: candidate.role || '',
+        round: round.name || 'Round ' + round.round_no,
+        interviewer: round.interviewer || '',
+        decision: LBL[round.decision] || round.decision,
+        feedback: round.note || '',
+        submittedAt: round.submitted_at ? new Date(round.submitted_at) : null,
+      })));
+
+    if (!records.length) {
+      flash('There is no submitted feedback to export yet.');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const date = new Date().toISOString().slice(0, 10);
+      const headers = ['Candidate', 'BCU', 'Role', 'Interview Round', 'Interviewer', 'Decision', 'Feedback', 'Submitted At'];
+      if (format === 'excel') {
+        const ExcelJS = (await import('exceljs')).default;
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet('Interview Feedback', { views: [{ state: 'frozen', ySplit: 1 }] });
+        sheet.columns = [
+          { header: headers[0], key: 'candidate', width: 24 },
+          { header: headers[1], key: 'bcu', width: 18 },
+          { header: headers[2], key: 'role', width: 28 },
+          { header: headers[3], key: 'round', width: 28 },
+          { header: headers[4], key: 'interviewer', width: 24 },
+          { header: headers[5], key: 'decision', width: 16 },
+          { header: headers[6], key: 'feedback', width: 60 },
+          { header: headers[7], key: 'submittedAt', width: 22, style: { numFmt: 'dd mmm yyyy hh:mm' } },
+        ];
+        sheet.addRows(records);
+        sheet.autoFilter = { from: 'A1', to: 'H1' };
+        sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF176B65' } };
+        sheet.getColumn('feedback').alignment = { vertical: 'top', wrapText: true };
+        const buffer = await workbook.xlsx.writeBuffer();
+        const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `interview-feedback-${date}.xlsx`;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } else {
+        const { jsPDF } = await import('jspdf');
+        const autoTable = (await import('jspdf-autotable')).default;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        doc.setFontSize(16);
+        doc.text('Interview Feedback', 14, 14);
+        doc.setFontSize(9);
+        doc.text(`${records.length} submitted feedback record${records.length === 1 ? '' : 's'}`, 14, 20);
+        autoTable(doc, {
+          head: [headers],
+          body: records.map((record) => [
+            record.candidate,
+            record.bcu,
+            record.role,
+            record.round,
+            record.interviewer,
+            record.decision,
+            record.feedback,
+            record.submittedAt ? record.submittedAt.toLocaleString() : '',
+          ]),
+          startY: 24,
+          margin: { left: 10, right: 10, bottom: 12 },
+          styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak', valign: 'top' },
+          headStyles: { fillColor: [23, 107, 101] },
+          columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 20 }, 2: { cellWidth: 32 }, 3: { cellWidth: 34 }, 4: { cellWidth: 28 }, 5: { cellWidth: 20 }, 6: { cellWidth: 'auto' }, 7: { cellWidth: 30 } },
+          didDrawPage: () => {
+            doc.setFontSize(8);
+            doc.text(`Page ${doc.internal.getNumberOfPages()}`, doc.internal.pageSize.getWidth() - 18, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
+          },
+        });
+        doc.save(`interview-feedback-${date}.pdf`);
+      }
+    } catch (e) {
+      flash(`Export failed: ${e.message || 'Please try again.'}`);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   if (loadErr) {
     return (
@@ -206,6 +294,7 @@ export default function Admin() {
   const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
+  const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);
 
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : filt === 'all' ? ['hold', 'reject'] : [filt];
@@ -213,7 +302,7 @@ export default function Admin() {
 
   return (
     <div className="page-shell">
-      <div className="shell-panel" style={{ padding: 18 }}>
+      <div className="shell-panel workspace-panel">
         <div className="bar">
           <div className="brand" style={{ margin: 0, gap: 14 }}><Logo h={48} /><span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>Interview Feedback</span></div>
           <div className="me">
@@ -249,6 +338,10 @@ export default function Admin() {
                   {[['all', 'All'], ['hold', 'Hold'], ['reject', 'Rejected']].map(([k, l]) => <button key={k} role="tab" aria-selected={filt === k} onClick={() => setFilt(k)}>{l}</button>)}
                 </div>
               )}
+              <div className="export-actions">
+                <button className="btn ghost" disabled={exporting || !feedbackCount} title="Download all submitted feedback as an Excel workbook" onClick={() => exportFeedback('excel')}>Excel</button>
+                <button className="btn ghost" disabled={exporting || !feedbackCount} title="Download all submitted feedback as a PDF" onClick={() => exportFeedback('pdf')}>PDF</button>
+              </div>
             </div>
             <div className="card">
               {list.length ? list.map((c) => {

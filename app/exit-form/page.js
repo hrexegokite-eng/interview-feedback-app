@@ -215,7 +215,7 @@ export default function ExitFormDashboard() {
 
   return (
     <div className="page-shell">
-      <div className="shell-panel" style={{ padding: 18 }}>
+      <div className="shell-panel workspace-panel">
         <div className="bar">
           <div className="brand" style={{ margin: 0, gap: 14 }}>
             <Logo h={44} />
