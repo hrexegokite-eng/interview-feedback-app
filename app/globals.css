@@ -719,6 +719,8 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
 .profile-panel .rd .card { border-radius: 12px; }
 .profile-panel .f { margin-top: 14px; }
 .profile-panel input { min-height: 42px; }
+.edit-form { margin-top: 14px; }
+.edit-form .btn.primary { margin-top: 16px; }
 @keyframes pnin { from { transform: translateY(20px) scale(.97); opacity: 0; } }
 
 /* ═══════════════════════════════════════════

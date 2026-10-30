@@ -6,6 +6,11 @@ import { Icon, Av, Logo, api, fmt, rel, rname, toISO, LBL, COL } from '@/compone
 const pending = (c) => c.rounds.find((r) => !r.decision);
 const lastDone = (c) => [...c.rounds].reverse().find((r) => r.decision) || {};
 const linkOf = (t) => location.origin + '/f/' + t;
+const localDateTime = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+};
 async function copy(t) { try { await navigator.clipboard.writeText(t); return true; } catch { return false; } }
 const Empty = ({ t, s }) => <div className="empty"><Icon n="inbox" s={30} /><p><b>{t}</b></p><p className="sm">{s}</p></div>;
 const Spinner = () => <span className="btn-spinner" aria-hidden="true" />;
@@ -465,7 +470,52 @@ function Profile({ c, close, reload, flash, move, remove }) {
   const [badInterviewer, setBadInterviewer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
+  const [editingCandidate, setEditingCandidate] = useState(false);
+  const [candidateForm, setCandidateForm] = useState({ name: c.name, bcu: c.bcu || '', role: c.role || '' });
+  const [editingRound, setEditingRound] = useState(null);
+  const [roundForm, setRoundForm] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  async function saveCandidate(e) {
+    e.preventDefault();
+    setSavingEdit(true);
+    try {
+      await api('/api/candidates/' + c.id, { method: 'PATCH', body: candidateForm });
+      setEditingCandidate(false);
+      flash('Candidate details updated');
+      reload();
+    } catch (x) { flash(x.message); }
+    finally { setSavingEdit(false); }
+  }
+
+  function startRoundEdit(round) {
+    setEditingRound(round.id);
+    setRoundForm({
+      roundName: round.name === 'Round ' + round.round_no ? '' : round.name || '',
+      interviewer: round.interviewer || '',
+      when: localDateTime(round.scheduled_at),
+      meetLink: round.meet_link || '',
+      cvUrl: round.cv_url || '',
+      cvFilename: round.cv_filename || '',
+    });
+  }
+
+  async function saveRound(e, roundId) {
+    e.preventDefault();
+    setSavingEdit(true);
+    try {
+      await api(`/api/candidates/${c.id}/rounds/${roundId}`, {
+        method: 'PATCH',
+        body: { ...roundForm, when: toISO(roundForm.when) },
+      });
+      setEditingRound(null);
+      setRoundForm(null);
+      flash('Interview details updated');
+      reload();
+    } catch (x) { flash(x.message); }
+    finally { setSavingEdit(false); }
+  }
 
   async function next(e) {
     e.preventDefault();
@@ -489,6 +539,20 @@ function Profile({ c, close, reload, flash, move, remove }) {
           <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{[c.bcu ? 'BCU: ' + c.bcu : '', c.role || 'Candidate', R.length + (R.length === 1 ? ' round' : ' rounds')].filter(Boolean).join(' · ')}</p></div>
           <span className={'badge ' + c.status} style={{ marginLeft: 'auto' }}>{LBL[c.status]}</span>
         </div>
+        <div style={{ marginTop: 12 }}>
+          <button className="btn ghost" onClick={() => setEditingCandidate((value) => !value)}>
+            {editingCandidate ? 'Cancel candidate edit' : 'Edit candidate'}
+          </button>
+        </div>
+        {editingCandidate && (
+          <form className="card edit-form" onSubmit={saveCandidate}>
+            <h2>Candidate details</h2>
+            <div className="f"><label htmlFor="edit-candidate-name">Candidate name</label><input id="edit-candidate-name" required maxLength={200} value={candidateForm.name} onChange={(e) => setCandidateForm({ ...candidateForm, name: e.target.value })} /></div>
+            <div className="f"><label htmlFor="edit-candidate-bcu">BCU</label><input id="edit-candidate-bcu" maxLength={120} value={candidateForm.bcu} onChange={(e) => setCandidateForm({ ...candidateForm, bcu: e.target.value })} /></div>
+            <div className="f"><label htmlFor="edit-candidate-role">Role</label><input id="edit-candidate-role" maxLength={200} value={candidateForm.role} onChange={(e) => setCandidateForm({ ...candidateForm, role: e.target.value })} /></div>
+            <button className="btn primary" type="submit" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save candidate details'}</button>
+          </form>
+        )}
         <div className="chips" style={{ marginTop: 16 }}>
           {R.map((r) => <span key={r.id} className={'badge ' + (r.decision || 'scheduled')}>R{r.round_no} · {LBL[r.decision || 'scheduled']}</span>)}
         </div>
@@ -501,6 +565,31 @@ function Profile({ c, close, reload, flash, move, remove }) {
                 <div className="card">
                   <div className="top"><b>{rname(r)}</b><span className={'badge ' + st}>{LBL[st]}</span></div>
                   <div className="sm mut" style={{ marginTop: 2 }}>{[r.interviewer ? 'Interviewer: ' + r.interviewer : '', r.scheduled_at ? 'Interview ' + fmt(r.scheduled_at) : '', r.decision ? 'Submitted ' + fmt(r.submitted_at) : ''].filter(Boolean).join(' · ')}</div>
+                  {!r.decision && (
+                    <div style={{ marginTop: 10 }}>
+                      <button className="btn ghost" onClick={() => editingRound === r.id ? setEditingRound(null) : startRoundEdit(r)}>
+                        {editingRound === r.id ? 'Cancel edit' : 'Edit interview'}
+                      </button>
+                    </div>
+                  )}
+                  {editingRound === r.id && roundForm && (
+                    <form className="edit-form" onSubmit={(e) => saveRound(e, r.id)}>
+                      <div className="f"><label htmlFor={`round-name-${r.id}`}>Round name</label><input id={`round-name-${r.id}`} maxLength={120} placeholder={`Round ${r.round_no}`} value={roundForm.roundName} onChange={(e) => setRoundForm({ ...roundForm, roundName: e.target.value })} /></div>
+                      <div className="f"><label htmlFor={`round-interviewer-${r.id}`}>Interviewer name <span className="req">*</span></label><input id={`round-interviewer-${r.id}`} required maxLength={200} value={roundForm.interviewer} onChange={(e) => setRoundForm({ ...roundForm, interviewer: e.target.value })} /></div>
+                      <div className="f"><label htmlFor={`round-date-${r.id}`}>Date &amp; time</label><input id={`round-date-${r.id}`} type="datetime-local" value={roundForm.when} onChange={(e) => setRoundForm({ ...roundForm, when: e.target.value })} /></div>
+                      <div className="f"><label htmlFor={`round-meet-${r.id}`}>Google Meet link</label><input id={`round-meet-${r.id}`} type="url" maxLength={2000} value={roundForm.meetLink} onChange={(e) => setRoundForm({ ...roundForm, meetLink: e.target.value })} /></div>
+                      <div className="f">
+                        <label>CV / Resume</label>
+                        <CvUpload
+                          cvUrl={roundForm.cvUrl}
+                          cvFilename={roundForm.cvFilename}
+                          onUploaded={(url, filename) => setRoundForm({ ...roundForm, cvUrl: url, cvFilename: filename })}
+                          onRemove={() => setRoundForm({ ...roundForm, cvUrl: '', cvFilename: '' })}
+                        />
+                      </div>
+                      <button className="btn primary" type="submit" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save interview details'}</button>
+                    </form>
+                  )}
                   {/* Meet link & CV links */}
                   {(r.meet_link || r.cv_url) && (
                     <div className="resource-bar">
