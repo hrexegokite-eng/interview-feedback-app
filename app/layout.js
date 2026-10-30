@@ -4,8 +4,8 @@ export const metadata = {
   title: 'Go Kite · Interview Feedback',
   description: 'Interview scheduling and feedback for Go Kite Travel & Tours',
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
+    icon: '/kite-icon.png',
+    shortcut: '/kite-icon.png',
     apple: '/logo.png',
   },
 };
