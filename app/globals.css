@@ -438,6 +438,74 @@ select { cursor: pointer; }
 .evaluation-field label { font-size: 12px; }
 .evaluation-field input, .evaluation-field select { font-size: 13px; }
 .evaluation-field textarea { min-height: 86px; font-size: 13px; }
+.feedback-success-shell { max-width: 680px; padding-top: 36px; }
+.feedback-success-card {
+  padding: clamp(24px, 5vw, 36px);
+  border: 1px solid rgba(20, 184, 166, 0.34);
+  border-radius: 18px;
+  background: rgba(18, 24, 30, 0.95);
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.08), 0 12px 30px rgba(0,0,0,0.28);
+  text-align: center;
+}
+.feedback-success-icon {
+  display: grid;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 26px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: radial-gradient(circle at 30% 30%, #3ff2b0 0%, #18b58a 55%, #0d8b67 100%);
+  box-shadow: 0 0 0 12px rgba(20, 184, 166, 0.12), 0 14px 28px rgba(20, 184, 166, 0.24);
+}
+.feedback-success-title {
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: clamp(25px, 4vw, 32px);
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.feedback-success-message {
+  max-width: 520px;
+  margin: 0 auto 22px;
+  color: var(--mut);
+  font-size: 15px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.feedback-success-recommendation {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  padding: 10px 18px;
+  border: 1px solid rgba(20, 184, 166, 0.26);
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.12);
+  color: #5ce6b2;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+}
+.feedback-success-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #5ce6b2;
+  box-shadow: 0 0 10px rgba(92, 230, 178, 0.7);
+}
+.feedback-success-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.feedback-success-footer p { max-width: 470px; margin: 0 auto; font-size: 13px; line-height: 1.7; }
 .cnt { text-align: right; font-size: 12px; color: var(--mut); margin-top: 4px; }
 .f { margin-top: 16px; }
 
@@ -1073,6 +1141,10 @@ select { cursor: pointer; }
 @media (max-width: 420px) {
   .evaluation-heading { flex-direction: column; }
   .evaluation-grid, .evaluation-grid.languages, .evaluation-grid.products { grid-template-columns: 1fr; }
+  .feedback-success-shell { padding-top: 20px; }
+  .feedback-success-card { padding: 24px 18px; }
+  .feedback-success-icon { width: 80px; height: 80px; margin-bottom: 24px; }
+  .feedback-success-recommendation { padding: 9px 14px; font-size: 13px; }
 }
 
 .exit-public-panel { padding: 18px; }
