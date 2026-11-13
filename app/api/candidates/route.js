@@ -13,7 +13,8 @@ export async function GET() {
           'interviewer', r.interviewer, 'scheduled_at', r.scheduled_at,
           'token', r.token, 'decision', r.decision, 'note', r.note,
           'submitted_at', r.submitted_at,
-          'meet_link', r.meet_link, 'cv_url', r.cv_url, 'cv_filename', r.cv_filename
+          'meet_link', r.meet_link, 'cv_url', r.cv_url, 'cv_filename', r.cv_filename,
+          'evaluation', r.evaluation
         ) order by r.round_no) filter (where r.id is not null),
         '[]'::json
       ) as rounds

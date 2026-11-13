@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { Icon, Av, Logo, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
+import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS } from '@/lib/interview-feedback';
 
 function playSuccessSound() {
   try {
@@ -28,13 +29,11 @@ function playSuccessSound() {
 
 const CHIPS = {
   proceed: ['Strong communicator', 'Solid technical depth', 'Great culture fit', 'Ready for next round'],
-  hold: ['Needs another interview', 'Unclear on depth', 'Compare with other candidates'],
   reject: ['Skill gaps', 'Communication concerns', 'Not aligned with role', 'Low motivation'],
 };
 const PH = {
   '': 'Strengths, concerns, anything the hiring team should know…',
   proceed: 'What stood out? What should the next round probe?',
-  hold: 'What’s unresolved? What would help you decide?',
   reject: 'What were the main gaps? Specifics help the team.',
 };
 
@@ -80,17 +79,23 @@ export default function Feedback({ token }) {
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [evaluation, setEvaluation] = useState(emptyEvaluation());
 
   useEffect(() => {
     api('/api/feedback/' + token)
-      .then((x) => { setD(x); setPick(x.decision || ''); setNote(x.note || ''); })
+      .then((x) => {
+        setD(x);
+        setPick(x.decision || '');
+        setNote(x.note || '');
+        setEvaluation({ ...emptyEvaluation(x.role || ''), ...(x.evaluation || {}) });
+      })
       .catch((e) => setErr(e.message));
   }, [token]);
 
   useEffect(() => {
     const kd = (e) => {
-      if (done || e.target.tagName === 'TEXTAREA' || e.metaKey || e.ctrlKey) return;
-      const k = ['proceed', 'hold', 'reject'][+e.key - 1];
+      if (done || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.metaKey || e.ctrlKey) return;
+      const k = ['proceed', 'reject'][+e.key - 1];
       if (k) setPick(k);
     };
     addEventListener('keydown', kd);
@@ -102,13 +107,33 @@ export default function Feedback({ token }) {
     setBusy(true);
     setMsg('');
     try {
-      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note } });
+      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note, evaluation } });
       playSuccessSound();
       setDone(true);
     } catch (e) {
       setMsg(e.message);
     }
     setBusy(false);
+  }
+
+  function setField(key, value) {
+    setEvaluation((current) => ({ ...current, [key]: value }));
+  }
+
+  function setRating(group, key, value) {
+    setEvaluation((current) => ({ ...current, [group]: { ...current[group], [key]: value } }));
+  }
+
+  function ratingField(id, label, value, onChange) {
+    return (
+      <div className="evaluation-field" key={id}>
+        <label htmlFor={id}>{label}</label>
+        <select id={id} value={value || ''} onChange={(event) => onChange(event.target.value)}>
+          <option value="">Select rating</option>
+          {RATINGS.map(([rating, description]) => <option key={rating} value={rating}>{description}</option>)}
+        </select>
+      </div>
+    );
   }
 
   const head = (
@@ -194,7 +219,7 @@ export default function Feedback({ token }) {
   }
 
   return (
-    <div className="narrow" style={{ maxWidth: 490, margin: '0 auto', paddingTop: 8 }}>
+    <div className="narrow" style={{ maxWidth: 760, margin: '0 auto', paddingTop: 8 }}>
       {head}
 
       {/* Candidate Profile Summary */}
@@ -285,6 +310,87 @@ export default function Feedback({ token }) {
         )}
       </div>
 
+      <div className="card evaluation-card">
+        <div className="evaluation-heading">
+          <div>
+            <h2>Interview evaluation</h2>
+            <p className="sm mut">Complete the candidate assessment, then choose a recommendation below.</p>
+          </div>
+          <span className="evaluation-step">Candidate assessment</span>
+        </div>
+
+        <div className="evaluation-section">
+          <div className="evaluation-field">
+            <label htmlFor="proposed-designation">Proposed Designation</label>
+            <input id="proposed-designation" type="text" maxLength={200} value={evaluation.proposedDesignation} onChange={(event) => setField('proposedDesignation', event.target.value)} />
+          </div>
+        </div>
+
+        <div className="evaluation-section">
+          <h3>Language Skill Ratings</h3>
+          <div className="evaluation-grid languages">
+            {LANGUAGES.map((language) => ratingField(
+              'language-' + language.toLowerCase(), language, evaluation.languageRatings?.[language] || '',
+              (value) => setRating('languageRatings', language, value)
+            ))}
+          </div>
+        </div>
+
+        <div className="evaluation-section">
+          <h3>Communication Fluency</h3>
+          <div className="evaluation-grid">
+            {ratingField('communication-fluency', 'Fluency rating', evaluation.communicationFluency, (value) => setField('communicationFluency', value))}
+          </div>
+        </div>
+
+        <div className="evaluation-section">
+          <h3>Product Knowledge Inputs</h3>
+          <div className="evaluation-grid products">
+            {PRODUCTS.map((product) => ratingField(
+              'product-' + product.toLowerCase().replaceAll(' ', '-'), product, evaluation.productKnowledge?.[product] || '',
+              (value) => setRating('productKnowledge', product, value)
+            ))}
+            <div className="evaluation-field">
+              <label htmlFor="other-products">Other Products if any</label>
+              <input id="other-products" type="text" maxLength={200} value={evaluation.otherProducts} onChange={(event) => setField('otherProducts', event.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        <div className="evaluation-section">
+          <h3>Experience and Selection</h3>
+          <div className="evaluation-grid">
+            <div className="evaluation-field">
+              <label htmlFor="prior-b2b-experience">Prior B2B Experience</label>
+              <select id="prior-b2b-experience" value={evaluation.priorB2BExperience} onChange={(event) => setField('priorB2BExperience', event.target.value)}>
+                <option value="">Select</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div className="evaluation-field">
+              <label htmlFor="years-prior-experience">Years of prior Experience</label>
+              <input id="years-prior-experience" type="number" min="0" max="60" step="0.1" value={evaluation.yearsPriorExperience} onChange={(event) => setField('yearsPriorExperience', event.target.value)} />
+            </div>
+            <div className="evaluation-field">
+              <label htmlFor="job-neediness">Job Neediness</label>
+              <select id="job-neediness" value={evaluation.jobNeediness} onChange={(event) => setField('jobNeediness', event.target.value)}>
+                <option value="">Select</option>
+                {JOB_NEEDINESS.map((option) => <option key={option} value={option}>{option}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="evaluation-section">
+          <h3>Attitude and Personality</h3>
+          <div className="evaluation-field">
+            <label htmlFor="attitude-personality">Assessment</label>
+            <textarea id="attitude-personality" maxLength={1500} rows={3} value={evaluation.attitudePersonality} onChange={(event) => setField('attitudePersonality', event.target.value)} />
+          </div>
+        </div>
+      </div>
+
       {/* Decision Card */}
       <div
         className="card"
@@ -302,12 +408,12 @@ export default function Feedback({ token }) {
             Recommendation
           </span>
           <span style={{ fontSize: 11.5, color: 'var(--mut)' }}>
-            Keys 1 · 2 · 3
+            Keys 1 · 2
           </span>
         </div>
 
         <div className="opts">
-          {['proceed', 'hold', 'reject'].map((k, i) => (
+          {['proceed', 'reject'].map((k, i) => (
             <button
               key={k}
               type="button"
@@ -333,7 +439,7 @@ export default function Feedback({ token }) {
         <div style={{ marginTop: 22 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink)' }}>
-              Notes (optional)
+              Comments (optional)
             </label>
             <span style={{ fontSize: 11, color: 'var(--mut)' }}>
               {note.length} / 1500
@@ -409,7 +515,7 @@ export default function Feedback({ token }) {
         </button>
 
         <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 12, fontSize: 11.5 }}>
-          {msg || (pick ? 'Press ⌘/Ctrl + Enter to submit' : 'Choose Proceed, Hold, or Reject')}
+          {msg || (pick ? 'Press ⌘/Ctrl + Enter to submit' : 'Choose Proceed or Reject')}
         </p>
       </div>
     </div>

@@ -403,8 +403,19 @@ input, textarea {
   outline: none;
   transition: border-color var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std), background var(--dur) var(--ease-std);
 }
+select {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 13px;
+  outline: none;
+  transition: border-color var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std), background var(--dur) var(--ease-std);
+}
 input:hover:not(:focus) { border-color: color-mix(in srgb, var(--acc) 30%, var(--line)); }
-input:focus, textarea:focus {
+input:focus, textarea:focus, select:focus {
   border-color: var(--acc);
   box-shadow: 0 0 0 3.5px color-mix(in srgb, var(--acc) 18%, transparent);
   background: var(--card);
@@ -412,6 +423,21 @@ input:focus, textarea:focus {
 input.bad { border-color: var(--no); box-shadow: 0 0 0 3px color-mix(in srgb, var(--no) 15%, transparent); }
 input[type=password] { width: 100%; }
 textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
+select { cursor: pointer; }
+.evaluation-card { margin-top: 14px; padding: 24px; border: 1px solid var(--line); }
+.evaluation-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.evaluation-heading h2 { margin: 0; font-size: 19px; }
+.evaluation-heading p { margin: 6px 0 0; }
+.evaluation-step { flex: none; padding: 5px 10px; color: var(--acc); background: var(--accb); border-radius: 99px; font-size: 11px; font-weight: 600; }
+.evaluation-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.evaluation-section h3 { margin: 0 0 12px; font-size: 13px; font-weight: 700; }
+.evaluation-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.evaluation-grid.languages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.evaluation-grid.products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.evaluation-field { min-width: 0; }
+.evaluation-field label { font-size: 12px; }
+.evaluation-field input, .evaluation-field select { font-size: 13px; }
+.evaluation-field textarea { min-height: 86px; font-size: 13px; }
 .cnt { text-align: right; font-size: 12px; color: var(--mut); margin-top: 4px; }
 .f { margin-top: 16px; }
 
@@ -546,6 +572,17 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   white-space: pre-wrap;
   color: var(--ink2);
 }
+.evaluation-history {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--soft) 72%, transparent);
+  font-size: 12.5px;
+}
+.evaluation-history > b { color: var(--ink); }
+.evaluation-history > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 16px; margin-top: 8px; }
+.evaluation-history p { margin: 0; color: var(--ink2); white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* ═══════════════════════════════════════════
    SEARCH / TOOLS
@@ -1029,6 +1066,13 @@ textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
   .row { flex-wrap: wrap; }
   .row .acts { width: 100%; justify-content: flex-start; }
   .bar { position: static; margin-bottom: 18px; }
+  .evaluation-card { padding: 18px; }
+  .evaluation-grid.languages, .evaluation-grid.products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .evaluation-history > div { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .evaluation-heading { flex-direction: column; }
+  .evaluation-grid, .evaluation-grid.languages, .evaluation-grid.products { grid-template-columns: 1fr; }
 }
 
 .exit-public-panel { padding: 18px; }

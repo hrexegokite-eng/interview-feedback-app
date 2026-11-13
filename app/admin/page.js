@@ -2,10 +2,29 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon, Av, Logo, api, fmt, rel, rname, toISO, LBL, COL } from '@/components/ui';
+import { LANGUAGES, PRODUCTS } from '@/lib/interview-feedback';
 
 const pending = (c) => c.rounds.find((r) => !r.decision);
 const lastDone = (c) => [...c.rounds].reverse().find((r) => r.decision) || {};
 const linkOf = (t) => location.origin + '/f/' + t;
+const evaluationLines = (evaluation) => {
+  if (!evaluation) return [];
+  const lines = [];
+  if (evaluation.proposedDesignation) lines.push('Proposed designation: ' + evaluation.proposedDesignation);
+  const languages = LANGUAGES.filter((language) => evaluation.languageRatings?.[language])
+    .map((language) => `${language} ${evaluation.languageRatings[language]}/5`);
+  if (languages.length) lines.push('Languages: ' + languages.join(', '));
+  if (evaluation.communicationFluency) lines.push('Communication fluency: ' + evaluation.communicationFluency + '/5');
+  const products = PRODUCTS.filter((product) => evaluation.productKnowledge?.[product])
+    .map((product) => `${product} ${evaluation.productKnowledge[product]}/5`);
+  if (products.length) lines.push('Product knowledge: ' + products.join(', '));
+  if (evaluation.otherProducts) lines.push('Other products: ' + evaluation.otherProducts);
+  if (evaluation.priorB2BExperience) lines.push('Prior B2B experience: ' + (evaluation.priorB2BExperience === 'yes' ? 'Yes' : 'No'));
+  if (evaluation.yearsPriorExperience) lines.push('Years of prior experience: ' + evaluation.yearsPriorExperience);
+  if (evaluation.jobNeediness) lines.push('Job neediness: ' + evaluation.jobNeediness);
+  if (evaluation.attitudePersonality) lines.push('Attitude and personality: ' + evaluation.attitudePersonality);
+  return lines;
+};
 const localDateTime = (value) => {
   if (!value) return '';
   const date = new Date(value);
@@ -202,6 +221,7 @@ export default function Admin() {
         interviewer: round.interviewer || '',
         decision: LBL[round.decision] || round.decision,
         feedback: round.note || '',
+        evaluation: evaluationLines(round.evaluation).join('\n'),
         submittedAt: round.submitted_at ? new Date(round.submitted_at) : null,
       })));
 
@@ -213,7 +233,7 @@ export default function Admin() {
     setExporting(true);
     try {
       const date = new Date().toISOString().slice(0, 10);
-      const headers = ['Candidate', 'BCU', 'Role', 'Interview Round', 'Interviewer', 'Decision', 'Feedback', 'Submitted At'];
+      const headers = ['Candidate', 'BCU', 'Role', 'Interview Round', 'Interviewer', 'Decision', 'Comments', 'Evaluation', 'Submitted At'];
       if (format === 'excel') {
         const ExcelJS = (await import('exceljs')).default;
         const workbook = new ExcelJS.Workbook();
@@ -225,14 +245,16 @@ export default function Admin() {
           { header: headers[3], key: 'round', width: 28 },
           { header: headers[4], key: 'interviewer', width: 24 },
           { header: headers[5], key: 'decision', width: 16 },
-          { header: headers[6], key: 'feedback', width: 60 },
-          { header: headers[7], key: 'submittedAt', width: 22, style: { numFmt: 'dd mmm yyyy hh:mm' } },
+          { header: headers[6], key: 'feedback', width: 42 },
+          { header: headers[7], key: 'evaluation', width: 70 },
+          { header: headers[8], key: 'submittedAt', width: 22, style: { numFmt: 'dd mmm yyyy hh:mm' } },
         ];
         sheet.addRows(records);
-        sheet.autoFilter = { from: 'A1', to: 'H1' };
+        sheet.autoFilter = { from: 'A1', to: 'I1' };
         sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
         sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF176B65' } };
         sheet.getColumn('feedback').alignment = { vertical: 'top', wrapText: true };
+        sheet.getColumn('evaluation').alignment = { vertical: 'top', wrapText: true };
         const buffer = await workbook.xlsx.writeBuffer();
         const url = URL.createObjectURL(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
         const link = document.createElement('a');
@@ -258,13 +280,14 @@ export default function Admin() {
             record.interviewer,
             record.decision,
             record.feedback,
+            record.evaluation,
             record.submittedAt ? record.submittedAt.toLocaleString() : '',
           ]),
           startY: 24,
           margin: { left: 10, right: 10, bottom: 12 },
           styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak', valign: 'top' },
           headStyles: { fillColor: [23, 107, 101] },
-          columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 20 }, 2: { cellWidth: 32 }, 3: { cellWidth: 34 }, 4: { cellWidth: 28 }, 5: { cellWidth: 20 }, 6: { cellWidth: 'auto' }, 7: { cellWidth: 30 } },
+          columnStyles: { 0: { cellWidth: 24 }, 1: { cellWidth: 17 }, 2: { cellWidth: 27 }, 3: { cellWidth: 30 }, 4: { cellWidth: 24 }, 5: { cellWidth: 18 }, 6: { cellWidth: 45 }, 7: { cellWidth: 65 }, 8: { cellWidth: 28 } },
           didDrawPage: () => {
             doc.setFontSize(8);
             doc.text(`Page ${doc.internal.getNumberOfPages()}`, doc.internal.pageSize.getWidth() - 18, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
@@ -303,7 +326,7 @@ export default function Admin() {
 
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : filt === 'all' ? ['hold', 'reject'] : [filt];
-  const list = cands.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name].join(' '))].join(' ').toLowerCase().includes(s)));
+  const list = cands.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
 
   return (
     <div className="page-shell">
@@ -560,6 +583,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
         <div className="tl" style={{ marginTop: 12 }}>
           {R.map((r) => {
             const st = r.decision || 'scheduled';
+            const details = evaluationLines(r.evaluation);
             return (
               <div key={r.id} className="rd" style={{ '--c': `var(--${COL[st][0]})` }}>
                 <div className="card">
@@ -598,6 +622,12 @@ function Profile({ c, close, reload, flash, move, remove }) {
                     </div>
                   )}
                   {r.note ? <div className="note">{r.note}</div> : r.decision ? <p className="sm mut" style={{ marginTop: 8 }}>No notes added.</p> : null}
+                  {details.length > 0 && (
+                    <div className="evaluation-history">
+                      <b>Interview evaluation</b>
+                      <div>{details.map((line) => <p key={line}>{line}</p>)}</div>
+                    </div>
+                  )}
                   {!r.decision && <div style={{ marginTop: 12 }}><button className="btn ghost" onClick={async () => flash((await copy(linkOf(r.token))) ? 'Link copied' : 'Copy failed')}><Icon n="link" s={14} />Copy feedback link</button></div>}
                 </div>
               </div>
