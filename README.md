@@ -9,7 +9,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 - 📄 **CV / Resume Upload**: Upload candidate resumes (PDF, DOC, images) attached directly to candidates and interview rounds.
 - 💬 **Interviewer Feedback Portal**: Dedicated tokenized feedback links (`/f/[token]`) for interviewers to record recommendations (Proceed, Hold, Reject) and notes.
 - 🔒 **Authentication**: Admin dashboard authentication with **Google OAuth 2.0** (with dev fallback for local testing).
-- 📊 **Hiring Dashboard**: View candidate pipeline status (Scheduled, Shortlisted, On Hold, Rejected) with candidate profiles and timeline history.
+- 📊 **Hiring Dashboard**: View candidate pipeline status (Scheduled, Shortlisted for next round, On Hold, Rejected) with candidate profiles and timeline history.
 
 ## Environment Variables
 

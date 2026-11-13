@@ -203,7 +203,7 @@ export default function Admin() {
 
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   async function move(id, status) {
-    try { await api('/api/candidates/' + id, { method: 'PATCH', body: { status } }); flash('Moved to ' + (status === 'proceed' ? 'Shortlisted' : LBL[status])); load(); }
+    try { await api('/api/candidates/' + id, { method: 'PATCH', body: { status } }); flash('Moved to ' + (status === 'proceed' ? 'Shortlisted for next round' : LBL[status])); load(); }
     catch (e) { flash(e.message); }
   }
   async function remove(id) {
@@ -318,8 +318,8 @@ export default function Admin() {
   if (!me || !cands) return <LoadingSkeleton />;
 
   const cnt = (s) => cands.filter((c) => c.status === s).length;
-  const stats = [['Awaiting feedback', 'scheduled', 'var(--acc)', 'schedule', 'all'], ['Shortlisted', 'proceed', 'var(--ok)', 'proceed', 'all'], ['On hold', 'hold', 'var(--hd)', 'other', 'hold'], ['Rejected', 'reject', 'var(--no)', 'other', 'reject']];
-  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')]];
+  const stats = [['Awaiting feedback', 'scheduled', 'var(--acc)', 'schedule', 'all'], ['Shortlisted for next round', 'proceed', 'var(--ok)', 'proceed', 'all'], ['On hold', 'hold', 'var(--hd)', 'other', 'hold'], ['Rejected', 'reject', 'var(--no)', 'other', 'reject']];
+  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
   const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);

@@ -560,8 +560,9 @@ select { cursor: pointer; }
 .stat:hover::before { opacity: 1; }
 .stat:active { transform: scale(.98) translateY(0); box-shadow: var(--sh); }
 .stat .n { font-size: 28px; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
-.stat .l { font-size: 12.5px; color: var(--mut); margin-top: 4px; font-weight: 500; display: flex; align-items: center; gap: 5px; }
+.stat .l { font-size: 12.5px; color: var(--mut); margin-top: 4px; font-weight: 500; display: flex; align-items: flex-start; gap: 5px; }
 .stat i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+.stat .l i { flex: none; margin-top: 4px; }
 
 /* ═══════════════════════════════════════════
    SEGMENT TABS
