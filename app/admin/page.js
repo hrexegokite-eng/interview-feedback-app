@@ -384,7 +384,7 @@ export default function Admin() {
                     </div>
                     <div className="acts" onClick={(e) => e.stopPropagation()}>
                       <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>
-                      {['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlist' : LBL[k]}</button>)}
+                      {['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlisted for next round' : LBL[k]}</button>)}
                       <DelBtn onConfirm={() => remove(c.id)} />
                     </div>
                   </div>
@@ -662,7 +662,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
           )}
         </div>
         <div className="chips" style={{ marginTop: 18 }}>
-          {!pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
+          {!pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
           <span style={{ marginLeft: 'auto' }}><DelBtn onConfirm={() => remove(c.id)} /></span>
         </div>
     </section>
