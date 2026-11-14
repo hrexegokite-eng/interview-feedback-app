@@ -44,7 +44,7 @@ export function Logo({ h = 48, style }) {
   return <img src="/logo.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
-export const LBL = { proceed: 'Proceed', hold: 'Hold', reject: 'Rejected', scheduled: 'Awaiting feedback', complete: 'Complete' };
+export const LBL = { proceed: 'Proceed', hold: 'Hold', reject: 'Rejected', scheduled: 'Awaiting feedback', complete: 'Scheduled for onboarding' };
 export const ICO = { proceed: 'check', hold: 'pause', reject: 'x' };
 export const COL = { scheduled: ['acc', 'accb'], proceed: ['ok', 'okb'], hold: ['hd', 'hdb'], reject: ['no', 'nob'] };
 export const DESC = { proceed: 'Move to the next stage', hold: 'Need more time or information', reject: 'Not the right fit right now' };

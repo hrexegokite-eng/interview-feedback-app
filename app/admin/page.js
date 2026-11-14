@@ -234,7 +234,7 @@ export default function Admin() {
         setQ('');
         setProf(null);
       }
-      flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Candidate marked complete' : 'Moved to ' + LBL[status]);
+      flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Candidate scheduled for onboarding' : 'Moved to ' + LBL[status]);
       load();
     }
     catch (e) { flash(e.message); }
@@ -364,9 +364,9 @@ export default function Admin() {
     ['Pending feedback', cnt('scheduled'), 'var(--hd)', 'schedule', 'all'],
     ['Rejected', cnt('reject'), 'var(--no)', 'other', 'reject'],
     ['Selected', cnt('proceed'), 'var(--ok)', 'proceed', 'all'],
-    ['Completed', cnt('complete'), 'var(--ok)', 'complete', 'all'],
+    ['Scheduled for onboarding', cnt('complete'), 'var(--ok)', 'complete', 'all'],
   ];
-  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Complete', cnt('complete')]];
+  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Scheduled for onboarding', cnt('complete')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
   const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);
@@ -457,7 +457,7 @@ export default function Admin() {
                     </div>
                   </div>
                 );
-              }) : <Empty t={s ? 'No matches' : tab === 'complete' ? 'No completed candidates' : 'Nothing here yet'} s={s ? 'Try a different search.' : tab === 'complete' ? 'Candidates appear here after all rounds are submitted and marked complete.' : 'Candidates appear once an interviewer submits feedback.'} />}
+              }) : <Empty t={s ? 'No matches' : tab === 'complete' ? 'No candidates scheduled for onboarding' : 'Nothing here yet'} s={s ? 'Try a different search.' : tab === 'complete' ? 'Candidates appear here after all rounds are submitted and marked complete.' : 'Candidates appear once an interviewer submits feedback.'} />}
             </div>
           </>
         )}
