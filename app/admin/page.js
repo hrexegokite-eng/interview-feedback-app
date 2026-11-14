@@ -8,6 +8,22 @@ const pending = (c) => c.rounds.find((r) => !r.decision);
 const lastDone = (c) => [...c.rounds].reverse().find((r) => r.decision) || {};
 const linkOf = (t) => location.origin + '/f/' + t;
 const localDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const matchesInterviewDate = (value, filter, from, to) => {
+  if (filter === 'all') return true;
+  if (!value) return false;
+  const date = localDateKey(new Date(value));
+  const today = new Date();
+  if (filter === 'today') return date === localDateKey(today);
+  if (filter === 'yesterday') {
+    today.setDate(today.getDate() - 1);
+    return date === localDateKey(today);
+  }
+  if (filter === 'tomorrow') {
+    today.setDate(today.getDate() + 1);
+    return date === localDateKey(today);
+  }
+  return !!(from || to) && (!from || date >= from) && (!to || date <= to);
+};
 const evaluationLines = (evaluation) => {
   if (!evaluation) return [];
   const lines = [];
@@ -167,6 +183,9 @@ export default function Admin() {
   const [cands, setCands] = useState(null);
   const [tab, setTab] = useState('schedule');
   const [filt, setFilt] = useState('all');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [q, setQ] = useState('');
   const [prof, setProf] = useState(null);
   const [toast, setToast] = useState('');
@@ -328,8 +347,22 @@ export default function Admin() {
 
   if (!me || !cands) return <LoadingSkeleton />;
 
-  const cnt = (s) => cands.filter((c) => c.status === s).length;
-  const stats = [['Awaiting feedback', 'scheduled', 'var(--acc)', 'schedule', 'all'], ['Shortlisted for next round', 'proceed', 'var(--ok)', 'proceed', 'all'], ['On hold', 'hold', 'var(--hd)', 'other', 'hold'], ['Rejected', 'reject', 'var(--no)', 'other', 'reject']];
+  const invalidRange = dateFilter === 'range' && dateFrom && dateTo && dateFrom > dateTo;
+  const dateFilteredCandidates = cands.filter((candidate) => {
+    if (invalidRange) return false;
+    const round = pending(candidate) || lastDone(candidate) || candidate.rounds[candidate.rounds.length - 1];
+    return matchesInterviewDate(round?.scheduled_at, dateFilter, dateFrom, dateTo);
+  });
+  const cnt = (status) => dateFilteredCandidates.filter((candidate) => candidate.status === status).length;
+  const scheduledInterviews = invalidRange ? 0 : cands.reduce((total, candidate) => total + candidate.rounds
+    .filter((round) => matchesInterviewDate(round.scheduled_at, dateFilter, dateFrom, dateTo)).length, 0);
+  const stats = [
+    ['Scheduled interviews', scheduledInterviews, 'var(--acc)', 'schedule', 'all'],
+    ['Pending feedback', cnt('scheduled'), 'var(--hd)', 'schedule', 'all'],
+    ['Rejected', cnt('reject'), 'var(--no)', 'other', 'reject'],
+    ['Selected', cnt('proceed'), 'var(--ok)', 'proceed', 'all'],
+    ['Completed', cnt('complete'), 'var(--ok)', 'complete', 'all'],
+  ];
   const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Complete', cnt('complete')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
@@ -337,7 +370,7 @@ export default function Admin() {
 
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : tab === 'complete' ? ['complete'] : filt === 'all' ? ['hold', 'reject'] : [filt];
-  const list = cands.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
+  const list = dateFilteredCandidates.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
 
   return (
     <div className="page-shell">
@@ -354,10 +387,31 @@ export default function Admin() {
           </div>
         </div>
 
+        <div className="tools" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
+          <label htmlFor="dashboard-interview-date-filter" className="sm mut">Interview date</label>
+          <select id="dashboard-interview-date-filter" value={dateFilter} onChange={(e) => { setDateFilter(e.target.value); setProf(null); }} style={{ width: 'auto', minWidth: 160 }}>
+            <option value="all">All dates</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="range">Custom range</option>
+          </select>
+          {dateFilter === 'range' && (
+            <>
+              <label htmlFor="dashboard-date-from" className="sm mut">From</label>
+              <input id="dashboard-date-from" type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setProf(null); }} style={{ width: 'auto' }} />
+              <label htmlFor="dashboard-date-to" className="sm mut">To</label>
+              <input id="dashboard-date-to" type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setProf(null); }} style={{ width: 'auto' }} />
+            </>
+          )}
+        </div>
+        {invalidRange && <p className="err sm" role="alert">The end date must be on or after the start date.</p>}
+        {dateFilter === 'range' && !dateFrom && !dateTo && <p className="sm mut">Choose a start date, an end date, or both to apply the range.</p>}
+
         <div className="stats">
-          {stats.map(([l, st, c, t, f]) => (
-            <button key={l} className="stat" onClick={() => { setTab(t); setFilt(f); setQ(''); }}>
-              <div className="n">{cnt(st)}</div><div className="l"><i style={{ background: c }} />{l}</div>
+          {stats.map(([label, value, color, targetTab, targetFilter]) => (
+            <button key={label} className="stat" onClick={() => { setTab(targetTab); setFilt(targetFilter); setQ(''); }}>
+              <div className="n">{value}</div><div className="l"><i style={{ background: color }} />{label}</div>
             </button>
           ))}
         </div>
@@ -368,7 +422,7 @@ export default function Admin() {
           ))}
         </div>
 
-        {profile ? <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} /> : tab === 'schedule' ? <Schedule cands={cands} reload={load} flash={flash} open={open} /> : (
+        {profile ? <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} /> : tab === 'schedule' ? <Schedule cands={dateFilteredCandidates} reload={load} flash={flash} open={open} /> : (
           <>
             <div className="tools">
               <div className="sbox"><Icon n="search" s={16} /><input placeholder="Search name, role or notes" value={q} onChange={(e) => setQ(e.target.value)} /></div>
@@ -418,9 +472,6 @@ function Schedule({ cands, reload, flash, open }) {
   const [badInterviewer, setBadInterviewer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
-  const [dateFilter, setDateFilter] = useState('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function add(e) {
@@ -439,25 +490,7 @@ function Schedule({ cands, reload, flash, open }) {
     setBusy(false);
   }
 
-  const today = localDateKey(new Date());
-  const yesterdayDate = new Date();
-  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const yesterday = localDateKey(yesterdayDate);
-  const tomorrow = localDateKey(tomorrowDate);
-  const invalidRange = dateFilter === 'range' && dateFrom && dateTo && dateFrom > dateTo;
-  const w = cands.filter((c) => {
-    if (c.status !== 'scheduled') return false;
-    if (dateFilter === 'all') return true;
-    const round = pending(c) || c.rounds[c.rounds.length - 1];
-    if (!round?.scheduled_at || invalidRange) return false;
-    const interviewDate = localDateKey(new Date(round.scheduled_at));
-    if (dateFilter === 'today') return interviewDate === today;
-    if (dateFilter === 'yesterday') return interviewDate === yesterday;
-    if (dateFilter === 'tomorrow') return interviewDate === tomorrow;
-    return !!(dateFrom || dateTo) && (!dateFrom || interviewDate >= dateFrom) && (!dateTo || interviewDate <= dateTo);
-  });
+  const w = cands.filter((c) => c.status === 'scheduled');
   return (
     <div className="split">
       <form className="card" onSubmit={add}>
@@ -487,32 +520,7 @@ function Schedule({ cands, reload, flash, open }) {
         {made && <LinkBox name={made.name} l={made.l} />}
       </form>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <h2 style={{ margin: 0 }}>Awaiting feedback</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <label htmlFor="interview-date-filter" className="sm mut">Interview date</label>
-            <select id="interview-date-filter" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} style={{ width: 'auto', minWidth: 150 }}>
-              <option value="all">All dates</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="tomorrow">Tomorrow</option>
-              <option value="range">Custom range</option>
-            </select>
-          </div>
-        </div>
-        {dateFilter === 'range' && (
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-            <div className="f" style={{ flex: '1 1 150px', marginTop: 0 }}>
-              <label htmlFor="interview-date-from">From</label>
-              <input id="interview-date-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-            </div>
-            <div className="f" style={{ flex: '1 1 150px', marginTop: 0 }}>
-              <label htmlFor="interview-date-to">To</label>
-              <input id="interview-date-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
-          </div>
-        )}
-        {invalidRange && <p className="err sm" role="alert">The end date must be on or after the start date.</p>}
+        <h2>Awaiting feedback</h2>
         <div className="f">
           {w.length ? w.map((c) => {
             const r = pending(c) || c.rounds[c.rounds.length - 1];
@@ -535,9 +543,7 @@ function Schedule({ cands, reload, flash, open }) {
                 </div>
               </div>
             );
-          }) : dateFilter !== 'all' && !invalidRange
-            ? <Empty t="No interviews for these dates" s={dateFilter === 'range' && !dateFrom && !dateTo ? 'Choose a start date, an end date, or both to filter interviews.' : 'Try a different date filter.'} />
-            : !invalidRange && <Empty t="Nothing pending" s="Schedule an interview to generate a feedback link." />}
+          }) : <Empty t="No interviews for these dates" s="Try a different date filter or schedule an interview." />}
         </div>
       </div>
     </div>

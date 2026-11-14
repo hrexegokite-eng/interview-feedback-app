@@ -535,7 +535,7 @@ select { cursor: pointer; }
 /* ═══════════════════════════════════════════
    STATS
 ═══════════════════════════════════════════ */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 4px; }
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 4px; }
 
 .stat {
   text-align: left;
