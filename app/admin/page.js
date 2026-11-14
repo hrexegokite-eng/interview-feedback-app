@@ -228,6 +228,9 @@ export default function Admin() {
       if (status === 'complete') {
         setTab('complete');
         setFilt('all');
+        setDateFilter('all');
+        setDateFrom('');
+        setDateTo('');
         setQ('');
         setProf(null);
       }
