@@ -12,8 +12,19 @@ export async function PATCH(req, { params }) {
   if (!UUID.test(id)) return bad('Invalid request.');
 
   if (Object.hasOwn(body, 'status')) {
-    if (!['proceed', 'hold', 'reject'].includes(body.status)) return bad('Invalid request.');
-    await sql`update candidates set status = ${body.status}, updated_at = now() where id = ${id}::uuid`;
+    if (!['proceed', 'hold', 'reject', 'complete'].includes(body.status)) return bad('Invalid request.');
+    if (body.status === 'complete') {
+      const rounds = await sql`
+        select count(*)::int as total,
+          count(*) filter (where decision is null)::int as pending
+        from rounds where candidate_id = ${id}::uuid`;
+      if (!rounds[0].total) return bad('Schedule at least one interview round before completing this candidate.');
+      if (rounds[0].pending) return bad('Complete all interview rounds before completing this candidate.', 409);
+    }
+    const rows = await sql`
+      update candidates set status = ${body.status}, updated_at = now()
+      where id = ${id}::uuid returning id`;
+    if (!rows.length) return bad('Candidate not found.', 404);
     return Response.json({ ok: true });
   }
 

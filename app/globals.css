@@ -261,6 +261,7 @@ button.chip:active { transform: scale(.96); }
 .badge.hold     { background: var(--hdb); color: var(--hd); }
 .badge.reject   { background: var(--nob); color: var(--no); }
 .badge.scheduled{ background: var(--accb); color: var(--acc); }
+.badge.complete { background: var(--okb); color: var(--ok); }
 
 /* ═══════════════════════════════════════════
    BUTTONS

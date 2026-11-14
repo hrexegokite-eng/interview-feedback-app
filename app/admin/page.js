@@ -7,6 +7,7 @@ import { LANGUAGES, PRODUCTS } from '@/lib/interview-feedback';
 const pending = (c) => c.rounds.find((r) => !r.decision);
 const lastDone = (c) => [...c.rounds].reverse().find((r) => r.decision) || {};
 const linkOf = (t) => location.origin + '/f/' + t;
+const localDateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const evaluationLines = (evaluation) => {
   if (!evaluation) return [];
   const lines = [];
@@ -203,7 +204,17 @@ export default function Admin() {
 
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   async function move(id, status) {
-    try { await api('/api/candidates/' + id, { method: 'PATCH', body: { status } }); flash('Moved to ' + (status === 'proceed' ? 'Shortlisted for next round' : LBL[status])); load(); }
+    try {
+      await api('/api/candidates/' + id, { method: 'PATCH', body: { status } });
+      if (status === 'complete') {
+        setTab('complete');
+        setFilt('all');
+        setQ('');
+        setProf(null);
+      }
+      flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Candidate marked complete' : 'Moved to ' + LBL[status]);
+      load();
+    }
     catch (e) { flash(e.message); }
   }
   async function remove(id) {
@@ -319,13 +330,13 @@ export default function Admin() {
 
   const cnt = (s) => cands.filter((c) => c.status === s).length;
   const stats = [['Awaiting feedback', 'scheduled', 'var(--acc)', 'schedule', 'all'], ['Shortlisted for next round', 'proceed', 'var(--ok)', 'proceed', 'all'], ['On hold', 'hold', 'var(--hd)', 'other', 'hold'], ['Rejected', 'reject', 'var(--no)', 'other', 'reject']];
-  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')]];
+  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Complete', cnt('complete')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
   const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);
 
   const s = q.toLowerCase();
-  const set = tab === 'proceed' ? ['proceed'] : filt === 'all' ? ['hold', 'reject'] : [filt];
+  const set = tab === 'proceed' ? ['proceed'] : tab === 'complete' ? ['complete'] : filt === 'all' ? ['hold', 'reject'] : [filt];
   const list = cands.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
 
   return (
@@ -383,13 +394,13 @@ export default function Admin() {
                       {d.note && <div className="note">{d.note}</div>}
                     </div>
                     <div className="acts" onClick={(e) => e.stopPropagation()}>
-                      <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>
-                      {['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlisted for next round' : LBL[k]}</button>)}
+                      {c.status !== 'complete' && <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>}
+                      {c.status !== 'complete' && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlisted for next round' : LBL[k]}</button>)}
                       <DelBtn onConfirm={() => remove(c.id)} />
                     </div>
                   </div>
                 );
-              }) : <Empty t={s ? 'No matches' : 'Nothing here yet'} s={s ? 'Try a different search.' : 'Candidates appear once an interviewer submits feedback.'} />}
+              }) : <Empty t={s ? 'No matches' : tab === 'complete' ? 'No completed candidates' : 'Nothing here yet'} s={s ? 'Try a different search.' : tab === 'complete' ? 'Candidates appear here after all rounds are submitted and marked complete.' : 'Candidates appear once an interviewer submits feedback.'} />}
             </div>
           </>
         )}
@@ -407,6 +418,9 @@ function Schedule({ cands, reload, flash, open }) {
   const [badInterviewer, setBadInterviewer] = useState(false);
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
+  const [dateFilter, setDateFilter] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function add(e) {
@@ -425,7 +439,25 @@ function Schedule({ cands, reload, flash, open }) {
     setBusy(false);
   }
 
-  const w = cands.filter((c) => c.status === 'scheduled');
+  const today = localDateKey(new Date());
+  const yesterdayDate = new Date();
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const yesterday = localDateKey(yesterdayDate);
+  const tomorrow = localDateKey(tomorrowDate);
+  const invalidRange = dateFilter === 'range' && dateFrom && dateTo && dateFrom > dateTo;
+  const w = cands.filter((c) => {
+    if (c.status !== 'scheduled') return false;
+    if (dateFilter === 'all') return true;
+    const round = pending(c) || c.rounds[c.rounds.length - 1];
+    if (!round?.scheduled_at || invalidRange) return false;
+    const interviewDate = localDateKey(new Date(round.scheduled_at));
+    if (dateFilter === 'today') return interviewDate === today;
+    if (dateFilter === 'yesterday') return interviewDate === yesterday;
+    if (dateFilter === 'tomorrow') return interviewDate === tomorrow;
+    return !!(dateFrom || dateTo) && (!dateFrom || interviewDate >= dateFrom) && (!dateTo || interviewDate <= dateTo);
+  });
   return (
     <div className="split">
       <form className="card" onSubmit={add}>
@@ -455,7 +487,32 @@ function Schedule({ cands, reload, flash, open }) {
         {made && <LinkBox name={made.name} l={made.l} />}
       </form>
       <div className="card">
-        <h2>Awaiting feedback</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <h2 style={{ margin: 0 }}>Awaiting feedback</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <label htmlFor="interview-date-filter" className="sm mut">Interview date</label>
+            <select id="interview-date-filter" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} style={{ width: 'auto', minWidth: 150 }}>
+              <option value="all">All dates</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="tomorrow">Tomorrow</option>
+              <option value="range">Custom range</option>
+            </select>
+          </div>
+        </div>
+        {dateFilter === 'range' && (
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
+            <div className="f" style={{ flex: '1 1 150px', marginTop: 0 }}>
+              <label htmlFor="interview-date-from">From</label>
+              <input id="interview-date-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+            </div>
+            <div className="f" style={{ flex: '1 1 150px', marginTop: 0 }}>
+              <label htmlFor="interview-date-to">To</label>
+              <input id="interview-date-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+            </div>
+          </div>
+        )}
+        {invalidRange && <p className="err sm" role="alert">The end date must be on or after the start date.</p>}
         <div className="f">
           {w.length ? w.map((c) => {
             const r = pending(c) || c.rounds[c.rounds.length - 1];
@@ -478,7 +535,9 @@ function Schedule({ cands, reload, flash, open }) {
                 </div>
               </div>
             );
-          }) : <Empty t="Nothing pending" s="Schedule an interview to generate a feedback link." />}
+          }) : dateFilter !== 'all' && !invalidRange
+            ? <Empty t="No interviews for these dates" s={dateFilter === 'range' && !dateFrom && !dateTo ? 'Choose a start date, an end date, or both to filter interviews.' : 'Try a different date filter.'} />
+            : !invalidRange && <Empty t="Nothing pending" s="Schedule an interview to generate a feedback link." />}
         </div>
       </div>
     </div>
@@ -566,6 +625,11 @@ function Profile({ c, close, reload, flash, move, remove }) {
           <button className="btn ghost" onClick={() => setEditingCandidate((value) => !value)}>
             {editingCandidate ? 'Cancel candidate edit' : 'Edit candidate'}
           </button>
+          {c.status !== 'complete' && R.length > 0 && !pend && (
+            <button className="btn primary" style={{ marginLeft: 8 }} onClick={() => move(c.id, 'complete')}>
+              Complete
+            </button>
+          )}
         </div>
         {editingCandidate && (
           <form className="card edit-form" onSubmit={saveCandidate}>
@@ -662,7 +726,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
           )}
         </div>
         <div className="chips" style={{ marginTop: 18 }}>
-          {!pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
+          {c.status !== 'complete' && !pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
           <span style={{ marginLeft: 'auto' }}><DelBtn onConfirm={() => remove(c.id)} /></span>
         </div>
     </section>
