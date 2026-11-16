@@ -225,6 +225,7 @@ export default function Admin() {
   async function move(id, status) {
     try {
       await api('/api/candidates/' + id, { method: 'PATCH', body: { status } });
+      setCands((current) => current?.map((candidate) => candidate.id === id ? { ...candidate, status } : candidate));
       if (status === 'complete') {
         setTab('complete');
         setFilt('all');
