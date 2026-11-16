@@ -370,7 +370,6 @@ export default function Admin() {
     ['Pending feedback', cnt('scheduled'), 'var(--hd)', 'schedule', 'all'],
     ['Rejected', cnt('reject'), 'var(--no)', 'other', 'reject'],
     ['Selected', cnt('proceed'), 'var(--ok)', 'proceed', 'all'],
-    ['Scheduled for onboarding', cnt('complete'), 'var(--ok)', 'complete', 'all'],
   ];
   const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Scheduled for onboarding', cnt('complete')]];
   const open = (id) => setProf(id);
