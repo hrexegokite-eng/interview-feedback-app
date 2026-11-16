@@ -191,13 +191,18 @@ export default function Admin() {
   const [toast, setToast] = useState('');
   const [loadErr, setLoadErr] = useState('');
   const [exporting, setExporting] = useState(false);
+  const candidatesLoadVersion = useRef(0);
 
   const flash = useCallback((m) => { setToast(m); setTimeout(() => setToast(''), 2200); }, []);
   const load = useCallback(async () => {
+    const requestVersion = ++candidatesLoadVersion.current;
     try {
-      setCands(await api('/api/candidates'));
+      const candidates = await api('/api/candidates');
+      if (requestVersion !== candidatesLoadVersion.current) return;
+      setCands(candidates);
       setLoadErr('');
     } catch (e) {
+      if (requestVersion !== candidatesLoadVersion.current) return;
       if (e.status === 401) {
         router.replace('/login');
       } else {
@@ -225,6 +230,7 @@ export default function Admin() {
   async function move(id, status) {
     try {
       await api('/api/candidates/' + id, { method: 'PATCH', body: { status } });
+      candidatesLoadVersion.current += 1;
       setCands((current) => current?.map((candidate) => candidate.id === id ? { ...candidate, status } : candidate));
       if (status === 'complete') {
         setTab('complete');
@@ -236,7 +242,6 @@ export default function Admin() {
         setProf(null);
       }
       flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Candidate scheduled for onboarding' : 'Moved to ' + LBL[status]);
-      load();
     }
     catch (e) { flash(e.message); }
   }
