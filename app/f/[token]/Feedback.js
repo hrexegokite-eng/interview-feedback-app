@@ -65,6 +65,7 @@ export default function Feedback({ token }) {
   const [d, setD] = useState(null);
   const [err, setErr] = useState('');
   const [pick, setPick] = useState('');
+  const [note, setNote] = useState('');
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -76,6 +77,7 @@ export default function Feedback({ token }) {
       .then((x) => {
         setD(x);
         setPick(x.decision || '');
+        setNote(x.note || '');
         setEvaluation({ ...emptyEvaluation(x.role || ''), ...(x.evaluation || {}) });
       })
       .catch((e) => setErr(e.message));
@@ -106,7 +108,7 @@ export default function Feedback({ token }) {
     setBusy(true);
     setMsg('');
     try {
-      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, evaluation } });
+      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note, evaluation } });
       playSuccessSound();
       setDone(true);
     } catch (e) {
@@ -402,6 +404,36 @@ export default function Feedback({ token }) {
               <kbd>{i + 1}</kbd>
             </button>
           ))}
+        </div>
+
+        <div style={{ marginTop: 22 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink)' }}>
+              Comments <span className="sm mut">(optional)</span>
+            </label>
+            <span style={{ fontSize: 11, color: 'var(--mut)' }}>{note.length} / 1500</span>
+          </div>
+          <textarea
+            id="n"
+            value={note}
+            maxLength={1500}
+            rows={4}
+            placeholder="Strengths, concerns, anything the hiring team should know…"
+            onChange={(event) => setNote(event.target.value)}
+            onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') submit(); }}
+            style={{
+              width: '100%',
+              borderRadius: 14,
+              fontSize: 13.5,
+              lineHeight: 1.6,
+              border: '1px solid rgba(110, 231, 215, 0.14)',
+              background: 'linear-gradient(180deg, rgba(14,20,26,0.9), rgba(18,28,35,0.8))',
+              color: 'var(--ink)',
+              padding: '12px 14px',
+              resize: 'vertical',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+            }}
+          />
         </div>
 
         <button
