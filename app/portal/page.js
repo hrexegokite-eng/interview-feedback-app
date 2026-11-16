@@ -81,8 +81,13 @@ export default function Portal() {
           role="button"
           tabIndex={0}
           onClick={() => router.push('/admin')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/admin')}
-          className="card"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              router.push('/admin');
+            }
+          }}
+          className="card portal-module"
           style={{
             cursor: 'pointer',
             padding: 26,
@@ -93,16 +98,6 @@ export default function Portal() {
             transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
             position: 'relative',
             overflow: 'hidden',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-            e.currentTarget.style.boxShadow = '0 12px 36px rgba(79,70,229,0.18)';
-            e.currentTarget.style.borderColor = 'var(--acc)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'var(--sh-md)';
-            e.currentTarget.style.borderColor = 'color-mix(in srgb, var(--acc) 45%, var(--line))';
           }}
         >
           {/* Header pill */}
@@ -168,8 +163,13 @@ export default function Portal() {
           role="button"
           tabIndex={0}
           onClick={() => router.push('/exit-form')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/exit-form')}
-          className="card"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              router.push('/exit-form');
+            }
+          }}
+          className="card portal-module"
           style={{
             cursor: 'pointer',
             padding: 26,
@@ -224,7 +224,7 @@ export default function Portal() {
 
         {/* Future Module Placeholder 1: Employee Directory */}
         <div
-          className="card"
+          className="card portal-module-coming"
           style={{
             padding: 26,
             borderRadius: 18,
@@ -273,7 +273,7 @@ export default function Portal() {
 
         {/* Future Module Placeholder 2: Performance Reviews */}
         <div
-          className="card"
+          className="card portal-module-coming"
           style={{
             padding: 26,
             borderRadius: 18,

@@ -1331,3 +1331,170 @@ select { cursor: pointer; }
   .btn.ghost, .seg button, .profile-back { min-height: 44px; }
   input[type="radio"] { min-width: 20px; min-height: 20px; }
 }
+
+/* Refined workspace finish */
+:root {
+  --radius: 16px;
+  --radius-sm: 11px;
+  --radius-lg: 22px;
+  --sh: 0 2px 8px rgba(0, 0, 0, .18), 0 18px 44px rgba(0, 0, 0, .2);
+  --sh-md: 0 8px 26px rgba(0, 0, 0, .24);
+  --sh-lg: 0 18px 56px rgba(0, 0, 0, .3);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 12% 0%, color-mix(in srgb, var(--acc) 12%, transparent), transparent 34rem),
+    radial-gradient(ellipse at 92% 8%, rgba(80, 120, 168, .08), transparent 28rem),
+    linear-gradient(180deg, #0b141a 0%, #0c151c 45%, #0a1117 100%);
+}
+
+.page-shell {
+  max-width: 1360px;
+  padding-top: clamp(18px, 3vw, 36px);
+}
+
+.shell-panel {
+  border-color: color-mix(in srgb, var(--acc) 18%, var(--line));
+  border-radius: 26px;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--card) 96%, #10242a), color-mix(in srgb, var(--bg2) 94%, #101a20));
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+.workspace-panel { padding: clamp(14px, 2vw, 24px); }
+
+.page-shell .card,
+.page-shell .stat {
+  background: linear-gradient(155deg, color-mix(in srgb, var(--card) 98%, white 2%), var(--card));
+  border-color: color-mix(in srgb, var(--line) 78%, transparent);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+.page-shell .card:hover {
+  transform: none;
+  border-color: color-mix(in srgb, var(--acc) 28%, var(--line));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(255, 255, 255, .03);
+}
+
+.bar {
+  border-color: color-mix(in srgb, var(--line) 82%, var(--acc));
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .14), inset 0 1px 0 rgba(255, 255, 255, .035);
+}
+
+.stat {
+  min-height: 100px;
+  border-radius: 17px;
+}
+
+.stat .n { font-size: clamp(26px, 2.2vw, 32px); }
+.stat .l { margin-top: 8px; }
+
+.seg {
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg2) 72%, var(--card));
+  padding: 4px;
+}
+
+.seg button { padding: 9px 16px; }
+.seg button[aria-selected=true] { box-shadow: 0 2px 8px rgba(0, 0, 0, .18), inset 0 0 0 1px color-mix(in srgb, var(--line) 75%, transparent); }
+
+.row[data-id] {
+  border-radius: 13px;
+  transition: background var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std);
+}
+
+.row[data-id]:hover {
+  background: color-mix(in srgb, var(--accb) 55%, var(--soft));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acc) 12%, transparent);
+}
+
+.btn {
+  min-height: 40px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+
+.btn.primary {
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--acc) 18%, transparent), inset 0 1px 0 rgba(255, 255, 255, .16);
+}
+
+.btn.ghost {
+  border-color: color-mix(in srgb, var(--line) 88%, transparent);
+  background: color-mix(in srgb, var(--card) 35%, transparent);
+}
+
+input, textarea, select {
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg) 84%, var(--card));
+}
+
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--acc) 15%, transparent);
+}
+
+.card h2 { font-size: 15px; }
+.tools { gap: 12px; }
+.sbox input { min-height: 44px; }
+.badge { padding: 4px 11px; }
+
+.login-wrap {
+  background: radial-gradient(ellipse at 50% 34%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 35rem);
+}
+
+.login-panel {
+  width: min(100%, 560px);
+  padding: clamp(22px, 4vw, 42px);
+}
+
+.login-panel > .center { padding-top: 22px; }
+.login-panel > .center h1 { font-size: clamp(28px, 4vw, 34px); letter-spacing: -.045em; }
+.login-panel > .card { padding: clamp(18px, 3vw, 26px); }
+.login-panel .btn.google { min-height: 50px; border-radius: 13px; }
+
+.portal-module {
+  transition: transform var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std), border-color var(--dur) var(--ease-std);
+}
+
+.portal-module:hover,
+.portal-module:focus-visible {
+  transform: translateY(-3px) !important;
+  border-color: var(--acc) !important;
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--acc) 13%, transparent) !important;
+}
+
+.portal-module:focus-visible,
+.portal-module-coming:focus-visible,
+.row[data-id]:focus-visible,
+button:focus-visible,
+a:focus-visible,
+.profile-back:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--acc) 75%, white);
+  outline-offset: 3px;
+}
+
+.evaluation-card { border-radius: 20px; }
+.evaluation-section { margin-top: 26px; }
+.evaluation-field label { display: inline-block; margin-bottom: 7px; }
+.opt { border-radius: 13px; padding: 14px 16px; }
+.feedback-success-card { border-radius: 24px; }
+
+@media (max-width: 720px) {
+  .page-shell { padding-top: 12px; }
+  .shell-panel { border-radius: 20px; }
+  .workspace-panel { padding: 12px; }
+  .bar { border-radius: 15px; }
+  .stat { min-height: 88px; }
+  .seg { margin-top: 16px; }
+  .portal-grid { gap: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
