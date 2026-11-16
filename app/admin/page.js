@@ -379,6 +379,11 @@ export default function Admin() {
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : tab === 'complete' ? ['complete'] : filt === 'all' ? ['hold', 'reject'] : [filt];
   const list = dateFilteredCandidates.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
+  const startScheduling = () => {
+    setTab('schedule');
+    setProf(null);
+    window.setTimeout(() => document.getElementById('candidate-schedule-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+  };
 
   return (
     <div className="page-shell">
@@ -395,7 +400,20 @@ export default function Admin() {
           </div>
         </div>
 
-        <div className="tools" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
+        <section className="dashboard-hero">
+          <div className="dashboard-hero-copy">
+            <span className="dashboard-eyebrow"><span /> HIRING OPERATIONS</span>
+            <h1>Hiring pipeline</h1>
+            <p>Keep interviews moving and make every candidate decision with confidence.</p>
+          </div>
+          <div className="dashboard-hero-action">
+            <span className="dashboard-live"><i /> Live workspace</span>
+            <button className="btn primary" onClick={startScheduling}><Icon n="plus" s={16} />Schedule an interview</button>
+          </div>
+        </section>
+
+        <div className="tools dashboard-filters">
+          <span className="dashboard-filter-label"><Icon n="cal" s={14} /> Pipeline date</span>
           <label htmlFor="dashboard-interview-date-filter" className="sm mut">Interview date</label>
           <select id="dashboard-interview-date-filter" value={dateFilter} onChange={(e) => { setDateFilter(e.target.value); setProf(null); }} style={{ width: 'auto', minWidth: 160 }}>
             <option value="all">All dates</option>
@@ -418,8 +436,11 @@ export default function Admin() {
 
         <div className="stats">
           {stats.map(([label, value, color, targetTab, targetFilter]) => (
-            <button key={label} className="stat" onClick={() => { setTab(targetTab); setFilt(targetFilter); setQ(''); }}>
-              <div className="n">{value}</div><div className="l"><i style={{ background: color }} />{label}</div>
+            <button key={label} className="stat dashboard-stat" style={{ '--metric-color': color }} onClick={() => { setTab(targetTab); setFilt(targetFilter); setQ(''); }}>
+              <span className="dashboard-stat-accent" />
+              <span className="dashboard-stat-label">{label}</span>
+              <span className="dashboard-stat-value">{value}</span>
+              <span className="dashboard-stat-hint">View pipeline <Icon n="external" s={13} /></span>
             </button>
           ))}
         </div>
@@ -444,7 +465,7 @@ export default function Admin() {
                 <button className="btn ghost" disabled={exporting || !feedbackCount} title="Download all submitted feedback as a PDF" onClick={() => exportFeedback('pdf')}>PDF</button>
               </div>
             </div>
-            <div className="card">
+            <div className="card candidate-results">
               {list.length ? list.map((c) => {
                 const d = lastDone(c);
                 return (
@@ -516,7 +537,7 @@ function Schedule({ cands, reload, flash, open }) {
   const w = cands.filter((c) => c.status === 'scheduled');
   return (
     <div className="split">
-      <form className="card" onSubmit={add}>
+      <form id="candidate-schedule-form" className="card schedule-form-card" onSubmit={add}>
         <h2>Add candidate &amp; schedule Round 1</h2>
         <div className="f"><label htmlFor="nm">Candidate name <span className="req">*</span></label><input id="nm" required className={badName ? 'bad' : ''} placeholder="e.g. Priya Sharma" autoComplete="off" value={f.name} onChange={on('name')} /></div>
         <div className="f"><label htmlFor="bcu">BCU</label><input id="bcu" placeholder="Enter BCU" value={f.bcu} onChange={on('bcu')} /></div>

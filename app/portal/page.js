@@ -62,15 +62,13 @@ export default function Portal() {
           </div>
         </div>
 
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: 'inline-block', padding: '4px 12px', background: 'var(--accb)', color: 'var(--acc)', borderRadius: 20, fontSize: 12.5, fontWeight: 600, marginBottom: 12 }}>
-            Enterprise Portal
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, letterSpacing: '-0.02em' }}>
+        <div className="portal-intro">
+          <div className="portal-eyebrow"><span /> YOUR WORKSPACE</div>
+          <h1>
             Welcome back, {displayName}
           </h1>
-          <p className="mut" style={{ fontSize: 15, marginTop: 8 }}>
-            Select a workspace module below to access your tools and dashboards.
+          <p className="mut">
+            Your tools, thoughtfully brought together. Choose a module to continue.
           </p>
         </div>
 
@@ -88,17 +86,6 @@ export default function Portal() {
             }
           }}
           className="card portal-module"
-          style={{
-            cursor: 'pointer',
-            padding: 26,
-            borderRadius: 18,
-            border: '1.5px solid color-mix(in srgb, var(--acc) 45%, var(--line))',
-            background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 30%, var(--card)))',
-            boxShadow: 'var(--sh-md)',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
         >
           {/* Header pill */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -170,13 +157,6 @@ export default function Portal() {
             }
           }}
           className="card portal-module"
-          style={{
-            cursor: 'pointer',
-            padding: 26,
-            borderRadius: 18,
-            border: '1.5px solid color-mix(in srgb, var(--acc) 45%, var(--line))',
-            background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 30%, var(--card)))',
-          }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div
