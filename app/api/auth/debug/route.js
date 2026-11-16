@@ -18,7 +18,7 @@ export async function GET(req) {
     google_client_id_prefix: (process.env.GOOGLE_CLIENT_ID || '').slice(0, 20) + '...',
     google_client_secret_set: !!(process.env.GOOGLE_CLIENT_SECRET),
     auth_secret_set: !!(process.env.AUTH_SECRET),
-    admin_email_set: !!(process.env.ADMIN_EMAIL),
+    super_admin_email_set: !!(process.env.SUPER_ADMIN_EMAIL),
     node_env: process.env.NODE_ENV,
     headers: {
       'x-forwarded-proto': req.headers.get('x-forwarded-proto'),

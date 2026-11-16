@@ -1,11 +1,12 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad } from '@/lib/auth';
+import { getAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 // Change a candidate's status by hand
 export async function PATCH(req, { params }) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const admin = await getAdmin();
+  if (!admin) return bad('Unauthorized', 401);
   const { id } = await params;
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object' || Array.isArray(body)) return bad('Invalid request.');
@@ -17,6 +18,7 @@ export async function PATCH(req, { params }) {
       update candidates set status = ${body.status}, updated_at = now()
       where id = ${id}::uuid returning id`;
     if (!rows.length) return bad('Candidate not found.', 404);
+    await logAdminAction(admin.email, 'candidate.status_changed', id, { status: body.status });
     return Response.json({ ok: true });
   }
 
@@ -31,14 +33,17 @@ export async function PATCH(req, { params }) {
     where id = ${id}::uuid
     returning id`;
   if (!rows.length) return bad('Candidate not found.', 404);
-  return Response.json({ ok: true });
+    await logAdminAction(admin.email, 'candidate.updated', id);
+    return Response.json({ ok: true });
 }
 
 // Delete a candidate (their rounds are deleted automatically)
 export async function DELETE(_req, { params }) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
-  const { id } = await params;
-  if (!UUID.test(id)) return bad('Invalid request.');
-  await sql`delete from candidates where id = ${id}::uuid`;
-  return Response.json({ ok: true });
+    const admin = await getAdmin();
+    if (!admin) return bad('Unauthorized', 401);
+    const { id } = await params;
+    if (!UUID.test(id)) return bad('Invalid request.');
+    const rows = await sql`delete from candidates where id = ${id}::uuid returning id`;
+    if (rows.length) await logAdminAction(admin.email, 'candidate.deleted', id);
+    return Response.json({ ok: true });
 }

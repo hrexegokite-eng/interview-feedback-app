@@ -1,10 +1,11 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad } from '@/lib/auth';
+import { getAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export async function PATCH(req, { params }) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const admin = await getAdmin();
+  if (!admin) return bad('Unauthorized', 401);
   const { id, roundId } = await params;
   if (!UUID.test(id) || !UUID.test(roundId)) return bad('Invalid request.');
 
@@ -32,5 +33,6 @@ export async function PATCH(req, { params }) {
     returning id`;
   if (!rows.length) return bad('Scheduled interview not found or feedback has already been submitted.', 404);
   await sql`update candidates set updated_at = now() where id = ${id}::uuid`;
+  await logAdminAction(admin.email, 'interview.round_updated', id, { round_id: roundId });
   return Response.json({ ok: true });
 }

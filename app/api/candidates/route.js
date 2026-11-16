@@ -1,5 +1,5 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad } from '@/lib/auth';
+import { getAdmin, bad, logAdminAction } from '@/lib/auth';
 
 
 // List every candidate with all their rounds
@@ -27,7 +27,8 @@ export async function GET() {
 
 // Add a candidate and schedule Round 1
 export async function POST(req) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const admin = await getAdmin();
+  if (!admin) return bad('Unauthorized', 401);
   const b = await req.json().catch(() => ({}));
   const name = (b.name || '').trim();
   const interviewer = (b.interviewer || '').trim();
@@ -42,6 +43,7 @@ export async function POST(req) {
     select id, 1, ${(b.roundName || '').trim() || 'Round 1'}, ${(b.interviewer || '').trim() || null}, ${b.when || null}::timestamptz,
       ${(b.meetLink || '').trim() || null}, ${(b.cvUrl || '').trim() || null}, ${(b.cvFilename || '').trim() || null}
     from c
-    returning token`;
+    returning candidate_id as id, token`;
+  await logAdminAction(admin.email, 'candidate.created', rows[0].id);
   return Response.json({ token: rows[0].token }, { status: 201 });
 }

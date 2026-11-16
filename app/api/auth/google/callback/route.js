@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createSession } from '@/lib/auth';
+import { createSession, isAdminEmail } from '@/lib/auth';
 
 function getRedirectUri(req) {
   if (process.env.APP_URL) {
@@ -59,8 +59,11 @@ export async function GET(req) {
     });
     const profile = await userRes.json();
 
-    if (!userRes.ok || !profile.email) {
+    if (!userRes.ok || !profile.email || profile.email_verified !== true) {
       return NextResponse.redirect(new URL('/login?error=Unable+to+retrieve+Google+profile', baseUrl));
+    }
+    if (!(await isAdminEmail(profile.email))) {
+      return NextResponse.redirect(new URL('/login?error=This+Google+account+is+not+authorized+to+access+the+workspace', baseUrl));
     }
 
     // 3. Create session JWT

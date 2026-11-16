@@ -7,12 +7,21 @@ export default function Portal() {
   const router = useRouter();
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [modules, setModules] = useState({});
+  const [moduleError, setModuleError] = useState('');
 
   useEffect(() => {
     api('/api/auth/me')
       .then((data) => {
         setMe(data);
-        setLoading(false);
+        return api('/api/workspace-modules').then((items) => {
+          setModules(Object.fromEntries(items.map((item) => [item.key, item.enabled])));
+          setModuleError('');
+          setLoading(false);
+        }).catch((error) => {
+          setModuleError(error.message);
+          setLoading(false);
+        });
       })
       .catch(() => {
         router.replace('/login');
@@ -48,6 +57,7 @@ export default function Portal() {
           <div className="me">
             <Av name={me?.name || me?.email} small />
             <span>{me?.email}</span>
+            {me?.role === 'superadmin' && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
             <button className="btn ghost" onClick={logout}>Sign out</button>
           </div>
         </div>
@@ -65,8 +75,9 @@ export default function Portal() {
         </div>
 
         <div className="portal-grid">
+        {moduleError && <p className="err" role="alert">{moduleError}</p>}
         {/* Active Module: Interview Feedback */}
-        <div
+        {modules['interview-feedback'] && <div
           role="button"
           tabIndex={0}
           onClick={() => router.push('/admin')}
@@ -150,18 +161,21 @@ export default function Portal() {
               Open Module →
             </span>
           </div>
-        </div>
+        </div>}
 
-        {/* Disabled Module: Exit Form */}
-        <div
+        {/* Workspace module: Exit Form */}
+        {modules['exit-form'] && <div
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push('/exit-form')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/exit-form')}
           className="card"
           style={{
+            cursor: 'pointer',
             padding: 26,
             borderRadius: 18,
-            border: '1px dashed var(--line)',
-            background: 'var(--card)',
-            opacity: 0.65,
-            cursor: 'not-allowed',
+            border: '1.5px solid color-mix(in srgb, var(--acc) 45%, var(--line))',
+            background: 'linear-gradient(145deg, var(--card), color-mix(in srgb, var(--accb) 30%, var(--card)))',
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -170,10 +184,10 @@ export default function Portal() {
                 width: 52,
                 height: 52,
                 borderRadius: 14,
-                background: 'var(--soft)',
+                background: 'linear-gradient(135deg, var(--acc), var(--acc2))',
                 display: 'grid',
                 placeItems: 'center',
-                color: 'var(--mut)',
+                color: '#fff',
               }}
             >
               <Icon n="file" s={24} />
@@ -184,11 +198,11 @@ export default function Portal() {
                 borderRadius: 99,
                 fontSize: 11.5,
                 fontWeight: 600,
-                background: 'var(--soft)',
-                color: 'var(--mut)',
+                background: 'var(--okb)',
+                color: 'var(--ok)',
               }}
             >
-              Coming Soon
+              ● Active Module
             </span>
           </div>
 
@@ -204,8 +218,9 @@ export default function Portal() {
             <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--mut)' }}>
               Employee offboarding & feedback
             </span>
+            <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open Module →</span>
           </div>
-        </div>
+        </div>}
 
         {/* Future Module Placeholder 1: Employee Directory */}
         <div

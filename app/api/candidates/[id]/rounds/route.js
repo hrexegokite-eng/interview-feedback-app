@@ -1,11 +1,12 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad } from '@/lib/auth';
+import { getAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 // Schedule the next round for an existing candidate
 export async function POST(req, { params }) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const admin = await getAdmin();
+  if (!admin) return bad('Unauthorized', 401);
   const { id } = await params;
   if (!UUID.test(id)) return bad('Invalid request.');
   const b = await req.json().catch(() => ({}));
@@ -22,5 +23,6 @@ export async function POST(req, { params }) {
            ${(b.meetLink || '').trim() || null}, ${(b.cvUrl || '').trim() || null}, ${(b.cvFilename || '').trim() || null}
     from n
     returning token, round_no`;
+  await logAdminAction(admin.email, 'interview.round_scheduled', id, { round_no: rows[0].round_no });
   return Response.json(rows[0], { status: 201 });
 }

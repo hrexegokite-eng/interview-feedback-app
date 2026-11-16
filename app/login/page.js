@@ -21,7 +21,7 @@ function LoginForm() {
   const [googleBusy, setGoogleBusy] = useState(false);
   const [googleStatus, setGoogleStatus] = useState(null);
   const [showDevGoogle, setShowDevGoogle] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState('admin@gokite.com');
+  const [googleEmail, setGoogleEmail] = useState('hrops@gokitetours.com');
 
   useEffect(() => {
     const errorParam = searchParams.get('error');
