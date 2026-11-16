@@ -192,15 +192,32 @@ export default function Admin() {
   const [toast, setToast] = useState('');
   const [loadErr, setLoadErr] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const candidatesLoadVersion = useRef(0);
+  const toastTimer = useRef(null);
+  const searchInputRef = useRef(null);
 
-  const flash = useCallback((m) => { setToast(m); setTimeout(() => setToast(''), 2200); }, []);
+  const startScheduling = useCallback(() => {
+    setTab('schedule');
+    setProf(null);
+    window.setTimeout(() => document.getElementById('candidate-schedule-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+  }, []);
+
+  const flash = useCallback((m) => {
+    setToast(m);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 3200);
+  }, []);
+
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
   const load = useCallback(async () => {
     const requestVersion = ++candidatesLoadVersion.current;
     try {
       const candidates = await api('/api/candidates');
       if (requestVersion !== candidatesLoadVersion.current) return;
       setCands(candidates);
+      setLastUpdated(new Date());
       setLoadErr('');
     } catch (e) {
       if (requestVersion !== candidatesLoadVersion.current) return;
@@ -212,6 +229,15 @@ export default function Admin() {
     }
   }, [router]);
 
+  const refreshNow = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await load();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load]);
+
   useEffect(() => {
     api('/api/auth/me').then(setMe).catch(() => router.replace('/login'));
     const t0 = setTimeout(load, 0);
@@ -222,10 +248,26 @@ export default function Admin() {
   }, [load, router]);
 
   useEffect(() => {
-    const kd = (e) => { if (e.key === 'Escape') setProf(null); };
+    const kd = (e) => {
+      if (e.key === 'Escape') {
+        setProf(null);
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable) return;
+      if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        startScheduling();
+      } else if (e.key === '/' && tab !== 'schedule') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      } else if (e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        refreshNow();
+      }
+    };
     addEventListener('keydown', kd);
     return () => removeEventListener('keydown', kd);
-  }, []);
+  }, [refreshNow, startScheduling, tab]);
 
   async function logout() { await api('/api/auth/logout', { method: 'POST' }); router.replace('/login'); }
   async function move(id, status) {
@@ -380,11 +422,7 @@ export default function Admin() {
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : tab === 'complete' ? ['complete'] : filt === 'all' ? ['hold', 'reject'] : [filt];
   const list = dateFilteredCandidates.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
-  const startScheduling = () => {
-    setTab('schedule');
-    setProf(null);
-    window.setTimeout(() => document.getElementById('candidate-schedule-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
-  };
+  const hasActiveFilters = Boolean(q || dateFilter !== 'all');
 
   return (
     <div className="page-shell">
@@ -408,7 +446,7 @@ export default function Admin() {
             <p>Keep interviews moving and make every candidate decision with confidence.</p>
           </div>
           <div className="dashboard-hero-action">
-            <span className="dashboard-live"><i /> Live workspace</span>
+            <span className="dashboard-live"><i /> Live workspace{lastUpdated ? ` · Synced ${lastUpdated.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</span>
             <button className="btn primary" onClick={startScheduling}><Icon n="plus" s={16} />Schedule an interview</button>
           </div>
         </section>
@@ -455,16 +493,25 @@ export default function Admin() {
         {profile ? <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} /> : tab === 'schedule' ? <Schedule cands={dateFilteredCandidates} reload={load} flash={flash} open={open} /> : (
           <>
             <div className="tools">
-              <div className="sbox"><Icon n="search" s={16} /><input placeholder="Search name, role or notes" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+              <div className="sbox">
+                <Icon n="search" s={16} />
+                <input ref={searchInputRef} id="candidate-search" placeholder="Search name, role or notes" value={q} onChange={(e) => setQ(e.target.value)} />
+                {q && <button className="search-clear" type="button" aria-label="Clear search" onClick={() => { setQ(''); searchInputRef.current?.focus(); }}><Icon n="x" s={14} /></button>}
+              </div>
               {tab === 'other' && (
                 <div className="seg" style={{ margin: 0 }}>
                   {[['all', 'All'], ['hold', 'Hold'], ['reject', 'Rejected']].map(([k, l]) => <button key={k} role="tab" aria-selected={filt === k} onClick={() => setFilt(k)}>{l}</button>)}
                 </div>
               )}
+              {hasActiveFilters && <button className="btn ghost" onClick={() => { setQ(''); setDateFilter('all'); setDateFrom(''); setDateTo(''); }}>Clear filters</button>}
+              <button className="btn ghost refresh-action" disabled={refreshing} onClick={refreshNow} title="Refresh candidate data (R)">
+                <Icon n="refresh" s={14} />{refreshing ? 'Refreshing…' : 'Refresh'}
+              </button>
               <div className="export-actions">
                 <button className="btn ghost" disabled={exporting || !feedbackCount} title="Download all submitted feedback as an Excel workbook" onClick={() => exportFeedback('excel')}>Excel</button>
                 <button className="btn ghost" disabled={exporting || !feedbackCount} title="Download all submitted feedback as a PDF" onClick={() => exportFeedback('pdf')}>PDF</button>
               </div>
+              <span className="shortcut-hint"><kbd>/</kbd> search <kbd>N</kbd> schedule <kbd>R</kbd> refresh</span>
             </div>
             <div className="card candidate-results">
               {list.length ? list.map((c) => {

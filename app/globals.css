@@ -706,24 +706,26 @@ select { cursor: pointer; }
 .toast {
   position: fixed;
   left: 50%;
-  top: calc(24px + env(safe-area-inset-top, 0px));
+  top: 50%;
   bottom: auto;
-  transform: translate(-50%, -14px) scale(.96);
+  transform: translate(-50%, calc(-50% + 12px)) scale(.96);
   background: var(--ink);
   color: var(--inv);
-  padding: 10px 20px;
-  border-radius: 99px;
-  font-size: 13.5px;
-  font-weight: 500;
+  padding: 15px 24px;
+  border: 1px solid color-mix(in srgb, var(--acc) 24%, transparent);
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 600;
   opacity: 0;
   transition: opacity .22s var(--ease-std), transform .28s var(--ease);
   pointer-events: none;
   z-index: 10000;
-  box-shadow: var(--sh-md);
+  box-shadow: 0 18px 56px rgba(0, 0, 0, .38), 0 0 0 100vmax rgba(2, 8, 12, .12);
   max-width: min(560px, calc(100vw - 32px));
   text-align: center;
+  overflow-wrap: anywhere;
 }
-.toast.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
 /* ═══════════════════════════════════════════
    MODAL OVERLAY
@@ -1699,6 +1701,50 @@ a:focus-visible,
   .dashboard-live { grid-row: 1; }
   .dashboard-stat { min-height: 118px; gap: 9px; }
   .dashboard-stat-hint { font-size: 10px; }
+}
+
+.dashboard-hero-action .dashboard-live { text-align: right; }
+.sbox { display: flex; align-items: center; }
+.sbox input { padding-right: 42px; }
+.search-clear {
+  position: absolute;
+  right: 7px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--mut);
+  transition: color var(--dur) var(--ease-std), background var(--dur) var(--ease-std);
+}
+.search-clear:hover { color: var(--ink); background: var(--soft); }
+.shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--mut);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.shortcut-hint kbd {
+  display: inline-grid;
+  min-width: 18px;
+  height: 19px;
+  place-items: center;
+  padding: 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  color: var(--ink2);
+  font: inherit;
+  font-weight: 700;
+}
+.refresh-action:disabled { opacity: .65; }
+
+@media (max-width: 860px) {
+  .shortcut-hint { display: none; }
 }
 
 .loading-screen {
