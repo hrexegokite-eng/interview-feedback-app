@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Icon, Av, Logo, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
-import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS } from '@/lib/interview-feedback';
+import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS, validateEvaluation } from '@/lib/interview-feedback';
 
 function playSuccessSound() {
   try {
@@ -80,6 +80,7 @@ export default function Feedback({ token }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [evaluation, setEvaluation] = useState(emptyEvaluation());
+  const formRef = useRef(null);
 
   useEffect(() => {
     api('/api/feedback/' + token)
@@ -104,6 +105,21 @@ export default function Feedback({ token }) {
 
   async function submit() {
     if (!pick) return;
+    const invalidField = formRef.current?.querySelector(':invalid');
+    if (invalidField) {
+      invalidField.reportValidity();
+      setMsg('Complete all required fields before submitting.');
+      return;
+    }
+    if (!validateEvaluation(evaluation)) {
+      setMsg('Complete all required assessment fields with valid values.');
+      return;
+    }
+    if (!note.trim()) {
+      setMsg('Comments are required.');
+      document.getElementById('n')?.focus();
+      return;
+    }
     setBusy(true);
     setMsg('');
     try {
@@ -127,9 +143,10 @@ export default function Feedback({ token }) {
   function ratingField(id, label, value, onChange) {
     return (
       <div className="evaluation-field" key={id}>
-        <label htmlFor={id}>{label}</label>
-        <select id={id} value={value || ''} onChange={(event) => onChange(event.target.value)}>
+        <label htmlFor={id}>{label} <span className="req">*</span></label>
+        <select id={id} required value={value || ''} onChange={(event) => onChange(event.target.value)}>
           <option value="">Select rating</option>
+          <option value="none">None</option>
           {RATINGS.map(([rating, description]) => <option key={rating} value={rating}>{description}</option>)}
         </select>
       </div>
@@ -185,7 +202,7 @@ export default function Feedback({ token }) {
   }
 
   return (
-    <div className="narrow" style={{ maxWidth: 760, margin: '0 auto', paddingTop: 8 }}>
+    <div ref={formRef} className="narrow" style={{ maxWidth: 760, margin: '0 auto', paddingTop: 8 }}>
       {head}
 
       {/* Candidate Profile Summary */}
@@ -287,8 +304,8 @@ export default function Feedback({ token }) {
 
         <div className="evaluation-section">
           <div className="evaluation-field">
-            <label htmlFor="proposed-designation">Proposed Designation</label>
-            <input id="proposed-designation" type="text" maxLength={200} value={evaluation.proposedDesignation} onChange={(event) => setField('proposedDesignation', event.target.value)} />
+            <label htmlFor="proposed-designation">Proposed Designation <span className="req">*</span></label>
+            <input id="proposed-designation" type="text" required maxLength={200} value={evaluation.proposedDesignation} onChange={(event) => setField('proposedDesignation', event.target.value)} />
           </div>
         </div>
 
@@ -317,8 +334,8 @@ export default function Feedback({ token }) {
               (value) => setRating('productKnowledge', product, value)
             ))}
             <div className="evaluation-field">
-              <label htmlFor="other-products">Other Products if any</label>
-              <input id="other-products" type="text" maxLength={200} value={evaluation.otherProducts} onChange={(event) => setField('otherProducts', event.target.value)} />
+              <label htmlFor="other-products">Other Products (enter None if not applicable) <span className="req">*</span></label>
+              <input id="other-products" type="text" required maxLength={200} value={evaluation.otherProducts} onChange={(event) => setField('otherProducts', event.target.value)} />
             </div>
           </div>
         </div>
@@ -327,21 +344,23 @@ export default function Feedback({ token }) {
           <h3>Experience and Selection</h3>
           <div className="evaluation-grid">
             <div className="evaluation-field">
-              <label htmlFor="prior-b2b-experience">Prior B2B Experience</label>
-              <select id="prior-b2b-experience" value={evaluation.priorB2BExperience} onChange={(event) => setField('priorB2BExperience', event.target.value)}>
+              <label htmlFor="prior-b2b-experience">Prior B2B Experience <span className="req">*</span></label>
+              <select id="prior-b2b-experience" required value={evaluation.priorB2BExperience} onChange={(event) => setField('priorB2BExperience', event.target.value)}>
                 <option value="">Select</option>
+                <option value="none">None</option>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </select>
             </div>
             <div className="evaluation-field">
-              <label htmlFor="years-prior-experience">Years of prior Experience</label>
-              <input id="years-prior-experience" type="number" min="0" max="60" step="0.1" value={evaluation.yearsPriorExperience} onChange={(event) => setField('yearsPriorExperience', event.target.value)} />
+              <label htmlFor="years-prior-experience">Years of prior Experience <span className="req">*</span></label>
+              <input id="years-prior-experience" type="number" required min="0" max="60" step="0.1" value={evaluation.yearsPriorExperience} onChange={(event) => setField('yearsPriorExperience', event.target.value)} />
             </div>
             <div className="evaluation-field">
-              <label htmlFor="job-neediness">Job Neediness</label>
-              <select id="job-neediness" value={evaluation.jobNeediness} onChange={(event) => setField('jobNeediness', event.target.value)}>
+              <label htmlFor="job-neediness">Job Neediness <span className="req">*</span></label>
+              <select id="job-neediness" required value={evaluation.jobNeediness} onChange={(event) => setField('jobNeediness', event.target.value)}>
                 <option value="">Select</option>
+                <option value="none">None</option>
                 {JOB_NEEDINESS.map((option) => <option key={option} value={option}>{option}</option>)}
               </select>
             </div>
@@ -351,8 +370,8 @@ export default function Feedback({ token }) {
         <div className="evaluation-section">
           <h3>Attitude and Personality</h3>
           <div className="evaluation-field">
-            <label htmlFor="attitude-personality">Assessment</label>
-            <textarea id="attitude-personality" maxLength={1500} rows={3} value={evaluation.attitudePersonality} onChange={(event) => setField('attitudePersonality', event.target.value)} />
+            <label htmlFor="attitude-personality">Assessment <span className="req">*</span></label>
+            <textarea id="attitude-personality" required maxLength={1500} rows={3} value={evaluation.attitudePersonality} onChange={(event) => setField('attitudePersonality', event.target.value)} />
           </div>
         </div>
       </div>
@@ -371,7 +390,7 @@ export default function Feedback({ token }) {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', letterSpacing: '0.01em', textTransform: 'uppercase' }}>
-            Recommendation
+            Recommendation <span className="req">*</span>
           </span>
           <span style={{ fontSize: 11.5, color: 'var(--mut)' }}>
             Keys 1 · 2
@@ -405,7 +424,7 @@ export default function Feedback({ token }) {
         <div style={{ marginTop: 22 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <label htmlFor="n" style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--ink)' }}>
-              Comments (optional)
+              Comments <span className="req">*</span>
             </label>
             <span style={{ fontSize: 11, color: 'var(--mut)' }}>
               {note.length} / 1500
@@ -413,6 +432,7 @@ export default function Feedback({ token }) {
           </div>
           <textarea
             id="n"
+            required
             value={note}
             maxLength={1500}
             rows={4}

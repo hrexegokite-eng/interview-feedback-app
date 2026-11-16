@@ -24,11 +24,11 @@ export async function POST(req, { params }) {
   if (!TOKEN.test(token)) return bad('Link not found.', 404);
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object' || Array.isArray(body)) return bad('Invalid feedback.');
-  const { decision, note = '', evaluation } = body;
+  const { decision, note, evaluation } = body;
   if (!['proceed', 'reject'].includes(decision)) return bad('Choose Proceed or Reject.');
   const validEvaluation = validateEvaluation(evaluation);
-  if (!validEvaluation) return bad('The interview evaluation form contains invalid values.');
-  if (typeof note !== 'string' || note.length > 1500) return bad('Comments must be 1500 characters or fewer.');
+  if (!validEvaluation) return bad('Complete all required interview evaluation fields with valid values.');
+  if (typeof note !== 'string' || !note.trim() || note.length > 1500) return bad('Comments are required and must be 1500 characters or fewer.');
   const exists = await sql`select 1 from rounds where token = ${token}`;
   if (!exists.length) return bad('Link not found.', 404);
   await sql`
