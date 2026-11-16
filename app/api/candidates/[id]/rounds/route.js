@@ -12,15 +12,24 @@ export async function POST(req, { params }) {
   const b = await req.json().catch(() => ({}));
   const interviewer = (b.interviewer || '').trim();
   if (!interviewer) return bad('Interviewer name is required.');
+  const candidateRows = await sql`
+    select f.id, f.name, f.questions, f.version
+    from candidates c left join feedback_forms f on f.id = c.feedback_form_id
+    where c.id = ${id}::uuid
+  `;
+  if (!candidateRows.length) return bad('Candidate not found.', 404);
+  const form = candidateRows[0].id ? candidateRows[0] : null;
+  const snapshot = form ? { id: form.id, name: form.name, version: form.version, questions: form.questions } : null;
   const pending = await sql`select 1 from rounds where candidate_id = ${id}::uuid and decision is null limit 1`;
   if (pending.length) return bad('The current round is still awaiting feedback.', 409);
   const rows = await sql`
     with n as (select coalesce(max(round_no), 0) + 1 as n from rounds where candidate_id = ${id}::uuid),
     u as (update candidates set status = 'scheduled', updated_at = now() where id = ${id}::uuid)
-    insert into rounds (candidate_id, round_no, name, interviewer, scheduled_at, meet_link, cv_url, cv_filename)
+    insert into rounds (candidate_id, round_no, name, interviewer, scheduled_at, meet_link, cv_url, cv_filename, form_snapshot)
     select ${id}::uuid, n.n, coalesce(${(b.roundName || '').trim() || null}::text, 'Round ' || n.n::text),
            ${(b.interviewer || '').trim() || null}, ${b.when || null}::timestamptz,
-           ${(b.meetLink || '').trim() || null}, ${(b.cvUrl || '').trim() || null}, ${(b.cvFilename || '').trim() || null}
+           ${(b.meetLink || '').trim() || null}, ${(b.cvUrl || '').trim() || null}, ${(b.cvFilename || '').trim() || null},
+           ${snapshot ? JSON.stringify(snapshot) : null}::jsonb
     from n
     returning token, round_no`;
   await logAdminAction(admin.email, 'interview.round_scheduled', id, { round_no: rows[0].round_no });

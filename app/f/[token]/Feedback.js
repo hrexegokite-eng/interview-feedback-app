@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Icon, Av, Logo, LoadingState, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
-import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS, validateEvaluation } from '@/lib/interview-feedback';
+import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS, validateCustomEvaluation, validateEvaluation } from '@/lib/interview-feedback';
 
 function playSuccessSound() {
   try {
@@ -36,6 +36,7 @@ export default function Feedback({ token }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [evaluation, setEvaluation] = useState(emptyEvaluation());
+  const [answers, setAnswers] = useState({});
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function Feedback({ token }) {
         setPick(x.decision || '');
         setNote(x.note || '');
         setEvaluation({ ...emptyEvaluation(x.role || ''), ...(x.evaluation || {}) });
+        setAnswers(x.evaluation || {});
       })
       .catch((e) => setErr(e.message));
   }, [token]);
@@ -67,14 +69,17 @@ export default function Feedback({ token }) {
       setMsg('Complete all required fields before submitting.');
       return;
     }
-    if (!validateEvaluation(evaluation)) {
+    const formAnswers = d.form_snapshot
+      ? validateCustomEvaluation(answers, d.form_snapshot.questions)
+      : validateEvaluation(evaluation);
+    if (!formAnswers) {
       setMsg('Complete all required assessment fields with valid values.');
       return;
     }
     setBusy(true);
     setMsg('');
     try {
-      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note, evaluation } });
+      await api('/api/feedback/' + token, { method: 'POST', body: { decision: pick, note, evaluation: formAnswers } });
       playSuccessSound();
       setDone(true);
     } catch (e) {
@@ -89,6 +94,45 @@ export default function Feedback({ token }) {
 
   function setRating(group, key, value) {
     setEvaluation((current) => ({ ...current, [group]: { ...current[group], [key]: value } }));
+  }
+
+  function renderCustomQuestion(question) {
+    const value = answers[question.id] || '';
+    const required = question.required;
+    const label = (
+      <label htmlFor={`question-${question.id}`}>
+        {question.label} {required && <span className="req">*</span>}
+      </label>
+    );
+    const update = (event) => setAnswers((current) => ({ ...current, [question.id]: event.target.value }));
+    const props = { id: `question-${question.id}`, required, value, onChange: update };
+
+    return (
+      <div className="evaluation-field" key={question.id}>
+        {label}
+        {question.type === 'long_text' ? (
+          <textarea {...props} rows={3} maxLength={2000} />
+        ) : question.type === 'rating' ? (
+          <select {...props}>
+            <option value="">Select rating</option>
+            {RATINGS.map(([rating, description]) => <option key={rating} value={rating}>{description}</option>)}
+          </select>
+        ) : question.type === 'dropdown' ? (
+          <select {...props}>
+            <option value="">Select an option</option>
+            {question.options.map((option) => <option key={option} value={option}>{option}</option>)}
+          </select>
+        ) : question.type === 'yes_no' ? (
+          <select {...props}>
+            <option value="">Select</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        ) : (
+          <input {...props} type="text" maxLength={2000} />
+        )}
+      </div>
+    );
   }
 
   function ratingField(id, label, value, onChange) {
@@ -115,7 +159,10 @@ export default function Feedback({ token }) {
   if (!d) return <LoadingState label="Loading interview feedback form" />;
 
   const round = 'Round ' + d.round_no + (d.round_name && d.round_name !== 'Round ' + d.round_no ? ' · ' + d.round_name : '');
-  const requiredValues = [
+  const requiredValues = d.form_snapshot ? [
+    ...d.form_snapshot.questions.filter((question) => question.required).map((question) => answers[question.id]?.trim()),
+    pick,
+  ] : [
     evaluation.proposedDesignation?.trim(),
     ...LANGUAGES.map((language) => evaluation.languageRatings?.[language]),
     evaluation.communicationFluency,
@@ -226,12 +273,19 @@ export default function Feedback({ token }) {
       <div className="card evaluation-card" id="feedback-assessment">
         <div className="evaluation-heading">
           <div>
-            <h2>Interview evaluation</h2>
+            <h2>{d.form_snapshot?.name || 'Interview evaluation'}</h2>
             <p className="sm mut">Complete the candidate assessment, then choose a recommendation below.</p>
           </div>
           <span className="evaluation-step">Candidate assessment</span>
         </div>
 
+        {d.form_snapshot ? (
+          <div className="evaluation-section">
+            <div className="evaluation-grid">
+              {d.form_snapshot.questions.map(renderCustomQuestion)}
+            </div>
+          </div>
+        ) : <>
         <div className="evaluation-section">
           <div className="evaluation-field">
             <label htmlFor="proposed-designation">Proposed Designation <span className="req">*</span></label>
@@ -304,6 +358,7 @@ export default function Feedback({ token }) {
             <textarea id="attitude-personality" required maxLength={1500} rows={3} value={evaluation.attitudePersonality} onChange={(event) => setField('attitudePersonality', event.target.value)} />
           </div>
         </div>
+        </>}
       </div>
 
       {/* Decision Card */}

@@ -23,13 +23,40 @@ export async function PATCH(req, { params }) {
   }
 
   const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const bcu = typeof body.bcu === 'string' ? body.bcu.trim() : '';
   const role = typeof body.role === 'string' ? body.role.trim() : '';
-  if (!name || name.length > 200 || bcu.length > 120 || role.length > 200) return bad('Enter a candidate name and keep each field within its length limit.');
+  const legacyBcu = typeof body.legacyBcu === 'string'
+    ? body.legacyBcu.trim()
+    : typeof body.bcu === 'string' ? body.bcu.trim() : '';
+  if (!name || name.length > 200 || legacyBcu.length > 120 || role.length > 200) return bad('Enter a candidate name and keep each field within its length limit.');
+
+  const current = await sql`select feedback_form_id, bcu from candidates where id = ${id}::uuid`;
+  if (!current.length) return bad('Candidate not found.', 404);
+  let feedbackFormId = null;
+  let bcu = legacyBcu || current[0].bcu || null;
+
+  if (Object.hasOwn(body, 'feedbackFormId')) {
+    const requestedFormId = typeof body.feedbackFormId === 'string' ? body.feedbackFormId.trim() : '';
+    if (requestedFormId && !UUID.test(requestedFormId)) return bad('Choose a valid feedback form.');
+    if (requestedFormId) {
+      const forms = await sql`
+        select id, name, active from feedback_forms where id = ${requestedFormId}::uuid
+      `;
+      if (!forms.length || (!forms[0].active && forms[0].id !== current[0].feedback_form_id)) {
+        return bad('That feedback form is unavailable.', 404);
+      }
+      feedbackFormId = forms[0].id;
+      bcu = forms[0].name;
+    } else {
+      bcu = Object.hasOwn(body, 'legacyBcu')
+        ? legacyBcu || null
+        : legacyBcu || (current[0].feedback_form_id ? null : current[0].bcu) || null;
+    }
+  }
 
   const rows = await sql`
     update candidates
-    set name = ${name}, bcu = ${bcu || null}, role = ${role || null}, updated_at = now()
+    set name = ${name}, bcu = ${bcu}, feedback_form_id = ${feedbackFormId}::uuid,
+        role = ${role || null}, updated_at = now()
     where id = ${id}::uuid
     returning id`;
   if (!rows.length) return bad('Candidate not found.', 404);

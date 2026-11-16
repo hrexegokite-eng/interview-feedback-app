@@ -1,0 +1,226 @@
+'use client';
+import { useCallback, useEffect, useState } from 'react';
+import { api, fmt } from '@/components/ui';
+
+const TYPES = [
+  ['short_text', 'Short text'],
+  ['long_text', 'Long text'],
+  ['rating', 'Rating scale (1–5)'],
+  ['dropdown', 'Dropdown'],
+  ['yes_no', 'Yes / No'],
+];
+
+function questionId() {
+  return `question_${globalThis.crypto.randomUUID().replaceAll('-', '')}`;
+}
+
+function blankForm() {
+  return {
+    id: '',
+    name: '',
+    questions: [{ id: questionId(), label: '', type: 'short_text', required: true }],
+  };
+}
+
+export default function FeedbackForms() {
+  const [forms, setForms] = useState([]);
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const load = useCallback(async () => {
+    try {
+      setForms(await api('/api/super-admin/forms'));
+      setError('');
+    } catch (loadError) {
+      setError(loadError.message || 'Unable to load feedback forms.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  function updateQuestion(id, changes) {
+    setForm((current) => ({
+      ...current,
+      questions: current.questions.map((question) => question.id === id ? { ...question, ...changes } : question),
+    }));
+  }
+
+  async function save(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const editing = Boolean(form.id);
+      await api('/api/super-admin/forms', {
+        method: editing ? 'PATCH' : 'POST',
+        body: {
+          ...(editing ? { id: form.id } : {}),
+          name: form.name,
+          questions: form.questions.map((question) => ({
+            ...question,
+            ...(question.type === 'dropdown'
+              ? { options: (question.optionsText || '').split('\n').map((option) => option.trim()).filter(Boolean) }
+              : {}),
+          })),
+        },
+      });
+      setForm(null);
+      setMessage(editing ? 'Form updated. Existing interview links keep their assigned version.' : 'Feedback form created.');
+      await load();
+    } catch (saveError) {
+      setError(saveError.message || 'Unable to save feedback form.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setActive(item, active) {
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      await api('/api/super-admin/forms', { method: 'PATCH', body: { id: item.id, active } });
+      setMessage(active ? `${item.name} is active for new candidates.` : `${item.name} was archived; existing links are unchanged.`);
+      await load();
+    } catch (actionError) {
+      setError(actionError.message || 'Unable to update feedback form.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function edit(item) {
+    setError('');
+    setMessage('');
+    setForm({
+      id: item.id,
+      name: item.name,
+      questions: item.questions.map((question) => ({
+        ...question,
+        optionsText: question.options?.join('\n') || '',
+      })),
+    });
+  }
+
+  if (loading) return <div className="card"><p className="sm mut">Loading feedback forms…</p></div>;
+
+  return (
+    <div>
+      {error && <p className="err" role="alert">{error}</p>}
+      {message && <p className="sm" role="status" style={{ color: 'var(--ok)', marginBottom: 14 }}>{message}</p>}
+
+      <section className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div>
+            <h2 style={{ marginBottom: 4 }}>BCU feedback forms</h2>
+            <p className="sm mut">Create named forms for the BCU dropdown. Editing a form affects new interview links only.</p>
+          </div>
+          <button className="btn primary" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankForm()); }}>
+            Create form
+          </button>
+        </div>
+
+        {forms.length ? forms.map((item) => (
+          <div key={item.id} className="row">
+            <div className="grow">
+              <b>{item.name}</b>
+              <div className="sm mut">
+                {item.questions.length} question{item.questions.length === 1 ? '' : 's'} · Version {item.version} · {item.active ? 'Active' : 'Archived'} · Updated {fmt(item.updated_at)}
+              </div>
+            </div>
+            <button className="btn ghost" disabled={busy} onClick={() => edit(item)}>Edit</button>
+            <button className="btn ghost" disabled={busy} onClick={() => setActive(item, !item.active)}>
+              {item.active ? 'Archive' : 'Restore'}
+            </button>
+          </div>
+        )) : <p className="sm mut" style={{ marginTop: 16 }}>No feedback forms yet. Create one to add named options to the BCU dropdown.</p>}
+      </section>
+
+      {form && (
+        <form className="card" onSubmit={save} style={{ marginTop: 16 }}>
+          <h2>{form.id ? 'Edit feedback form' : 'Create feedback form'}</h2>
+          <p className="sm mut">Question types: short text, long text, 1–5 rating, dropdown, and Yes / No.</p>
+          <div className="f">
+            <label htmlFor="feedback-form-name">Form name / BCU</label>
+            <input id="feedback-form-name" required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+          </div>
+
+          {form.questions.map((question, index) => (
+            <fieldset key={question.id} className="card" style={{ marginTop: 14, padding: 14 }}>
+              <legend className="sm mut">Question {index + 1}</legend>
+              <div className="f">
+                <label htmlFor={`question-label-${question.id}`}>Question</label>
+                <input
+                  id={`question-label-${question.id}`}
+                  required
+                  maxLength={160}
+                  value={question.label}
+                  onChange={(event) => updateQuestion(question.id, { label: event.target.value })}
+                />
+              </div>
+              <div className="f">
+                <label htmlFor={`question-type-${question.id}`}>Answer type</label>
+                <select
+                  id={`question-type-${question.id}`}
+                  value={question.type}
+                  onChange={(event) => updateQuestion(question.id, { type: event.target.value })}
+                >
+                  {TYPES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+              </div>
+              {question.type === 'dropdown' && (
+                <div className="f">
+                  <label htmlFor={`question-options-${question.id}`}>Options (one per line)</label>
+                  <textarea
+                    id={`question-options-${question.id}`}
+                    required
+                    rows={4}
+                    value={question.optionsText || ''}
+                    onChange={(event) => updateQuestion(question.id, { optionsText: event.target.value })}
+                  />
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                <label className="sm" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={question.required}
+                    onChange={(event) => updateQuestion(question.id, { required: event.target.checked })}
+                  />
+                  Required
+                </label>
+                <button
+                  type="button"
+                  className="btn ghost danger"
+                  disabled={form.questions.length === 1}
+                  onClick={() => setForm({ ...form, questions: form.questions.filter((item) => item.id !== question.id) })}
+                >
+                  Remove question
+                </button>
+              </div>
+            </fieldset>
+          ))}
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+            <button
+              type="button"
+              className="btn ghost"
+              disabled={form.questions.length >= 40}
+              onClick={() => setForm({ ...form, questions: [...form.questions, { id: questionId(), label: '', type: 'short_text', required: true }] })}
+            >
+              Add question
+            </button>
+            <button className="btn primary" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save form'}</button>
+            <button type="button" className="btn ghost" disabled={busy} onClick={() => setForm(null)}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}

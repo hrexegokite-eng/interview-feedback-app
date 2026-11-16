@@ -25,8 +25,13 @@ const matchesInterviewDate = (value, filter, from, to) => {
   }
   return !!(from || to) && (!from || date >= from) && (!to || date <= to);
 };
-const evaluationLines = (evaluation) => {
+const evaluationLines = (evaluation, formSnapshot) => {
   if (!evaluation) return [];
+  if (formSnapshot?.questions?.length) {
+    return formSnapshot.questions
+      .filter((question) => evaluation[question.id])
+      .map((question) => `${question.label}: ${evaluation[question.id]}`);
+  }
   const lines = [];
   if (evaluation.proposedDesignation) lines.push('Proposed designation: ' + evaluation.proposedDesignation);
   const languages = LANGUAGES.filter((language) => evaluation.languageRatings?.[language])
@@ -129,6 +134,7 @@ export default function Admin() {
   const router = useRouter();
   const [me, setMe] = useState(null);
   const [cands, setCands] = useState(null);
+  const [forms, setForms] = useState([]);
   const [tab, setTab] = useState('schedule');
   const [filt, setFilt] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
@@ -195,6 +201,10 @@ export default function Admin() {
   }, [load, router]);
 
   useEffect(() => {
+    api('/api/feedback-forms').then(setForms).catch((error) => flash(error.message || 'Unable to load feedback forms.'));
+  }, [flash]);
+
+  useEffect(() => {
     const kd = (e) => {
       if (e.key === 'Escape') {
         setProf(null);
@@ -250,7 +260,7 @@ export default function Admin() {
         interviewer: round.interviewer || '',
         decision: LBL[round.decision] || round.decision,
         feedback: round.note || '',
-        evaluation: evaluationLines(round.evaluation).join('\n'),
+        evaluation: evaluationLines(round.evaluation, round.form_snapshot).join('\n'),
         submittedAt: round.submitted_at ? new Date(round.submitted_at) : null,
       })));
 
@@ -368,7 +378,7 @@ export default function Admin() {
 
   const s = q.toLowerCase();
   const set = tab === 'proceed' ? ['proceed'] : tab === 'complete' ? ['complete'] : filt === 'all' ? ['hold', 'reject'] : [filt];
-  const list = dateFilteredCandidates.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation)].join(' '))].join(' ').toLowerCase().includes(s)));
+  const list = dateFilteredCandidates.filter((c) => set.includes(c.status) && (!s || [c.name, c.role, ...c.rounds.map((r) => [r.note, r.interviewer, r.name, ...evaluationLines(r.evaluation, r.form_snapshot)].join(' '))].join(' ').toLowerCase().includes(s)));
   const hasActiveFilters = Boolean(q || dateFilter !== 'all');
 
   return (
@@ -437,7 +447,7 @@ export default function Admin() {
           ))}
         </div>
 
-        {profile ? <Profile key={profile.id} c={profile} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} /> : tab === 'schedule' ? <Schedule cands={dateFilteredCandidates} reload={load} flash={flash} open={open} /> : (
+        {profile ? <Profile key={profile.id} c={profile} forms={forms} close={() => setProf(null)} reload={load} flash={flash} move={move} remove={remove} /> : tab === 'schedule' ? <Schedule cands={dateFilteredCandidates} forms={forms} reload={load} flash={flash} open={open} /> : (
           <>
             <div className="tools">
               <div className="sbox">
@@ -507,8 +517,8 @@ export default function Admin() {
   );
 }
 
-function Schedule({ cands, reload, flash, open }) {
-  const blank = { name: '', bcu: '', role: '', roundName: '', interviewer: '', when: '', meetLink: '', cvUrl: '', cvFilename: '' };
+function Schedule({ cands, forms, reload, flash, open }) {
+  const blank = { name: '', feedbackFormId: '', role: '', roundName: '', interviewer: '', when: '', meetLink: '', cvUrl: '', cvFilename: '' };
   const [f, setF] = useState(blank);
   const [badName, setBadName] = useState(false);
   const [badInterviewer, setBadInterviewer] = useState(false);
@@ -538,7 +548,13 @@ function Schedule({ cands, reload, flash, open }) {
       <form id="candidate-schedule-form" className="card schedule-form-card" onSubmit={add}>
         <h2>Add candidate &amp; schedule Round 1</h2>
         <div className="f"><label htmlFor="nm">Candidate name <span className="req">*</span></label><input id="nm" required className={badName ? 'bad' : ''} placeholder="e.g. Priya Sharma" autoComplete="off" value={f.name} onChange={on('name')} /></div>
-        <div className="f"><label htmlFor="bcu">BCU</label><input id="bcu" placeholder="Enter BCU" value={f.bcu} onChange={on('bcu')} /></div>
+        <div className="f">
+          <label htmlFor="bcu">BCU / feedback form</label>
+          <select id="bcu" value={f.feedbackFormId} onChange={on('feedbackFormId')}>
+            <option value="">Standard interview assessment</option>
+            {forms.filter((form) => form.active).map((form) => <option key={form.id} value={form.id}>{form.name}</option>)}
+          </select>
+        </div>
         <div className="f"><label htmlFor="rl">Role</label><input id="rl" placeholder="e.g. Travel Consultant" value={f.role} onChange={on('role')} /></div>
         <div className="f"><label htmlFor="rn">Round name (optional)</label><input id="rn" placeholder="e.g. Screening" value={f.roundName} onChange={on('roundName')} /></div>
         <div className="f"><label htmlFor="iv">Interviewer name <span className="req">*</span></label><input id="iv" required className={badInterviewer ? 'bad' : ''} placeholder="e.g. Rahul Mehta" value={f.interviewer} onChange={on('interviewer')} /></div>
@@ -592,7 +608,7 @@ function Schedule({ cands, reload, flash, open }) {
   );
 }
 
-function Profile({ c, close, reload, flash, move, remove }) {
+function Profile({ c, forms, close, reload, flash, move, remove }) {
   const R = c.rounds;
   const pend = pending(c);
   const n = (R.length ? R[R.length - 1].round_no : 0) + 1;
@@ -601,7 +617,12 @@ function Profile({ c, close, reload, flash, move, remove }) {
   const [busy, setBusy] = useState(false);
   const [made, setMade] = useState(null);
   const [editingCandidate, setEditingCandidate] = useState(false);
-  const [candidateForm, setCandidateForm] = useState({ name: c.name, bcu: c.bcu || '', role: c.role || '' });
+  const [candidateForm, setCandidateForm] = useState({
+    name: c.name,
+    feedbackFormId: c.feedback_form_id || (c.bcu ? '__legacy_bcu__' : ''),
+    legacyBcu: c.feedback_form_id ? '' : c.bcu || '',
+    role: c.role || '',
+  });
   const [editingRound, setEditingRound] = useState(null);
   const [roundForm, setRoundForm] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -611,7 +632,14 @@ function Profile({ c, close, reload, flash, move, remove }) {
     e.preventDefault();
     setSavingEdit(true);
     try {
-      await api('/api/candidates/' + c.id, { method: 'PATCH', body: candidateForm });
+      await api('/api/candidates/' + c.id, {
+        method: 'PATCH',
+        body: {
+          ...candidateForm,
+          feedbackFormId: candidateForm.feedbackFormId === '__legacy_bcu__' ? '' : candidateForm.feedbackFormId,
+          legacyBcu: candidateForm.feedbackFormId === '__legacy_bcu__' ? c.bcu || '' : candidateForm.feedbackFormId ? '' : candidateForm.legacyBcu,
+        },
+      });
       setEditingCandidate(false);
       flash('Candidate details updated');
       reload();
@@ -678,7 +706,25 @@ function Profile({ c, close, reload, flash, move, remove }) {
           <form className="card edit-form" onSubmit={saveCandidate}>
             <h2>Candidate details</h2>
             <div className="f"><label htmlFor="edit-candidate-name">Candidate name</label><input id="edit-candidate-name" required maxLength={200} value={candidateForm.name} onChange={(e) => setCandidateForm({ ...candidateForm, name: e.target.value })} /></div>
-            <div className="f"><label htmlFor="edit-candidate-bcu">BCU</label><input id="edit-candidate-bcu" maxLength={120} value={candidateForm.bcu} onChange={(e) => setCandidateForm({ ...candidateForm, bcu: e.target.value })} /></div>
+            <div className="f">
+              <label htmlFor="edit-candidate-bcu">BCU / feedback form</label>
+              <select
+                id="edit-candidate-bcu"
+                value={candidateForm.feedbackFormId}
+                onChange={(e) => setCandidateForm({
+                  ...candidateForm,
+                  feedbackFormId: e.target.value,
+                  legacyBcu: e.target.value === '__legacy_bcu__' ? c.bcu || '' : '',
+                })}
+              >
+                <option value="">Standard interview assessment</option>
+                {candidateForm.feedbackFormId === '__legacy_bcu__' && <option value="__legacy_bcu__">Legacy BCU: {c.bcu}</option>}
+                {forms.filter((form) => form.active || form.id === c.feedback_form_id).map((form) => (
+                  <option key={form.id} value={form.id}>{form.name}{form.active ? '' : ' (archived)'}</option>
+                ))}
+              </select>
+              {candidateForm.feedbackFormId === '' && candidateForm.legacyBcu && <span className="sm mut">Saving will keep the current legacy BCU.</span>}
+            </div>
             <div className="f"><label htmlFor="edit-candidate-role">Role</label><input id="edit-candidate-role" maxLength={200} value={candidateForm.role} onChange={(e) => setCandidateForm({ ...candidateForm, role: e.target.value })} /></div>
             <button className="btn primary" type="submit" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save candidate details'}</button>
           </form>
@@ -690,7 +736,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
         <div className="tl" style={{ marginTop: 12 }}>
           {R.map((r) => {
             const st = r.decision || 'scheduled';
-            const details = evaluationLines(r.evaluation);
+            const details = evaluationLines(r.evaluation, r.form_snapshot);
             return (
               <div key={r.id} className="rd" style={{ '--c': `var(--${COL[st][0]})` }}>
                 <div className="card">

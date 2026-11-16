@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Av, Icon, LoadingState, Logo, api, fmt } from '@/components/ui';
+import FeedbackForms from './FeedbackForms';
 
 const MODULE_NAMES = {
   'interview-feedback': 'Interview Feedback',
@@ -17,6 +18,7 @@ export default function SuperAdmin() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [tab, setTab] = useState('settings');
 
   const load = useCallback(async () => {
     try {
@@ -114,7 +116,7 @@ export default function SuperAdmin() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, margin: '26px 0 18px' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: 25 }}>Workspace administration</h1>
-            <p className="sm mut" style={{ marginTop: 6 }}>Manage administrator access, active modules, and review recent activity.</p>
+            <p className="sm mut" style={{ marginTop: 6 }}>Manage workspace access, BCU-specific feedback forms, and recent activity.</p>
             <p className="sm mut" style={{ marginTop: 4 }}>
               {data?.counts.candidates ?? 0} candidate records · {data?.counts.onboarding ?? 0} scheduled for onboarding
             </p>
@@ -125,6 +127,12 @@ export default function SuperAdmin() {
         {error && <p className="err" role="alert">{error}</p>}
         {message && <p className="sm" role="status" style={{ color: 'var(--ok)', marginBottom: 14 }}>{message}</p>}
 
+        <div className="seg" role="tablist" aria-label="Super admin sections" style={{ marginBottom: 18 }}>
+          <button role="tab" aria-selected={tab === 'settings'} onClick={() => setTab('settings')}>Workspace settings</button>
+          <button role="tab" aria-selected={tab === 'forms'} onClick={() => setTab('forms')}>Feedback forms</button>
+        </div>
+
+        {tab === 'forms' ? <FeedbackForms /> : <>
         <div className="split">
           <section className="card">
             <h2>Admin access</h2>
@@ -190,6 +198,7 @@ export default function SuperAdmin() {
             </div>
           )) : <p className="sm mut" style={{ marginTop: 14 }}>No admin actions recorded yet.</p>}
         </section>
+        </>}
       </div>
     </div>
   );

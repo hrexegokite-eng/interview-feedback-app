@@ -1,6 +1,6 @@
 import { sql } from '@/lib/db';
 import { bad } from '@/lib/auth';
-import { validateEvaluation } from '@/lib/interview-feedback';
+import { validateCustomEvaluation, validateEvaluation } from '@/lib/interview-feedback';
 
 const TOKEN = /^[a-f0-9]{32}$/;
 
@@ -9,7 +9,7 @@ export async function GET(_req, { params }) {
   const { token } = await params;
   if (!TOKEN.test(token)) return bad('Link not found.', 404);
   const rows = await sql`
-    select r.round_no, r.name as round_name, r.interviewer, r.scheduled_at, r.decision, r.note, r.evaluation,
+    select r.round_no, r.name as round_name, r.interviewer, r.scheduled_at, r.decision, r.note, r.evaluation, r.form_snapshot,
            r.meet_link, r.cv_url, r.cv_filename,
            c.name as candidate, c.role
     from rounds r join candidates c on c.id = r.candidate_id
@@ -26,11 +26,14 @@ export async function POST(req, { params }) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return bad('Invalid feedback.');
   const { decision, note = '', evaluation } = body;
   if (!['proceed', 'reject'].includes(decision)) return bad('Choose Proceed or Reject.');
-  const validEvaluation = validateEvaluation(evaluation);
+  const rows = await sql`select form_snapshot from rounds where token = ${token}`;
+  if (!rows.length) return bad('Link not found.', 404);
+  const formSnapshot = rows[0].form_snapshot;
+  const validEvaluation = formSnapshot
+    ? validateCustomEvaluation(evaluation, formSnapshot.questions)
+    : validateEvaluation(evaluation);
   if (!validEvaluation) return bad('Complete all required interview evaluation fields with valid values.');
   if (typeof note !== 'string' || note.length > 1500) return bad('Comments must be 1500 characters or fewer.');
-  const exists = await sql`select 1 from rounds where token = ${token}`;
-  if (!exists.length) return bad('Link not found.', 404);
   await sql`
     with r as (
       update rounds
