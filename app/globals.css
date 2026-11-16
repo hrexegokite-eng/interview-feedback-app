@@ -718,7 +718,7 @@ select { cursor: pointer; }
   opacity: 0;
   transition: opacity .22s var(--ease-std), transform .28s var(--ease);
   pointer-events: none;
-  z-index: 99;
+  z-index: 10000;
   box-shadow: var(--sh-md);
   max-width: min(560px, calc(100vw - 32px));
   text-align: center;

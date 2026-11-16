@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { Icon, Av, Logo, api, fmt, rel, rname, toISO, LBL, COL } from '@/components/ui';
 import { LANGUAGES, PRODUCTS } from '@/lib/interview-feedback';
@@ -503,8 +504,11 @@ export default function Admin() {
           </>
         )}
 
-        <div className={'toast' + (toast ? ' on' : '')}>{toast}</div>
       </div>
+      {toast && typeof document !== 'undefined' && createPortal(
+        <div className="toast on" role="status" aria-live="polite">{toast}</div>,
+        document.body
+      )}
     </div>
   );
 }
