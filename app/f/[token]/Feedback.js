@@ -149,6 +149,20 @@ export default function Feedback({ token }) {
   if (!d) return <FeedbackSkeleton />;
 
   const round = 'Round ' + d.round_no + (d.round_name && d.round_name !== 'Round ' + d.round_no ? ' · ' + d.round_name : '');
+  const requiredValues = [
+    evaluation.proposedDesignation?.trim(),
+    ...LANGUAGES.map((language) => evaluation.languageRatings?.[language]),
+    evaluation.communicationFluency,
+    ...PRODUCTS.map((product) => evaluation.productKnowledge?.[product]),
+    evaluation.otherProducts?.trim(),
+    evaluation.priorB2BExperience,
+    Number.isFinite(Number(evaluation.yearsPriorExperience)) && evaluation.yearsPriorExperience !== '' && Number(evaluation.yearsPriorExperience) >= 0 && Number(evaluation.yearsPriorExperience) <= 60,
+    evaluation.jobNeediness,
+    evaluation.attitudePersonality?.trim(),
+    pick,
+  ];
+  const completedFields = requiredValues.filter(Boolean).length;
+  const completionPercent = Math.round((completedFields / requiredValues.length) * 100);
 
   const isSubmitted = done || Boolean(d.decision);
 
@@ -187,42 +201,26 @@ export default function Feedback({ token }) {
   }
 
   return (
-    <div ref={formRef} className="narrow" style={{ maxWidth: 760, margin: '0 auto', paddingTop: 8 }}>
-      {head}
+    <div ref={formRef} className="narrow feedback-page" style={{ maxWidth: 820, margin: '0 auto', paddingTop: 8 }}>
+      <div className="feedback-page-head">
+        {head}
+        <div className="feedback-intro">
+          <div className="feedback-eyebrow"><span /> INTERVIEWER WORKSPACE</div>
+          <h1>Interview feedback</h1>
+          <p>Share a thoughtful assessment to help the team make a confident decision.</p>
+        </div>
+      </div>
 
       {/* Candidate Profile Summary */}
-      <div
-        className="card"
-        style={{
-          marginTop: 12,
-          padding: '16px 18px',
-          borderRadius: 12,
-          border: '1px solid var(--line)',
-          background: 'var(--card)',
-        }}
-      >
+      <div className="card feedback-candidate-card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Av name={d.candidate} small style={{ width: 38, height: 38, fontSize: 14 }} />
+          <Av name={d.candidate} small />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--ink)' }}>
-                {d.candidate}
-              </span>
-              <span
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  padding: '1px 7px',
-                  borderRadius: 4,
-                  background: 'var(--soft)',
-                  color: 'var(--mut)',
-                  border: '1px solid var(--line)',
-                }}
-              >
-                {round}
-              </span>
+              <span className="feedback-candidate-name">{d.candidate}</span>
+              <span className="feedback-round-pill">{round}</span>
             </div>
-            <div style={{ fontSize: 12.5, color: 'var(--mut)', marginTop: 2 }}>
+            <div className="feedback-candidate-meta">
               {[d.role || 'Candidate', d.interviewer ? 'by ' + d.interviewer : '', d.scheduled_at ? fmt(d.scheduled_at) : ''].filter(Boolean).join(' · ')}
             </div>
           </div>
@@ -230,47 +228,14 @@ export default function Feedback({ token }) {
 
         {/* Action Links (Meet & CV) */}
         {(d.meet_link || d.cv_url) && (
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              marginTop: 12,
-              paddingTop: 12,
-              borderTop: '1px solid var(--line)',
-              fontSize: 12.5,
-            }}
-          >
+          <div className="feedback-resources">
             {d.meet_link && (
-              <a
-                href={d.meet_link}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  color: 'var(--acc)',
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                }}
-              >
+              <a href={d.meet_link} target="_blank" rel="noreferrer" className="feedback-resource-link">
                 <Icon n="video" s={13} /> Join Meet ↗
               </a>
             )}
             {d.cv_url && (
-              <a
-                href={d.cv_url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 5,
-                  color: 'var(--ink)',
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                }}
-              >
+              <a href={d.cv_url} target="_blank" rel="noreferrer" className="feedback-resource-link">
                 <Icon n="file" s={13} /> {d.cv_filename || 'View CV'} ↗
               </a>
             )}
@@ -278,7 +243,21 @@ export default function Feedback({ token }) {
         )}
       </div>
 
-      <div className="card evaluation-card">
+      <div className="feedback-progress-card" aria-label={`${completedFields} of ${requiredValues.length} required fields complete`}>
+        <div className="feedback-progress-copy">
+          <span className="feedback-progress-title">Assessment progress</span>
+          <span className="feedback-progress-count">{completedFields} <span>/ {requiredValues.length} complete</span></span>
+        </div>
+        <div className="feedback-progress-track" role="progressbar" aria-valuenow={completionPercent} aria-valuemin={0} aria-valuemax={100} aria-label="Required fields completed">
+          <span style={{ width: `${completionPercent}%` }} />
+        </div>
+        <nav className="feedback-section-nav" aria-label="Feedback form sections">
+          <a href="#feedback-assessment">Assessment</a>
+          <a href="#feedback-recommendation">Recommendation</a>
+        </nav>
+      </div>
+
+      <div className="card evaluation-card" id="feedback-assessment">
         <div className="evaluation-heading">
           <div>
             <h2>Interview evaluation</h2>
@@ -363,7 +342,9 @@ export default function Feedback({ token }) {
 
       {/* Decision Card */}
       <div
+        id="feedback-recommendation"
         className="card"
+        data-feedback-decision
         style={{
           marginTop: 14,
           padding: '22px 20px 18px',
@@ -436,33 +417,19 @@ export default function Feedback({ token }) {
           />
         </div>
 
-        <button
-          type="button"
-          className="btn full primary"
-          disabled={!pick || busy}
-          onClick={submit}
-          style={{
-            marginTop: 22,
-            padding: '13px 18px',
-            fontSize: 14,
-            fontWeight: 700,
-            borderRadius: 12,
-            letterSpacing: '0.01em',
-            boxShadow: '0 10px 24px rgba(21, 180, 166, 0.22)',
-          }}
-        >
-          {busy ? (
-            <><span className="btn-spinner" aria-hidden="true" />Saving…</>
-          ) : pick ? (
-            `Submit · ${LBL[pick]}`
-          ) : (
-            'Select a recommendation'
-          )}
-        </button>
-
-        <p className={'sm ' + (msg ? 'err' : 'mut')} style={{ textAlign: 'center', marginTop: 12, fontSize: 11.5 }}>
+        <p className={'sm ' + (msg ? 'err' : 'mut') + ' feedback-submit-hint'} style={{ textAlign: 'center', marginTop: 12, fontSize: 11.5 }}>
           {msg || (pick ? 'Press ⌘/Ctrl + Enter to submit' : 'Choose Proceed or Reject')}
         </p>
+      </div>
+      <div className="feedback-submit-spacer" aria-hidden="true" />
+      <div className="feedback-submit-dock">
+        <div className="feedback-dock-progress">
+          <span className="feedback-dock-count">{completedFields}/{requiredValues.length}</span>
+          <span>{msg || (pick ? `${LBL[pick]} selected` : 'Choose a recommendation')}</span>
+        </div>
+        <button type="button" className="btn primary feedback-submit-button" disabled={!pick || busy} onClick={submit}>
+          {busy ? <><span className="btn-spinner" aria-hidden="true" />Saving…</> : pick ? <>Submit feedback <span>· {LBL[pick]}</span></> : 'Select a recommendation'}
+        </button>
       </div>
     </div>
   );
