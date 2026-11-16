@@ -640,7 +640,7 @@ function Profile({ c, close, reload, flash, move, remove }) {
           <button className="btn ghost" onClick={() => setEditingCandidate((value) => !value)}>
             {editingCandidate ? 'Cancel candidate edit' : 'Edit candidate'}
           </button>
-          {c.status !== 'complete' && R.length > 0 && !pend && (
+          {c.status !== 'complete' && R.length > 0 && (
             <button className="btn primary" style={{ marginLeft: 8 }} onClick={() => move(c.id, 'complete')}>
               Complete
             </button>
