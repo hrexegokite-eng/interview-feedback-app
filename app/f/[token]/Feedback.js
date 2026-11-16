@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Icon, Av, Logo, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
+import { Icon, Av, Logo, LoadingState, api, fmt, LBL, ICO, COL, DESC } from '@/components/ui';
 import { emptyEvaluation, JOB_NEEDINESS, LANGUAGES, PRODUCTS, RATINGS, validateEvaluation } from '@/lib/interview-feedback';
 
 function playSuccessSound() {
@@ -25,40 +25,6 @@ function playSuccessSound() {
     });
     setTimeout(() => ctx.close(), 1000);
   } catch (_) {}
-}
-
-function FeedbackSkeleton() {
-  return (
-    <div className="narrow">
-      <div className="brand" style={{ justifyContent: 'space-between', marginBottom: 28, alignItems: 'center' }}>
-        <div className="skeleton" style={{ width: 120, height: 44, borderRadius: 10 }} />
-        <div className="skeleton sk-line" style={{ width: 100, height: 12 }} />
-      </div>
-      <div className="sk-card" style={{ marginTop: 16, marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 16 }}>
-          <div className="skeleton sk-circle" style={{ width: 44, height: 44 }} />
-          <div style={{ flex: 1 }}>
-            <div className="skeleton sk-line" style={{ width: '40%', height: 16, marginBottom: 8 }} />
-            <div className="skeleton sk-line" style={{ width: '25%', height: 12 }} />
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <div className="skeleton sk-line" style={{ width: 90, height: 24, borderRadius: 99 }} />
-          <div className="skeleton sk-line" style={{ width: 130, height: 24, borderRadius: 99 }} />
-        </div>
-      </div>
-      <div className="sk-card">
-        <div className="skeleton sk-line" style={{ width: '45%', height: 18, marginBottom: 18 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="skeleton" style={{ height: 58, borderRadius: 12 }} />
-          ))}
-        </div>
-        <div className="skeleton" style={{ height: 110, borderRadius: 10, marginBottom: 16 }} />
-        <div className="skeleton" style={{ height: 46, borderRadius: 12 }} />
-      </div>
-    </div>
-  );
 }
 
 export default function Feedback({ token }) {
@@ -146,7 +112,7 @@ export default function Feedback({ token }) {
   );
 
   if (err) return <div className="narrow"><div className="center"><Logo h={64} style={{ margin: '0 auto 22px' }} /><h1>Link not found</h1><p className="mut" style={{ marginTop: 8 }}>This feedback link is invalid or has been removed.</p></div></div>;
-  if (!d) return <FeedbackSkeleton />;
+  if (!d) return <LoadingState label="Loading interview feedback form" />;
 
   const round = 'Round ' + d.round_no + (d.round_name && d.round_name !== 'Round ' + d.round_no ? ' · ' + d.round_name : '');
   const requiredValues = [

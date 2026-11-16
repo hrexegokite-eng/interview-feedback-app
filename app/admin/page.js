@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Icon, Av, Logo, api, fmt, rel, rname, toISO, LBL, COL } from '@/components/ui';
+import { Icon, Av, Logo, LoadingState, api, fmt, rel, rname, toISO, LBL, COL } from '@/components/ui';
 import { LANGUAGES, PRODUCTS } from '@/lib/interview-feedback';
 
 const pending = (c) => c.rounds.find((r) => !r.decision);
@@ -51,59 +51,6 @@ const localDateTime = (value) => {
 async function copy(t) { try { await navigator.clipboard.writeText(t); return true; } catch { return false; } }
 const Empty = ({ t, s }) => <div className="empty"><Icon n="inbox" s={30} /><p><b>{t}</b></p><p className="sm">{s}</p></div>;
 const Spinner = () => <span className="btn-spinner" aria-hidden="true" />;
-
-function SkeletonRow() {
-  return (
-    <div className="sk-row">
-      <div className="skeleton sk-circle" style={{ width: 32, height: 32, flex: 'none' }} />
-      <div style={{ flex: 1 }}>
-        <div className="skeleton sk-line" style={{ width: '45%', marginBottom: 7 }} />
-        <div className="skeleton sk-line" style={{ width: '70%', height: 10 }} />
-      </div>
-      <div className="skeleton sk-line" style={{ width: 64, height: 28, borderRadius: 8 }} />
-    </div>
-  );
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="wide" style={{ paddingTop: 28 }}>
-      {/* Bar skeleton */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 26, padding: '12px 18px', background: 'var(--card)', borderRadius: 16, border: '1px solid var(--line)' }}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <div className="skeleton" style={{ width: 44, height: 44, borderRadius: 10 }} />
-          <div className="skeleton sk-line" style={{ width: 140, height: 14 }} />
-        </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <div className="skeleton" style={{ width: 80, height: 28, borderRadius: 8 }} />
-          <div className="skeleton" style={{ width: 80, height: 28, borderRadius: 8 }} />
-        </div>
-      </div>
-      {/* Stats skeleton */}
-      <div className="stats" style={{ marginBottom: 4 }}>
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="sk-card">
-            <div className="skeleton sk-line" style={{ width: '30%', height: 28, marginBottom: 10 }} />
-            <div className="skeleton sk-line" style={{ width: '65%', height: 10 }} />
-          </div>
-        ))}
-      </div>
-      {/* Tab skeleton */}
-      <div className="skeleton" style={{ width: 280, height: 38, borderRadius: 12, margin: '20px 0 16px' }} />
-      {/* Content skeleton */}
-      <div className="split">
-        <div className="sk-card">
-          <div className="skeleton sk-line" style={{ width: '55%', marginBottom: 18 }} />
-          {[...Array(5)].map((_, i) => <div key={i} className="skeleton sk-line" style={{ height: 38, marginBottom: 12, borderRadius: 10 }} />)}
-        </div>
-        <div className="sk-card">
-          <div className="skeleton sk-line" style={{ width: '40%', marginBottom: 14 }} />
-          {[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function DelBtn({ onConfirm }) {
   const [arm, setArm] = useState(false);
@@ -397,7 +344,7 @@ export default function Admin() {
     );
   }
 
-  if (!me || !cands) return <LoadingSkeleton />;
+  if (!me || !cands) return <LoadingState label="Loading hiring pipeline" />;
 
   const invalidRange = dateFilter === 'range' && dateFrom && dateTo && dateFrom > dateTo;
   const dateFilteredCandidates = cands.filter((candidate) => {

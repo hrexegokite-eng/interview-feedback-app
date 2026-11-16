@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { LoadingState } from '@/components/ui';
 import Feedback from './Feedback';
 
 async function Inner({ params }) {
@@ -8,7 +9,7 @@ async function Inner({ params }) {
 
 export default function Page({ params }) {
   return (
-    <Suspense fallback={<div className="narrow"><p className="mut center">Loading…</p></div>}>
+    <Suspense fallback={<LoadingState label="Opening interview feedback" />}>
       <Inner params={params} />
     </Suspense>
   );

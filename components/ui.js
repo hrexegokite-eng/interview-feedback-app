@@ -45,9 +45,9 @@ export function Logo({ h = 48, style }) {
   return <img src="/logo.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
-export function LoadingState({ label = 'Preparing your workspace' }) {
+export function LoadingState({ label = 'Preparing your workspace', compact = false }) {
   return (
-    <div className="loading-screen" role="status" aria-live="polite">
+    <div className={`loading-screen${compact ? ' loading-compact' : ''}`} role="status" aria-live="polite">
       <div className="loading-emblem">
         <span className="loading-orbit loading-orbit-one" />
         <span className="loading-orbit loading-orbit-two" />

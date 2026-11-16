@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Logo, api } from '@/components/ui';
+import { Logo, LoadingState, api } from '@/components/ui';
 import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS, EXPERIENCE_SCALE } from '../fields';
 
 const INITIAL_FORM = {
@@ -121,7 +121,7 @@ export default function EmployeeExitForm() {
 
         <main className="exit-public-content">
           {loading ? (
-            <div className="center"><p className="mut">Loading form…</p></div>
+            <LoadingState compact label="Loading employee exit form" />
           ) : unavailable ? (
             <div className="center" role="alert">
               <h1>Form unavailable</h1>

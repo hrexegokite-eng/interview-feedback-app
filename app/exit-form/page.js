@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Logo, api } from '@/components/ui';
+import { Logo, LoadingState, api } from '@/components/ui';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { EMPLOYEE_FIELDS, EXPERIENCE_AREAS, EXPERIENCE_SCALE, FEEDBACK_FIELDS } from './fields';
@@ -251,7 +251,7 @@ export default function ExitFormDashboard() {
 
           <h2 className="exit-section-title">Forms and submissions</h2>
           {loading ? (
-            <p className="mut">Loading forms…</p>
+            <LoadingState compact label="Loading exit forms" />
           ) : !forms.length ? (
             <p className="mut">No exit forms yet. Create a link to send the questionnaire to an employee.</p>
           ) : (

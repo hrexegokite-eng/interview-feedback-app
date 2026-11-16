@@ -1995,6 +1995,29 @@ a:focus-visible,
   animation: loading-progress 1.35s ease-in-out infinite;
 }
 
+.loading-compact {
+  display: flex;
+  min-height: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 18px 0;
+  background: transparent;
+}
+
+.loading-compact .loading-emblem {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 13px;
+}
+
+.loading-compact .loading-emblem > .logo { height: 23px !important; }
+.loading-compact .loading-orbit-one { inset: -4px; border-radius: 16px; }
+.loading-compact .loading-orbit-two { inset: -7px; border-radius: 19px; }
+.loading-compact .loading-label { font-size: 12px; }
+.loading-compact .loading-track { width: 64px; flex: none; }
+
 @keyframes loading-spin { to { transform: rotate(360deg); } }
 @keyframes loading-breathe { 50% { transform: translateY(-3px); box-shadow: 0 20px 56px rgba(0, 0, 0, .28), 0 0 24px color-mix(in srgb, var(--acc) 12%, transparent); } }
 @keyframes loading-progress { from { transform: translateX(-115%); } to { transform: translateX(250%); } }

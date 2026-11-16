@@ -1,7 +1,7 @@
 'use client';
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Logo, Icon } from '@/components/ui';
+import { Logo, Icon, LoadingState } from '@/components/ui';
 
 function GoogleIcon() {
   return (
@@ -147,7 +147,7 @@ function LoginForm() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<div className="narrow"><p className="mut center">Loading…</p></div>}>
+    <Suspense fallback={<LoadingState label="Preparing sign in" />}>
       <LoginForm />
     </Suspense>
   );
