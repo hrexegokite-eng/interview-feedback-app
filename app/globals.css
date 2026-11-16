@@ -706,8 +706,9 @@ select { cursor: pointer; }
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
-  transform: translate(-50%, 24px) scale(.92);
+  top: calc(24px + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  transform: translate(-50%, -14px) scale(.96);
   background: var(--ink);
   color: var(--inv);
   padding: 10px 20px;
@@ -719,7 +720,8 @@ select { cursor: pointer; }
   pointer-events: none;
   z-index: 99;
   box-shadow: var(--sh-md);
-  white-space: nowrap;
+  max-width: min(560px, calc(100vw - 32px));
+  text-align: center;
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
 
