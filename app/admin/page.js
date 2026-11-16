@@ -241,7 +241,7 @@ export default function Admin() {
         setQ('');
         setProf(null);
       }
-      flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Candidate scheduled for onboarding' : 'Moved to ' + LBL[status]);
+      flash(status === 'proceed' ? 'Moved to Shortlisted for next round' : status === 'complete' ? 'Moved to Ready for onboarding' : 'Moved to ' + LBL[status]);
     }
     catch (e) { flash(e.message); }
   }
@@ -371,7 +371,7 @@ export default function Admin() {
     ['Rejected', cnt('reject'), 'var(--no)', 'other', 'reject'],
     ['Selected', cnt('proceed'), 'var(--ok)', 'proceed', 'all'],
   ];
-  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Scheduled for onboarding', cnt('complete')]];
+  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Ready for onboarding', cnt('complete')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
   const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);
@@ -503,7 +503,7 @@ export default function Admin() {
                     </div>
                   </div>
                 );
-              }) : <Empty t={s ? 'No matches' : tab === 'complete' ? 'No candidates scheduled for onboarding' : 'Nothing here yet'} s={s ? 'Try a different search.' : tab === 'complete' ? 'Candidates appear here after all rounds are submitted and marked complete.' : 'Candidates appear once an interviewer submits feedback.'} />}
+              }) : <Empty t={s ? 'No matches' : tab === 'complete' ? 'No candidates ready for onboarding' : 'Nothing here yet'} s={s ? 'Try a different search.' : tab === 'complete' ? 'Shortlisted candidates appear here after all interview rounds are complete and marked ready.' : 'Candidates appear once an interviewer submits feedback.'} />}
             </div>
           </>
         )}
@@ -815,6 +815,11 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
           )}
         </div>
         <div className="chips" style={{ marginTop: 18 }}>
+          {c.status === 'proceed' && R.length > 0 && !pend && (
+            <button className="btn primary" onClick={() => move(c.id, 'complete')}>
+              Mark ready for onboarding
+            </button>
+          )}
           {c.status !== 'complete' && !pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
           <span style={{ marginLeft: 'auto' }}><DelBtn onConfirm={() => remove(c.id)} /></span>
         </div>

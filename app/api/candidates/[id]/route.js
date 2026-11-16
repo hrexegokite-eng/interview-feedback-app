@@ -14,6 +14,19 @@ export async function PATCH(req, { params }) {
 
   if (Object.hasOwn(body, 'status')) {
     if (!['proceed', 'hold', 'reject', 'complete'].includes(body.status)) return bad('Invalid request.');
+    if (body.status === 'complete') {
+      const rows = await sql`
+        update candidates c
+        set status = 'complete', updated_at = now()
+        where c.id = ${id}::uuid and c.status = 'proceed'
+          and exists (select 1 from rounds r where r.candidate_id = c.id)
+          and not exists (select 1 from rounds r where r.candidate_id = c.id and r.decision is null)
+        returning c.id
+      `;
+      if (!rows.length) return bad('Only shortlisted candidates with all interview rounds completed can be marked ready for onboarding.', 409);
+      await logAdminAction(admin.email, 'candidate.status_changed', id, { status: body.status });
+      return Response.json({ ok: true });
+    }
     const rows = await sql`
       update candidates set status = ${body.status}, updated_at = now()
       where id = ${id}::uuid returning id`;
