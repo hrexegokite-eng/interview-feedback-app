@@ -448,14 +448,29 @@ export default function Admin() {
               {list.length ? list.map((c) => {
                 const d = lastDone(c);
                 return (
-                  <div key={c.id} className="row" data-id={c.id} style={{ alignItems: 'flex-start' }} onClick={() => open(c.id)}>
+                  <div
+                    key={c.id}
+                    className="row"
+                    data-id={c.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View full details for ${c.name}`}
+                    title="Click to view full candidate details"
+                    style={{ alignItems: 'flex-start' }}
+                    onClick={() => open(c.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        open(c.id);
+                      }
+                    }}
+                  >
                     <Av name={c.name} small />
                     <div className="grow">
                       <b>{c.name}</b> <span className={'badge ' + c.status} style={{ marginLeft: 6 }}>{LBL[c.status]}</span>
                       <div className="sm mut">{[c.role, c.rounds.length + (c.rounds.length > 1 ? ' rounds' : ' round'), d.interviewer ? 'by ' + d.interviewer : '', rel(d.submitted_at)].filter(Boolean).join(' · ')}</div>
-                      {d.note && <div className="note">{d.note}</div>}
                     </div>
-                    <div className="acts" onClick={(e) => e.stopPropagation()}>
+                    <div className="acts" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                       {c.status !== 'complete' && <button className="btn ghost" onClick={() => open(c.id)}><Icon n="plus" s={14} />Next round</button>}
                       {c.status !== 'complete' && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Shortlisted for next round' : LBL[k]}</button>)}
                       <DelBtn onConfirm={() => remove(c.id)} />
