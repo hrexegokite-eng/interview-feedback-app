@@ -15,15 +15,26 @@ export async function PATCH(req, { params }) {
   if (Object.hasOwn(body, 'status')) {
     if (!['proceed', 'hold', 'reject', 'complete'].includes(body.status)) return bad('Invalid request.');
     if (body.status === 'complete') {
-      const rows = await sql`
-        update candidates c
-        set status = 'complete', updated_at = now()
-        where c.id = ${id}::uuid and c.status = 'proceed'
-          and exists (select 1 from rounds r where r.candidate_id = c.id)
-          and not exists (select 1 from rounds r where r.candidate_id = c.id and r.decision is null)
-        returning c.id
+      const eligibility = await sql`
+        select c.status, count(r.id)::int as round_count,
+          count(r.id) filter (where r.decision is null)::int as pending_rounds
+        from candidates c
+        left join rounds r on r.candidate_id = c.id
+        where c.id = ${id}::uuid
+        group by c.id
       `;
-      if (!rows.length) return bad('Only shortlisted candidates with all interview rounds completed can be marked ready for onboarding.', 409);
+      if (!eligibility.length) return bad('Candidate not found.', 404);
+      if (eligibility[0].status !== 'proceed') return bad('Shortlist the candidate before marking them ready for onboarding.', 409);
+      if (!eligibility[0].round_count) return bad('Schedule at least one interview round before onboarding.', 409);
+      if (eligibility[0].pending_rounds) return bad('Complete all interview rounds before marking the candidate ready for onboarding.', 409);
+
+      const rows = await sql`
+        update candidates
+        set status = 'complete', updated_at = now()
+        where id = ${id}::uuid and status = 'proceed'
+        returning id
+      `;
+      if (!rows.length) return bad('Candidate status changed. Refresh and try again.', 409);
       await logAdminAction(admin.email, 'candidate.status_changed', id, { status: body.status });
       return Response.json({ ok: true });
     }

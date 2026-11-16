@@ -626,6 +626,7 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
   const [editingRound, setEditingRound] = useState(null);
   const [roundForm, setRoundForm] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [movingToOnboarding, setMovingToOnboarding] = useState(false);
   const on = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function saveCandidate(e) {
@@ -687,6 +688,12 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
       setMade(l); copy(l); flash('Round ' + r.round_no + ' scheduled'); reload();
     } catch (x) { flash(x.message); }
     setBusy(false);
+  }
+
+  async function markReadyForOnboarding() {
+    setMovingToOnboarding(true);
+    await move(c.id, 'complete');
+    setMovingToOnboarding(false);
   }
 
   return (
@@ -816,8 +823,8 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
         </div>
         <div className="chips" style={{ marginTop: 18 }}>
           {c.status === 'proceed' && R.length > 0 && !pend && (
-            <button className="btn primary" onClick={() => move(c.id, 'complete')}>
-              Mark ready for onboarding
+            <button className="btn primary" disabled={movingToOnboarding} onClick={markReadyForOnboarding}>
+              {movingToOnboarding ? <><Spinner />Moving…</> : 'Mark ready for onboarding'}
             </button>
           )}
           {c.status !== 'complete' && !pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
