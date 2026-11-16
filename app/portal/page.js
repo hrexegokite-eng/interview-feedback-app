@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Logo, Av, Icon, api } from '@/components/ui';
+import { Logo, Av, Icon, LoadingState, api } from '@/components/ui';
 
 export default function Portal() {
   const router = useRouter();
@@ -34,12 +34,7 @@ export default function Portal() {
   }
 
   if (loading) {
-    return (
-      <div className="wide center" style={{ paddingTop: 100 }}>
-        <Logo h={60} style={{ margin: '0 auto 24px' }} />
-        <p className="mut">Loading workspace modules…</p>
-      </div>
-    );
+    return <LoadingState label="Loading workspace modules" />;
   }
 
   const displayName = me?.name || me?.email?.split('@')[0] || 'Admin';

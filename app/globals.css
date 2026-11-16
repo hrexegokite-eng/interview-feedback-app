@@ -1698,3 +1698,67 @@ a:focus-visible,
   .dashboard-stat { min-height: 118px; gap: 9px; }
   .dashboard-stat-hint { font-size: 10px; }
 }
+
+.loading-screen {
+  display: grid;
+  min-height: 100svh;
+  align-content: center;
+  justify-items: center;
+  gap: 17px;
+  padding: 28px;
+  background:
+    radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--acc) 10%, transparent), transparent 22rem),
+    var(--bg);
+}
+
+.loading-emblem {
+  position: relative;
+  display: grid;
+  width: 118px;
+  height: 118px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line));
+  border-radius: 32px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card) 86%, var(--accb)), var(--card));
+  box-shadow: 0 16px 48px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255,255,255,.06);
+  animation: loading-breathe 2.2s ease-in-out infinite;
+}
+
+.loading-emblem > .logo { position: relative; z-index: 1; }
+.loading-orbit { position: absolute; inset: -8px; border: 1px solid transparent; border-radius: 38px; }
+.loading-orbit-one {
+  border-top-color: color-mix(in srgb, var(--acc) 85%, white);
+  border-right-color: color-mix(in srgb, var(--acc) 28%, transparent);
+  animation: loading-spin 1.8s linear infinite;
+}
+
+.loading-orbit-two {
+  inset: -15px;
+  border-radius: 44px;
+  border-bottom-color: color-mix(in srgb, var(--acc2) 65%, transparent);
+  animation: loading-spin 2.8s linear infinite reverse;
+}
+
+.loading-label { color: var(--ink2); font-size: 13px; font-weight: 500; letter-spacing: .01em; }
+.loading-track { width: 132px; height: 3px; overflow: hidden; border-radius: 99px; background: var(--line); }
+.loading-track > span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--acc), var(--acc2));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--acc) 55%, transparent);
+  animation: loading-progress 1.35s ease-in-out infinite;
+}
+
+@keyframes loading-spin { to { transform: rotate(360deg); } }
+@keyframes loading-breathe { 50% { transform: translateY(-3px); box-shadow: 0 20px 56px rgba(0, 0, 0, .28), 0 0 24px color-mix(in srgb, var(--acc) 12%, transparent); } }
+@keyframes loading-progress { from { transform: translateX(-115%); } to { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-emblem,
+  .loading-orbit-one,
+  .loading-orbit-two,
+  .loading-track > span { animation: none; }
+  .loading-track > span { width: 100%; opacity: .7; }
+}

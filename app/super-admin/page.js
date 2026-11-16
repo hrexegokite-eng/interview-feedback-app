@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Av, Icon, Logo, api, fmt } from '@/components/ui';
+import { Av, Icon, LoadingState, Logo, api, fmt } from '@/components/ui';
 
 const MODULE_NAMES = {
   'interview-feedback': 'Interview Feedback',
@@ -92,7 +92,7 @@ export default function SuperAdmin() {
   }
 
   if (loading) {
-    return <div className="wide center" style={{ paddingTop: 100 }}><Logo h={60} /><p className="mut">Loading super admin panel…</p></div>;
+    return <LoadingState label="Loading super admin panel" />;
   }
 
   return (

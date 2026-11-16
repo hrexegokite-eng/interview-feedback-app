@@ -44,6 +44,20 @@ export function Logo({ h = 48, style }) {
   return <img src="/logo.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
+export function LoadingState({ label = 'Preparing your workspace' }) {
+  return (
+    <div className="loading-screen" role="status" aria-live="polite">
+      <div className="loading-emblem">
+        <span className="loading-orbit loading-orbit-one" />
+        <span className="loading-orbit loading-orbit-two" />
+        <Logo h={54} />
+      </div>
+      <p className="loading-label">{label}</p>
+      <span className="loading-track"><span /></span>
+    </div>
+  );
+}
+
 export const LBL = { proceed: 'Proceed', hold: 'Hold', reject: 'Rejected', scheduled: 'Awaiting feedback', complete: 'Scheduled for onboarding' };
 export const ICO = { proceed: 'check', hold: 'pause', reject: 'x' };
 export const COL = { scheduled: ['acc', 'accb'], proceed: ['ok', 'okb'], hold: ['hd', 'hdb'], reject: ['no', 'nob'] };
