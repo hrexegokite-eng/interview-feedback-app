@@ -5,6 +5,7 @@ import { api, fmt } from '@/components/ui';
 const TYPES = [
   ['short_text', 'Short text'],
   ['long_text', 'Long text'],
+  ['number', 'Number'],
   ['rating', 'Rating scale (1–5)'],
   ['dropdown', 'Dropdown'],
   ['yes_no', 'Yes / No'],
@@ -51,7 +52,7 @@ function blankB2CForm() {
       question('Auxiliary', 'rating', null, 'Product Knowledge Inputs'),
       question('Other Products (enter None if not applicable)', 'short_text', null, 'Product Knowledge Inputs'),
       question('Prior B2C Experience', 'dropdown', ['None', 'Yes', 'No'], 'Experience and Selection'),
-      question('Years of prior Experience', 'short_text', null, 'Experience and Selection'),
+      question('Years of prior Experience', 'number', null, 'Experience and Selection'),
       question('Job Neediness', 'dropdown', ['None', 'High', 'Medium', 'Low'], 'Experience and Selection'),
       question('Attitude and Personality', 'long_text', null, 'Attitude and Personality'),
     ],

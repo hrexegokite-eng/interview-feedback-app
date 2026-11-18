@@ -128,6 +128,8 @@ export default function Feedback({ token }) {
             <option value="yes">Yes</option>
             <option value="no">No</option>
           </select>
+        ) : question.type === 'number' ? (
+          <input {...props} type="number" min="0" max="60" step="0.1" />
         ) : (
           <input {...props} type="text" maxLength={2000} />
         )}
@@ -136,9 +138,19 @@ export default function Feedback({ token }) {
   }
 
   function renderGroupedCustomQuestions(questions) {
+    const isB2C = d.form_snapshot?.name?.trim().toLowerCase() === 'b2c';
+    const languageLabels = ['English', 'Hindi', 'Tamil', 'Malayalam', 'Bangla', 'Marathi'];
+    const productLabels = ['Global Visa', 'Holidays', 'GCC Visa', 'Ticketing', 'Auxiliary'];
     const sections = [];
     questions.forEach((question) => {
-      const sectionName = question.section || '';
+      let sectionName = question.section || '';
+      if (isB2C && !sectionName) {
+        if (languageLabels.includes(question.label)) sectionName = 'Language Skill Ratings';
+        else if (question.label === 'Communication Fluency') sectionName = 'Communication Fluency';
+        else if (productLabels.includes(question.label) || question.label.startsWith('Other Products')) sectionName = 'Product Knowledge Inputs';
+        else if (['Prior B2C Experience', 'Prior B2B Experience', 'Years of prior Experience', 'Job Neediness'].includes(question.label)) sectionName = 'Experience and Selection';
+        else if (question.label === 'Attitude and Personality') sectionName = 'Attitude and Personality';
+      }
       let section = sections.find((item) => item.name === sectionName);
       if (!section) {
         section = { name: sectionName, questions: [] };
