@@ -22,6 +22,41 @@ function blankForm() {
   };
 }
 
+function blankB2CForm() {
+  const question = (label, type = 'short_text', options) => ({
+    id: questionId(),
+    label,
+    type,
+    required: true,
+    ...(options ? { options, optionsText: options.join('\n') } : {}),
+  });
+
+  return {
+    id: '',
+    name: 'B2C',
+    questions: [
+      question('Proposed Designation'),
+      question('English', 'rating'),
+      question('Hindi', 'rating'),
+      question('Tamil', 'rating'),
+      question('Malayalam', 'rating'),
+      question('Bangla', 'rating'),
+      question('Marathi', 'rating'),
+      question('Communication Fluency', 'rating'),
+      question('Global Visa', 'rating'),
+      question('Holidays', 'rating'),
+      question('GCC Visa', 'rating'),
+      question('Ticketing', 'rating'),
+      question('Auxiliary', 'rating'),
+      question('Other Products (enter None if not applicable)'),
+      question('Prior B2C Experience', 'dropdown', ['None', 'Yes', 'No']),
+      question('Years of prior Experience'),
+      question('Job Neediness', 'dropdown', ['None', 'High', 'Medium', 'Low']),
+      question('Attitude and Personality', 'long_text'),
+    ],
+  };
+}
+
 export default function FeedbackForms() {
   const [forms, setForms] = useState([]);
   const [form, setForm] = useState(null);
@@ -121,9 +156,14 @@ export default function FeedbackForms() {
             <h2 style={{ marginBottom: 4 }}>BCU feedback forms</h2>
             <p className="sm mut">Create named forms for the BCU dropdown. Editing a form affects new interview links only.</p>
           </div>
-          <button className="btn primary" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankForm()); }}>
-            Create form
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <button className="btn ghost" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankB2CForm()); }}>
+              Create B2C form
+            </button>
+            <button className="btn primary" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankForm()); }}>
+              Create form
+            </button>
+          </div>
         </div>
 
         {forms.length ? forms.map((item) => (
