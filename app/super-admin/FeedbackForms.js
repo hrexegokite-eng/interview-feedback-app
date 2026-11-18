@@ -23,11 +23,12 @@ function blankForm() {
 }
 
 function blankB2CForm() {
-  const question = (label, type = 'short_text', options) => ({
+  const question = (label, type = 'short_text', options, section = '') => ({
     id: questionId(),
     label,
     type,
     required: true,
+    ...(section ? { section } : {}),
     ...(options ? { options, optionsText: options.join('\n') } : {}),
   });
 
@@ -35,24 +36,24 @@ function blankB2CForm() {
     id: '',
     name: 'B2C',
     questions: [
-      question('Proposed Designation'),
-      question('English', 'rating'),
-      question('Hindi', 'rating'),
-      question('Tamil', 'rating'),
-      question('Malayalam', 'rating'),
-      question('Bangla', 'rating'),
-      question('Marathi', 'rating'),
-      question('Communication Fluency', 'rating'),
-      question('Global Visa', 'rating'),
-      question('Holidays', 'rating'),
-      question('GCC Visa', 'rating'),
-      question('Ticketing', 'rating'),
-      question('Auxiliary', 'rating'),
-      question('Other Products (enter None if not applicable)'),
-      question('Prior B2C Experience', 'dropdown', ['None', 'Yes', 'No']),
-      question('Years of prior Experience'),
-      question('Job Neediness', 'dropdown', ['None', 'High', 'Medium', 'Low']),
-      question('Attitude and Personality', 'long_text'),
+      question('Proposed Designation', 'short_text', null, 'Candidate Details'),
+      question('English', 'rating', null, 'Language Skill Ratings'),
+      question('Hindi', 'rating', null, 'Language Skill Ratings'),
+      question('Tamil', 'rating', null, 'Language Skill Ratings'),
+      question('Malayalam', 'rating', null, 'Language Skill Ratings'),
+      question('Bangla', 'rating', null, 'Language Skill Ratings'),
+      question('Marathi', 'rating', null, 'Language Skill Ratings'),
+      question('Communication Fluency', 'rating', null, 'Communication Fluency'),
+      question('Global Visa', 'rating', null, 'Product Knowledge Inputs'),
+      question('Holidays', 'rating', null, 'Product Knowledge Inputs'),
+      question('GCC Visa', 'rating', null, 'Product Knowledge Inputs'),
+      question('Ticketing', 'rating', null, 'Product Knowledge Inputs'),
+      question('Auxiliary', 'rating', null, 'Product Knowledge Inputs'),
+      question('Other Products (enter None if not applicable)', 'short_text', null, 'Product Knowledge Inputs'),
+      question('Prior B2C Experience', 'dropdown', ['None', 'Yes', 'No'], 'Experience and Selection'),
+      question('Years of prior Experience', 'short_text', null, 'Experience and Selection'),
+      question('Job Neediness', 'dropdown', ['None', 'High', 'Medium', 'Low'], 'Experience and Selection'),
+      question('Attitude and Personality', 'long_text', null, 'Attitude and Personality'),
     ],
   };
 }

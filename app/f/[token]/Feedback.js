@@ -135,6 +135,32 @@ export default function Feedback({ token }) {
     );
   }
 
+  function renderGroupedCustomQuestions(questions) {
+    const sections = [];
+    questions.forEach((question) => {
+      const sectionName = question.section || '';
+      let section = sections.find((item) => item.name === sectionName);
+      if (!section) {
+        section = { name: sectionName, questions: [] };
+        sections.push(section);
+      }
+      section.questions.push(question);
+    });
+
+    return sections.map((section) => (
+      <div className="evaluation-section" key={section.name || 'candidate-details'}>
+        {section.name && section.name !== 'Candidate Details' && <h3>{section.name}</h3>}
+        <div className={
+          section.name === 'Language Skill Ratings' ? 'evaluation-grid languages'
+            : section.name === 'Product Knowledge Inputs' ? 'evaluation-grid products'
+              : 'evaluation-grid'
+        }>
+          {section.questions.map(renderCustomQuestion)}
+        </div>
+      </div>
+    ));
+  }
+
   function ratingField(id, label, value, onChange) {
     return (
       <div className="evaluation-field" key={id}>
@@ -280,11 +306,15 @@ export default function Feedback({ token }) {
         </div>
 
         {d.form_snapshot ? (
-          <div className="evaluation-section">
-            <div className="evaluation-grid">
-              {d.form_snapshot.questions.map(renderCustomQuestion)}
-            </div>
-          </div>
+          d.form_snapshot.questions.some((question) => question.section)
+            ? renderGroupedCustomQuestions(d.form_snapshot.questions)
+            : (
+              <div className="evaluation-section">
+                <div className="evaluation-grid">
+                  {d.form_snapshot.questions.map(renderCustomQuestion)}
+                </div>
+              </div>
+            )
         ) : <>
         <div className="evaluation-section">
           <div className="evaluation-field">
