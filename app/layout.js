@@ -11,7 +11,7 @@ export const metadata = {
   icons: {
     icon: '/kite-icon.png',
     shortcut: '/kite-icon.png',
-    apple: '/logo.png',
+    apple: '/kite-icon.png',
   },
 };
 
