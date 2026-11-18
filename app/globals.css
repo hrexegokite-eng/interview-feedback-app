@@ -436,6 +436,7 @@ select { cursor: pointer; }
 .evaluation-grid.languages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .evaluation-grid.products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .evaluation-field { min-width: 0; }
+.evaluation-field-full { grid-column: 1 / -1; }
 .evaluation-field label { font-size: 12px; }
 .evaluation-field input, .evaluation-field select { font-size: 13px; }
 .evaluation-field textarea { min-height: 86px; font-size: 13px; }

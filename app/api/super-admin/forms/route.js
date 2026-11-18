@@ -87,3 +87,28 @@ export async function PATCH(req) {
     throw error;
   }
 }
+
+export async function DELETE(req) {
+  const auth = await authorize();
+  if (auth.error) return auth.error;
+  const body = await req.json().catch(() => null);
+  const id = typeof body?.id === 'string' ? body.id : '';
+  if (!UUID.test(id)) return bad('Choose a valid form.');
+
+  const rows = await sql`
+    delete from feedback_forms f
+    where f.id = ${id}::uuid
+      and not exists (
+        select 1 from candidates c where c.feedback_form_id = f.id
+      )
+    returning f.id, f.name
+  `;
+  if (!rows.length) {
+    const forms = await sql`select id from feedback_forms where id = ${id}::uuid`;
+    if (!forms.length) return bad('Form not found.', 404);
+    return bad('Reassign all candidates using this form before deleting it.', 409);
+  }
+
+  await logAdminAction(auth.admin.email, 'feedback_form.deleted', id, { name: rows[0].name });
+  return Response.json({ ok: true });
+}

@@ -132,6 +132,22 @@ export default function FeedbackForms() {
     }
   }
 
+  async function remove(item) {
+    if (!window.confirm(`Permanently delete the "${item.name}" form? Existing interview links will remain unchanged.`)) return;
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      await api('/api/super-admin/forms', { method: 'DELETE', body: { id: item.id } });
+      setMessage(`${item.name} was deleted.`);
+      await load();
+    } catch (deleteError) {
+      setError(deleteError.message || 'Unable to delete feedback form.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function edit(item) {
     setError('');
     setMessage('');
@@ -180,6 +196,7 @@ export default function FeedbackForms() {
             <button className="btn ghost" disabled={busy} onClick={() => setActive(item, !item.active)}>
               {item.active ? 'Archive' : 'Restore'}
             </button>
+            <button className="btn ghost danger" disabled={busy} onClick={() => remove(item)}>Delete</button>
           </div>
         )) : <p className="sm mut" style={{ marginTop: 16 }}>No feedback forms yet. Create one to add named options to the BCU dropdown.</p>}
       </section>

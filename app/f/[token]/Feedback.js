@@ -108,13 +108,14 @@ export default function Feedback({ token }) {
     const props = { id: `question-${question.id}`, required, value, onChange: update };
 
     return (
-      <div className="evaluation-field" key={question.id}>
+      <div className={`evaluation-field${question.type === 'long_text' ? ' evaluation-field-full' : ''}`} key={question.id}>
         {label}
         {question.type === 'long_text' ? (
           <textarea {...props} rows={3} maxLength={2000} />
         ) : question.type === 'rating' ? (
           <select {...props}>
             <option value="">Select rating</option>
+            <option value="none">None</option>
             {RATINGS.map(([rating, description]) => <option key={rating} value={rating}>{description}</option>)}
           </select>
         ) : question.type === 'dropdown' ? (
