@@ -1969,7 +1969,37 @@ a:focus-visible,
   animation: loading-breathe 2.2s ease-in-out infinite;
 }
 
-.loading-emblem > .logo { position: relative; z-index: 1; }
+.loading-emblem::before,
+.loading-emblem::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.loading-emblem::before {
+  inset: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--acc) 28%, transparent), transparent 72%);
+  filter: blur(9px);
+  animation: loading-aura 2.4s ease-in-out infinite;
+}
+
+.loading-emblem::after {
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.1) 48%, transparent 66%);
+  opacity: 0;
+  animation: loading-sheen 3.2s ease-in-out infinite;
+}
+
+.loading-emblem > .logo {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--acc) 35%, transparent));
+  animation: loading-logo-lift 2.2s ease-in-out infinite;
+}
+
 .loading-orbit { position: absolute; inset: -8px; border: 1px solid transparent; border-radius: 38px; }
 .loading-orbit-one {
   border-top-color: color-mix(in srgb, var(--acc) 85%, white);
@@ -2022,9 +2052,19 @@ a:focus-visible,
 @keyframes loading-spin { to { transform: rotate(360deg); } }
 @keyframes loading-breathe { 50% { transform: translateY(-3px); box-shadow: 0 20px 56px rgba(0, 0, 0, .28), 0 0 24px color-mix(in srgb, var(--acc) 12%, transparent); } }
 @keyframes loading-progress { from { transform: translateX(-115%); } to { transform: translateX(250%); } }
+@keyframes loading-aura { 50% { opacity: .8; transform: scale(1.16); } }
+@keyframes loading-logo-lift { 50% { transform: translateY(-4px) scale(1.05); } }
+@keyframes loading-sheen {
+  0%, 25% { transform: translateX(-120%); opacity: 0; }
+  42% { opacity: 1; }
+  70%, 100% { transform: translateX(120%); opacity: 0; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .loading-emblem,
+  .loading-emblem::before,
+  .loading-emblem::after,
+  .loading-emblem > .logo,
   .loading-orbit-one,
   .loading-orbit-two,
   .loading-track > span { animation: none; }
