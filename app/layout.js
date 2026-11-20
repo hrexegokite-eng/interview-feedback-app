@@ -8,11 +8,6 @@ export const metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Go Kite',
   },
-  icons: {
-    icon: '/kite-icon.png',
-    shortcut: '/kite-icon.png',
-    apple: '/kite-icon.png',
-  },
 };
 
 export const viewport = {
