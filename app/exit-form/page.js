@@ -129,7 +129,7 @@ export default function ExitFormDashboard() {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const clean = (value) => String(value || '—').replace(/[^\x20-\x7E]/g, ' ').trim() || '—';
-      const logoResponse = await fetch('/kite-mark.png');
+      const logoResponse = await fetch('/logo.png');
       if (!logoResponse.ok) throw new Error('Could not load the Go Kite logo for the PDF.');
       const logoBlob = await logoResponse.blob();
       const logoDataUrl = await new Promise((resolve, reject) => {
