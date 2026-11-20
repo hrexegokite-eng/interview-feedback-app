@@ -40,9 +40,9 @@ export function Av({ name, small }) {
   return <span className={'av' + (small ? ' s' : '')} style={{ '--h': h }}>{initials}</span>;
 }
 
-export function Logo({ h = 48, style }) {
+export function Logo({ h = 48, style, src = '/logo.png' }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/logo.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
+  return <img src={src} alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
 export function LoadingState({ label = 'Preparing your workspace', compact = false }) {
@@ -50,7 +50,7 @@ export function LoadingState({ label = 'Preparing your workspace', compact = fal
     <div className={`loading-screen${compact ? ' loading-compact' : ''}`} role="status" aria-live="polite">
       <div className="loading-emblem">
         <span className="loading-orbit loading-orbit-one" />
-        <Logo h={54} />
+        <Logo src="/loading-kite.png" h={86} />
       </div>
       <p className="loading-label">{label}</p>
       <span className="loading-track"><span /></span>
