@@ -42,7 +42,7 @@ export function Av({ name, small }) {
 
 export function Logo({ h = 48, style }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/logo.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
+  return <img src="/kite-mark.png" alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
 export function LoadingState({ label = 'Preparing your workspace', compact = false }) {
