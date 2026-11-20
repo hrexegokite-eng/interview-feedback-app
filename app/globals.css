@@ -1966,7 +1966,6 @@ a:focus-visible,
   border-radius: 32px;
   background: linear-gradient(145deg, color-mix(in srgb, var(--card) 86%, var(--accb)), var(--card));
   box-shadow: 0 16px 48px rgba(0, 0, 0, .24), inset 0 1px 0 rgba(255,255,255,.06);
-  animation: loading-breathe 2.2s ease-in-out infinite;
 }
 
 .loading-emblem::before,
@@ -1979,39 +1978,32 @@ a:focus-visible,
 .loading-emblem::before {
   inset: 20%;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--acc) 28%, transparent), transparent 72%);
-  filter: blur(9px);
-  animation: loading-aura 2.4s ease-in-out infinite;
+  background: radial-gradient(circle, color-mix(in srgb, var(--acc) 22%, transparent), transparent 72%);
+  filter: blur(12px);
+  animation: loading-aura 4s ease-in-out infinite;
 }
 
 .loading-emblem::after {
   inset: 0;
   z-index: 2;
   border-radius: inherit;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.1) 48%, transparent 66%);
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.07) 48%, transparent 66%);
   opacity: 0;
-  animation: loading-sheen 3.2s ease-in-out infinite;
+  animation: loading-sheen 5s ease-in-out infinite;
 }
 
 .loading-emblem > .logo {
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--acc) 35%, transparent));
-  animation: loading-logo-lift 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--acc) 24%, transparent));
+  animation: loading-logo-lift 3.4s ease-in-out infinite;
 }
 
 .loading-orbit { position: absolute; inset: -8px; border: 1px solid transparent; border-radius: 38px; }
 .loading-orbit-one {
-  border-top-color: color-mix(in srgb, var(--acc) 85%, white);
-  border-right-color: color-mix(in srgb, var(--acc) 28%, transparent);
-  animation: loading-spin 1.8s linear infinite;
-}
-
-.loading-orbit-two {
-  inset: -15px;
-  border-radius: 44px;
-  border-bottom-color: color-mix(in srgb, var(--acc2) 65%, transparent);
-  animation: loading-spin 2.8s linear infinite reverse;
+  border-top-color: color-mix(in srgb, var(--acc) 55%, white);
+  border-right-color: color-mix(in srgb, var(--acc) 16%, transparent);
+  animation: loading-spin 5s linear infinite;
 }
 
 .loading-label { color: var(--ink2); font-size: 13px; font-weight: 500; letter-spacing: .01em; }
@@ -2023,7 +2015,7 @@ a:focus-visible,
   border-radius: inherit;
   background: linear-gradient(90deg, var(--acc), var(--acc2));
   box-shadow: 0 0 12px color-mix(in srgb, var(--acc) 55%, transparent);
-  animation: loading-progress 1.35s ease-in-out infinite;
+  animation: loading-progress 1.8s ease-in-out infinite;
 }
 
 .loading-compact {
@@ -2045,28 +2037,24 @@ a:focus-visible,
 
 .loading-compact .loading-emblem > .logo { height: 23px !important; }
 .loading-compact .loading-orbit-one { inset: -4px; border-radius: 16px; }
-.loading-compact .loading-orbit-two { inset: -7px; border-radius: 19px; }
 .loading-compact .loading-label { font-size: 12px; }
 .loading-compact .loading-track { width: 64px; flex: none; }
 
 @keyframes loading-spin { to { transform: rotate(360deg); } }
-@keyframes loading-breathe { 50% { transform: translateY(-3px); box-shadow: 0 20px 56px rgba(0, 0, 0, .28), 0 0 24px color-mix(in srgb, var(--acc) 12%, transparent); } }
 @keyframes loading-progress { from { transform: translateX(-115%); } to { transform: translateX(250%); } }
-@keyframes loading-aura { 50% { opacity: .8; transform: scale(1.16); } }
-@keyframes loading-logo-lift { 50% { transform: translateY(-4px) scale(1.05); } }
+@keyframes loading-aura { 50% { opacity: .65; transform: scale(1.05); } }
+@keyframes loading-logo-lift { 50% { transform: translateY(-2px); } }
 @keyframes loading-sheen {
-  0%, 25% { transform: translateX(-120%); opacity: 0; }
-  42% { opacity: 1; }
-  70%, 100% { transform: translateX(120%); opacity: 0; }
+  0%, 35% { transform: translateX(-120%); opacity: 0; }
+  48% { opacity: 1; }
+  68%, 100% { transform: translateX(120%); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-emblem,
   .loading-emblem::before,
   .loading-emblem::after,
   .loading-emblem > .logo,
   .loading-orbit-one,
-  .loading-orbit-two,
   .loading-track > span { animation: none; }
   .loading-track > span { width: 100%; opacity: .7; }
 }

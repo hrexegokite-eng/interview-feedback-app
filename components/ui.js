@@ -50,7 +50,6 @@ export function LoadingState({ label = 'Preparing your workspace', compact = fal
     <div className={`loading-screen${compact ? ' loading-compact' : ''}`} role="status" aria-live="polite">
       <div className="loading-emblem">
         <span className="loading-orbit loading-orbit-one" />
-        <span className="loading-orbit loading-orbit-two" />
         <Logo h={54} />
       </div>
       <p className="loading-label">{label}</p>
