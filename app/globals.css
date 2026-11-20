@@ -1445,18 +1445,122 @@ input:focus, textarea:focus, select:focus {
 .badge { padding: 4px 11px; }
 
 .login-wrap {
+  min-height: 100svh;
+  padding: clamp(16px, 4vw, 40px);
   background: radial-gradient(ellipse at 50% 34%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 35rem);
 }
 
 .login-panel {
-  width: min(100%, 560px);
-  padding: clamp(22px, 4vw, 42px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+  width: min(100%, 960px);
+  min-height: 500px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 28px;
 }
 
-.login-panel > .center { padding-top: 22px; }
-.login-panel > .center h1 { font-size: clamp(28px, 4vw, 34px); letter-spacing: -.045em; }
-.login-panel > .card { padding: clamp(18px, 3vw, 26px); }
-.login-panel .btn.google { min-height: 50px; border-radius: 13px; }
+.login-story {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(30px, 5vw, 56px);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 12% 90%, color-mix(in srgb, var(--acc) 24%, transparent), transparent 60%),
+    linear-gradient(145deg, #102b32, #0d1d25 72%);
+}
+
+.login-story::after {
+  position: absolute;
+  z-index: -1;
+  right: -78px;
+  bottom: -96px;
+  width: 320px;
+  height: 320px;
+  background: url('/kite-icon.png') center / contain no-repeat;
+  content: '';
+  opacity: .07;
+  pointer-events: none;
+  transform: rotate(-12deg);
+}
+
+.login-kicker {
+  color: var(--acc2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.login-story > .login-kicker { margin-top: 36px; }
+
+.login-story-copy {
+  max-width: 390px;
+  margin: auto 0;
+  padding: 36px 0;
+}
+
+.login-story-copy h1 {
+  font-size: clamp(34px, 4.2vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -.055em;
+}
+
+.login-story-copy p,
+.login-content-head p {
+  margin-top: 14px;
+  color: var(--mut);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.login-story-footer {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: color-mix(in srgb, var(--ink2) 74%, transparent);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.login-story-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--acc2);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--acc2) 55%, transparent);
+}
+
+.login-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(32px, 5vw, 58px);
+  background: linear-gradient(180deg, rgba(18, 27, 35, .98), rgba(13, 21, 29, .98));
+}
+
+.login-content-head { margin-bottom: 30px; }
+.login-content-head h2 { margin-top: 13px; font-size: clamp(26px, 3vw, 32px); letter-spacing: -.045em; }
+.login-content .btn.google { min-height: 52px; border-radius: 13px; }
+.login-assurance { display: flex; align-items: center; gap: 8px; margin-top: 20px; color: var(--mut); font-size: 12px; }
+.login-assurance svg { color: var(--acc2); }
+.login-error { margin-top: 18px; text-align: left; }
+
+@media (max-width: 720px) {
+  .login-wrap { padding: 14px; }
+  .login-panel { grid-template-columns: 1fr; width: min(100%, 480px); min-height: 0; }
+  .login-story { min-height: 250px; padding: 24px; }
+  .login-story > .login-kicker { margin-top: 24px; }
+  .login-story-copy { margin: 18px 0; padding: 0; }
+  .login-story-copy h1 { max-width: 15ch; font-size: clamp(28px, 8vw, 36px); }
+  .login-story-copy p { margin-top: 9px; font-size: 13px; }
+  .login-story::after { right: -60px; bottom: -90px; width: 250px; height: 250px; }
+  .login-content { padding: 30px 24px 32px; }
+}
 
 .portal-module {
   transition: transform var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std), border-color var(--dur) var(--ease-std);

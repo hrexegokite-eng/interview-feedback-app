@@ -66,13 +66,26 @@ function LoginForm() {
   return (
     <div className="login-wrap">
       <div className="shell-panel login-panel">
-        <div className="center" style={{ paddingBottom: 24 }}>
-          <Logo h={72} style={{ margin: '0 auto 26px' }} />
-          <h1>Hiring dashboard</h1>
-          <p className="mut" style={{ marginTop: 8 }}>Sign in to manage interviews.</p>
-        </div>
+        <section className="login-story" aria-label="Go Kite hiring workspace">
+          <Logo h={58} />
+          <span className="login-kicker">INTERVIEW FEEDBACK</span>
+          <div className="login-story-copy">
+            <h1>Make every conversation count.</h1>
+            <p>A thoughtful workspace for better interviews and stronger teams.</p>
+          </div>
+          <div className="login-story-footer">
+            <span className="login-story-dot" />
+            <span>Hiring, with intention.</span>
+          </div>
+        </section>
 
-        <div className="card" style={{ background: 'rgba(17, 24, 29, 0.9)' }}>
+        <section className="login-content" aria-labelledby="login-title">
+          <div className="login-content-head">
+            <span className="login-kicker">HIRING WORKSPACE</span>
+            <h2 id="login-title">Welcome back</h2>
+            <p>Sign in with your Google account to continue.</p>
+          </div>
+
           {/* Google sign-in button */}
           <button
             type="button"
@@ -88,58 +101,63 @@ function LoginForm() {
             )}
           </button>
 
-          {err && <p className="err shake" style={{ marginTop: 16 }}>{err}</p>}
-        </div>
+          <div className="login-assurance">
+            <Icon n="lock" s={14} />
+            <span>Secure sign-in powered by Google</span>
+          </div>
 
-      {/* Google Dev / Setup Dialog */}
-      {showDevGoogle && (
-        <div className="ov" onClick={(e) => e.target === e.currentTarget && setShowDevGoogle(false)}>
-          <div className="pn" style={{ maxWidth: 460 }} role="dialog" aria-label="Google sign in">
-            <div className="top">
-              <span className="sm mut">Google authentication</span>
-              <button className="btn ghost" onClick={() => setShowDevGoogle(false)}><Icon n="x" s={14} /></button>
-            </div>
-            <div style={{ marginTop: 16, textAlign: 'center' }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--soft)', display: 'grid', placeItems: 'center', margin: '0 auto 12px' }}>
-                <GoogleIcon />
+          {err && <p className="err shake login-error">{err}</p>}
+        </section>
+
+        {/* Google Dev / Setup Dialog */}
+        {showDevGoogle && (
+          <div className="ov" onClick={(e) => e.target === e.currentTarget && setShowDevGoogle(false)}>
+            <div className="pn" style={{ maxWidth: 460 }} role="dialog" aria-label="Google sign in">
+              <div className="top">
+                <span className="sm mut">Google authentication</span>
+                <button className="btn ghost" onClick={() => setShowDevGoogle(false)}><Icon n="x" s={14} /></button>
               </div>
-              <h2 style={{ fontSize: 18 }}>Sign in with Google</h2>
-              <p className="sm mut" style={{ marginTop: 6, lineHeight: 1.5 }}>
-                {googleStatus?.configured
-                  ? 'Sign in using your Google account.'
-                  : 'For local testing, choose a Google account below or configure Google Cloud credentials in .env.local.'}
-              </p>
-            </div>
+              <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--soft)', display: 'grid', placeItems: 'center', margin: '0 auto 12px' }}>
+                  <GoogleIcon />
+                </div>
+                <h2 style={{ fontSize: 18 }}>Sign in with Google</h2>
+                <p className="sm mut" style={{ marginTop: 6, lineHeight: 1.5 }}>
+                  {googleStatus?.configured
+                    ? 'Sign in using your Google account.'
+                    : 'For local testing, choose a Google account below or configure Google Cloud credentials in .env.local.'}
+                </p>
+              </div>
 
-            <div style={{ marginTop: 20 }}>
-              <label>Google account email</label>
-              <input
-                type="email"
-                placeholder="your.email@gmail.com"
-                value={googleEmail}
-                onChange={(e) => setGoogleEmail(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn full primary"
-                disabled={googleBusy}
-                onClick={() => handleDevGoogleLogin()}
-                style={{ marginTop: 14 }}
-              >
-                {googleBusy ? <><span className="btn-spinner" />Signing in…</> : 'Sign in with this Google account'}
-              </button>
-            </div>
+              <div style={{ marginTop: 20 }}>
+                <label>Google account email</label>
+                <input
+                  type="email"
+                  placeholder="your.email@gmail.com"
+                  value={googleEmail}
+                  onChange={(e) => setGoogleEmail(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn full primary"
+                  disabled={googleBusy}
+                  onClick={() => handleDevGoogleLogin()}
+                  style={{ marginTop: 14 }}
+                >
+                  {googleBusy ? <><span className="btn-spinner" />Signing in…</> : 'Sign in with this Google account'}
+                </button>
+              </div>
 
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
-              <p className="sm mut" style={{ fontSize: 11.5, lineHeight: 1.5 }}>
-                💡 <b>To enable live Google OAuth redirect:</b><br />
-                Add <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>GOOGLE_CLIENT_ID</code> and{' '}
-                <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>GOOGLE_CLIENT_SECRET</code> to your <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>.env.local</code>.
-              </p>
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+                <p className="sm mut" style={{ fontSize: 11.5, lineHeight: 1.5 }}>
+                  💡 <b>To enable live Google OAuth redirect:</b><br />
+                  Add <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>GOOGLE_CLIENT_ID</code> and{' '}
+                  <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>GOOGLE_CLIENT_SECRET</code> to your <code style={{ background: 'var(--soft)', padding: '2px 4px', borderRadius: 4 }}>.env.local</code>.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
