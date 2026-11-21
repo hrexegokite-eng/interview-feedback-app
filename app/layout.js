@@ -5,8 +5,8 @@ export const metadata = {
   description: 'Interview scheduling and feedback for Go Kite Travel & Tours',
   icons: {
     icon: [
-      { url: '/icon.png?v=2', type: 'image/png', sizes: '512x512' },
-      { url: '/favicon.ico?v=2', type: 'image/x-icon' },
+      { url: '/kite-icon-v3.png', type: 'image/png', sizes: '512x512' },
+      { url: '/kite-favicon-v3.ico', type: 'image/x-icon' },
     ],
   },
   appleWebApp: {
