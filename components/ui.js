@@ -48,12 +48,28 @@ export function Logo({ h = 48, style, src = '/logo.png' }) {
 export function LoadingState({ label = 'Preparing your workspace', compact = false }) {
   return (
     <div className={`loading-screen${compact ? ' loading-compact' : ''}`} role="status" aria-live="polite">
-      <div className="loading-emblem">
-        <span className="loading-orbit loading-orbit-one" />
-        <Logo src="/loading-kite.png" h={86} />
+      <div className="loading-card">
+        <div className="loading-brand">
+          <Logo h={34} />
+          <span>
+            <strong>GO KITE</strong>
+            <small>INTERVIEW FEEDBACK</small>
+          </span>
+        </div>
+        <div className="loading-art" aria-hidden="true">
+          <span className="loading-orbit loading-orbit-one" />
+          <span className="loading-orbit loading-orbit-two" />
+          <span className="loading-art-glow" />
+          <Logo src="/loading-kite.png" h={58} />
+        </div>
+        <div className="loading-copy">
+          <span className="loading-kicker">PLEASE WAIT</span>
+          <p className="loading-label">{label}</p>
+          <p className="loading-caption">Getting everything ready for you</p>
+        </div>
+        <span className="loading-track" aria-hidden="true"><span /></span>
       </div>
-      <p className="loading-label">{label}</p>
-      <span className="loading-track"><span /></span>
+      <p className="loading-footer">GO KITE <span>·</span> YOUR WORKSPACE</p>
     </div>
   );
 }
