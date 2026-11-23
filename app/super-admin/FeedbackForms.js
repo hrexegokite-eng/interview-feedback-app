@@ -4,7 +4,7 @@ import { api, fmt } from '@/components/ui';
 
 const TYPES = [
   ['short_text', 'Short text'],
-  ['long_text', 'Long text'],
+  ['long_text', 'Long text / comments'],
   ['number', 'Number'],
   ['rating', 'Rating scale (1–5)'],
   ['dropdown', 'Dropdown'],
@@ -204,7 +204,7 @@ export default function FeedbackForms() {
       {form && (
         <form className="card" onSubmit={save} style={{ marginTop: 16 }}>
           <h2>{form.id ? 'Edit feedback form' : 'Create feedback form'}</h2>
-          <p className="sm mut">Question types: short text, long text, 1–5 rating, dropdown, and Yes / No.</p>
+          <p className="sm mut">Choose an answer type and optional segment for each question. Long text / comments adds a comment field.</p>
           <div className="f">
             <label htmlFor="feedback-form-name">Form name / BCU</label>
             <input id="feedback-form-name" required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
@@ -221,6 +221,16 @@ export default function FeedbackForms() {
                   maxLength={160}
                   value={question.label}
                   onChange={(event) => updateQuestion(question.id, { label: event.target.value })}
+                />
+              </div>
+              <div className="f">
+                <label htmlFor={`question-section-${question.id}`}>Segment (optional)</label>
+                <input
+                  id={`question-section-${question.id}`}
+                  maxLength={80}
+                  placeholder="e.g. Candidate details"
+                  value={question.section || ''}
+                  onChange={(event) => updateQuestion(question.id, { section: event.target.value })}
                 />
               </div>
               <div className="f">
