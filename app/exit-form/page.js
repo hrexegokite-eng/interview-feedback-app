@@ -228,7 +228,7 @@ export default function ExitFormDashboard() {
           </button>
         </div>
 
-        <div style={{ padding: '26px 8px 8px' }}>
+        <div className="exit-dashboard-content">
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: '0 0 8px' }}>Employee exit forms</h1>
           <p className="mut" style={{ margin: '0 0 20px' }}>
             Create a private link for an employee and review their submitted exit feedback here.

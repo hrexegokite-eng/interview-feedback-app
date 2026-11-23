@@ -113,7 +113,7 @@ export default function SuperAdmin() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, margin: '26px 0 18px' }}>
+        <div className="super-admin-heading">
           <div>
             <h1 style={{ margin: 0, fontSize: 25 }}>Workspace administration</h1>
             <p className="sm mut" style={{ marginTop: 6 }}>Manage workspace access, BCU-specific feedback forms, and recent activity.</p>

@@ -14,6 +14,43 @@ function GoogleIcon() {
   );
 }
 
+function playWelcomeSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return false;
+
+  const context = new AudioContextClass();
+  const playNotes = () => {
+    const notes = [
+      { frequency: 523.25, start: 0, duration: 0.18 },
+      { frequency: 659.25, start: 0.13, duration: 0.2 },
+      { frequency: 783.99, start: 0.27, duration: 0.28 },
+    ];
+
+    notes.forEach(({ frequency, start, duration }) => {
+      const oscillator = context.createOscillator();
+      const volume = context.createGain();
+      const noteStart = context.currentTime + start;
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      volume.gain.setValueAtTime(0, noteStart);
+      volume.gain.linearRampToValueAtTime(0.12, noteStart + 0.025);
+      volume.gain.exponentialRampToValueAtTime(0.001, noteStart + duration);
+      oscillator.connect(volume).connect(context.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteStart + duration);
+    });
+
+    window.setTimeout(() => { void context.close(); }, 900);
+  };
+
+  if (context.state === 'suspended') {
+    context.resume().then(playNotes);
+  } else {
+    playNotes();
+  }
+  return true;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,8 +73,11 @@ function LoginForm() {
   async function handleGoogleClick() {
     setErr('');
     if (googleStatus?.configured) {
+      const soundPlayed = playWelcomeSound();
       setGoogleBusy(true);
-      window.location.href = '/api/auth/google';
+      window.setTimeout(() => {
+        window.location.href = '/api/auth/google';
+      }, soundPlayed ? 600 : 0);
     } else {
       setShowDevGoogle(true);
     }
@@ -46,6 +86,7 @@ function LoginForm() {
   async function handleDevGoogleLogin(emailToUse) {
     const em = emailToUse || googleEmail;
     if (!em) return;
+    playWelcomeSound();
     setGoogleBusy(true);
     setErr('');
     try {

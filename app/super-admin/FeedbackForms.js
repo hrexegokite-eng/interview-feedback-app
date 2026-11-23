@@ -168,13 +168,13 @@ export default function FeedbackForms() {
       {error && <p className="err" role="alert">{error}</p>}
       {message && <p className="sm" role="status" style={{ color: 'var(--ok)', marginBottom: 14 }}>{message}</p>}
 
-      <section className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+      <section className="card feedback-form-list">
+        <div className="feedback-form-list-head">
           <div>
             <h2 style={{ marginBottom: 4 }}>BCU feedback forms</h2>
             <p className="sm mut">Create named forms for the BCU dropdown. Editing a form affects new interview links only.</p>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <div className="feedback-form-list-actions">
             <button className="btn ghost" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankB2CForm()); }}>
               Create B2C form
             </button>
@@ -202,7 +202,7 @@ export default function FeedbackForms() {
       </section>
 
       {form && (
-        <form className="card" onSubmit={save} style={{ marginTop: 16 }}>
+        <form className="card feedback-form-editor" onSubmit={save} style={{ marginTop: 16 }}>
           <h2>{form.id ? 'Edit feedback form' : 'Create feedback form'}</h2>
           <p className="sm mut">Choose an answer type and optional segment for each question. Long text / comments adds a comment field.</p>
           <div className="f">
@@ -211,7 +211,7 @@ export default function FeedbackForms() {
           </div>
 
           {form.questions.map((question, index) => (
-            <fieldset key={question.id} className="card" style={{ marginTop: 14, padding: 14 }}>
+            <fieldset key={question.id} className="card feedback-form-question">
               <legend className="sm mut">Question {index + 1}</legend>
               <div className="f">
                 <label htmlFor={`question-label-${question.id}`}>Question</label>
@@ -276,7 +276,7 @@ export default function FeedbackForms() {
             </fieldset>
           ))}
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+          <div className="feedback-form-actions" style={{ marginTop: 16 }}>
             <button
               type="button"
               className="btn ghost"
