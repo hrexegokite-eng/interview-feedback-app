@@ -121,7 +121,7 @@ export default function EmployeeExitForm() {
 
         <main className="exit-public-content">
           {loading ? (
-            <LoadingState compact label="Loading employee exit form" />
+            <LoadingState label="Loading employee exit form" />
           ) : unavailable ? (
             <div className="center" role="alert">
               <h1>Form unavailable</h1>

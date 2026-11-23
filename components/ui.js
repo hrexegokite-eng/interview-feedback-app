@@ -45,31 +45,15 @@ export function Logo({ h = 48, style, src = '/logo.png' }) {
   return <img src={src} alt="Go Kite Travel & Tours" className="logo" style={{ height: h, ...style }} />;
 }
 
-export function LoadingState({ label = 'Preparing your workspace', compact = false }) {
+export function LoadingState({ label = 'Preparing your workspace' }) {
   return (
-    <div className={`loading-screen${compact ? ' loading-compact' : ''}`} role="status" aria-live="polite">
-      <div className="loading-card">
-        <div className="loading-brand">
-          <Logo h={34} />
-          <span>
-            <strong>GO KITE</strong>
-            <small>INTERVIEW FEEDBACK</small>
-          </span>
-        </div>
-        <div className="loading-art" aria-hidden="true">
-          <span className="loading-orbit loading-orbit-one" />
-          <span className="loading-orbit loading-orbit-two" />
-          <span className="loading-art-glow" />
-          <Logo src="/loading-kite.png" h={58} />
-        </div>
-        <div className="loading-copy">
-          <span className="loading-kicker">PLEASE WAIT</span>
-          <p className="loading-label">{label}</p>
-          <p className="loading-caption">Getting everything ready for you</p>
-        </div>
-        <span className="loading-track" aria-hidden="true"><span /></span>
+    <div className="loading-screen" role="status" aria-label={label} aria-live="polite">
+      <div className="loading-indicator" aria-hidden="true">
+        <span className="loading-orbit" />
+        <span className="loading-art-glow" />
+        <span className="loading-art-mark"><Logo src="/loading-kite.png" h={58} /></span>
       </div>
-      <p className="loading-footer">GO KITE <span>·</span> YOUR WORKSPACE</p>
+      <span className="loading-progress" aria-hidden="true"><span /></span>
     </div>
   );
 }

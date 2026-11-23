@@ -251,7 +251,7 @@ export default function ExitFormDashboard() {
 
           <h2 className="exit-section-title">Forms and submissions</h2>
           {loading ? (
-            <LoadingState compact label="Loading exit forms" />
+            <LoadingState label="Loading exit forms" />
           ) : !forms.length ? (
             <p className="mut">No exit forms yet. Create a link to send the questionnaire to an employee.</p>
           ) : (
