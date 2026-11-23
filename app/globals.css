@@ -2109,13 +2109,13 @@ a:focus-visible,
 .loading-screen::before,
 .loading-screen::after { display: none; }
 
-.loading-indicator { display: grid; justify-items: center; gap: 18px; }
+.loading-indicator { display: grid; justify-items: center; gap: 16px; }
 .loading-indicator > .logo { width: auto; opacity: .9; }
 
-.loading-dots { display: flex; align-items: center; gap: 6px; height: 6px; }
+.loading-dots { display: flex; align-items: center; gap: 7px; height: 7px; }
 .loading-dots i {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--acc2);
   opacity: .3;
@@ -2127,7 +2127,7 @@ a:focus-visible,
 
 @keyframes loading-dot {
   0%, 60%, 100% { opacity: .3; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-3px); }
+  30% { opacity: 1; transform: translateY(-4px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
