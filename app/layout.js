@@ -3,12 +3,6 @@ import './globals.css';
 export const metadata = {
   title: 'Go Kite · Interview Feedback',
   description: 'Interview scheduling and feedback for Go Kite Travel & Tours',
-  icons: {
-    icon: [
-      { url: '/kite-icon-v3.png', type: 'image/png', sizes: '512x512' },
-      { url: '/kite-favicon-v3.ico', type: 'image/x-icon' },
-    ],
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
