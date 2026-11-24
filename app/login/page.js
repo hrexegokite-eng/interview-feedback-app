@@ -108,46 +108,75 @@ function LoginForm() {
     <div className="login-wrap">
       <div className="shell-panel login-panel">
         <section className="login-story" aria-label="Go Kite hiring workspace">
-          <Logo h={58} />
-          <span className="login-kicker">INTERVIEW FEEDBACK</span>
+          <div className="login-story-brand">
+            <Logo h={68} />
+            <span>GO KITE <i /> TRAVEL &amp; TOURS</span>
+          </div>
+          <div className="login-story-label">
+            <span className="login-kicker">PEOPLE-FIRST HIRING</span>
+            <span className="login-story-index">01 <i /> 03</span>
+          </div>
           <div className="login-story-copy">
-            <h1>Make every conversation count.</h1>
-            <p>A thoughtful workspace for better interviews and stronger teams.</p>
+            <h1>Great teams begin with <em>better conversations.</em></h1>
+            <p>A more thoughtful way to interview, share feedback, and make confident hiring decisions.</p>
           </div>
           <div className="login-story-footer">
-            <span className="login-story-dot" />
-            <span>Hiring, with intention.</span>
+            <span>THOUGHTFUL INTERVIEWS</span>
+            <i />
+            <span>CLEARER DECISIONS</span>
           </div>
+          <svg className="login-kite-art" viewBox="0 0 260 290" fill="none" aria-hidden="true">
+            <path d="M44 21 222 29l22 136L34 226 44 21Z" fill="url(#kite-fill)" />
+            <path d="m44 21 92 101 108 43M222 29l-86 93L34 226" stroke="url(#kite-stroke)" strokeWidth="2" />
+            <path d="M34 226c-54 32-62 57-43 71 16 11 46-5 49 14 2 14-21 23-25 43" stroke="url(#kite-stroke)" strokeWidth="2" strokeLinecap="round" />
+            <defs>
+              <linearGradient id="kite-fill" x1="30" y1="18" x2="221" y2="230" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#85E1D2" stopOpacity=".16" />
+                <stop offset="1" stopColor="#85E1D2" stopOpacity=".015" />
+              </linearGradient>
+              <linearGradient id="kite-stroke" x1="40" y1="18" x2="218" y2="284" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#9BE4D9" stopOpacity=".6" />
+                <stop offset="1" stopColor="#9BE4D9" stopOpacity=".08" />
+              </linearGradient>
+            </defs>
+          </svg>
         </section>
 
         <section className="login-content" aria-labelledby="login-title">
-          <div className="login-content-head">
-            <span className="login-kicker">HIRING WORKSPACE</span>
-            <h2 id="login-title">Welcome back</h2>
-            <p>Sign in with your Google account to continue.</p>
+          <div className="login-content-inner">
+            <div className="login-workspace-label">
+              <span className="login-workspace-mark" aria-hidden="true"><i /><i /><i /></span>
+              <span>HIRING WORKSPACE</span>
+            </div>
+            <div className="login-content-head">
+              <h2 id="login-title">Welcome back.</h2>
+              <p>Your next great hire starts with a thoughtful conversation.</p>
+            </div>
+
+            <button
+              type="button"
+              className="btn google full"
+              disabled={googleBusy}
+              onClick={handleGoogleClick}
+            >
+              {googleBusy ? (
+                <><span className="btn-spinner" aria-hidden="true" />Connecting to Google…</>
+              ) : (
+                <><GoogleIcon />Continue with Google</>
+              )}
+            </button>
+
+            <div className="login-assurance">
+              <Icon n="lock" s={14} />
+              <span>Secure sign-in with your Google account</span>
+            </div>
+
+            {err && <p className="err shake login-error" role="alert">{err}</p>}
           </div>
-
-          {/* Google sign-in button */}
-          <button
-            type="button"
-            className="btn google full"
-            disabled={googleBusy}
-            onClick={handleGoogleClick}
-            style={{ margin: 0, justifyContent: 'center' }}
-          >
-            {googleBusy ? (
-              <><span className="btn-spinner" aria-hidden="true" />Connecting to Google…</>
-            ) : (
-              <><GoogleIcon />Continue with Google</>
-            )}
-          </button>
-
-          <div className="login-assurance">
-            <Icon n="lock" s={14} />
-            <span>Secure sign-in powered by Google</span>
+          <div className="login-content-footer">
+            <span>GO KITE <i /> INTERVIEW FEEDBACK</span>
+            <span>Thoughtful hiring, together.</span>
           </div>
-
-          {err && <p className="err shake login-error">{err}</p>}
         </section>
 
         {/* Google Dev / Setup Dialog */}
