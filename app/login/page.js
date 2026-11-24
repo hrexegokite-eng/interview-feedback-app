@@ -104,32 +104,37 @@ function LoginForm() {
     }
   }
 
+  function moveLoginSpotlight(event) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty('--spotlight-x', `${event.clientX - bounds.left}px`);
+    event.currentTarget.style.setProperty('--spotlight-y', `${event.clientY - bounds.top}px`);
+  }
+
   return (
     <div className="login-wrap">
       <div className="login-atmosphere" aria-hidden="true">
         <span className="login-glow login-glow-one" />
         <span className="login-glow login-glow-two" />
-        <svg className="login-kite-motion" viewBox="0 0 240 280" fill="none">
-          <path d="M42 20 208 27l20 127L31 220 42 20Z" fill="url(#login-kite-fill)" />
-          <path className="login-kite-lines" d="m42 20 90 101 96 33M208 27l-76 94L31 220" stroke="url(#login-kite-stroke)" strokeWidth="1.5" />
-          <path className="login-kite-tail" d="M31 220c-48 30-58 52-41 67 15 13 42-4 44 14 2 13-19 22-24 39" stroke="url(#login-kite-stroke)" strokeWidth="1.5" strokeLinecap="round" />
-          <defs>
-            <linearGradient id="login-kite-fill" x1="30" y1="20" x2="210" y2="220" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#74D7C2" stopOpacity=".16" />
-              <stop offset="1" stopColor="#74D7C2" stopOpacity=".02" />
-            </linearGradient>
-            <linearGradient id="login-kite-stroke" x1="42" y1="20" x2="208" y2="270" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#8FE6D2" stopOpacity=".8" />
-              <stop offset="1" stopColor="#8FE6D2" stopOpacity=".08" />
-            </linearGradient>
-          </defs>
-        </svg>
       </div>
-      <div className="login-panel">
+      <div className="login-panel" onPointerMove={moveLoginSpotlight}>
+        <section className="login-story" aria-label="Go Kite interview feedback">
+          <div className="login-story-brand">
+            <Logo h={54} />
+            <span>INTERVIEW FEEDBACK</span>
+          </div>
+          <div className="login-story-copy">
+            <span>HIRING WORKSPACE</span>
+            <h1>Crossing<br /><em>the winds</em></h1>
+            <p>A considered space for interviews, feedback, and confident hiring decisions.</p>
+          </div>
+          <div className="login-story-footer">
+            <span className="login-story-status" />
+            <span>INTERVIEW <i /> FEEDBACK <i /> DECISIONS</span>
+          </div>
+        </section>
         <section className="login-content" aria-labelledby="login-title">
           <div className="login-content-inner">
-            <Logo h={62} />
-            <span className="login-brand-label">INTERVIEW FEEDBACK</span>
+            <span className="login-workspace-label">YOUR WORKSPACE</span>
             <div className="login-content-head">
               <h2 id="login-title">Welcome back</h2>
               <p>Sign in to your Go Kite interview workspace.</p>
