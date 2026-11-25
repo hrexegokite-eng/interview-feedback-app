@@ -3,6 +3,100 @@ import { bad, getAdmin, logAdminAction } from '@/lib/auth';
 
 const MODULES = ['interview-feedback', 'exit-form'];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NEON_API_BASE = 'https://console.neon.tech/api/v2';
+const FREE_PLAN_PROJECT_STORAGE_BYTES = 1_000_000_000;
+
+async function getNeonStorageCapacity() {
+  const apiKey = process.env.NEON_API_KEY?.trim();
+  const projectId = process.env.NEON_PROJECT_ID?.trim();
+  if (!apiKey || !projectId) {
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: 'Set NEON_API_KEY and NEON_PROJECT_ID in the server environment to read plan capacity from Neon.',
+    };
+  }
+  if (!/^[a-z0-9-]{1,60}$/i.test(projectId)) {
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: 'NEON_PROJECT_ID is not a valid Neon project ID.',
+    };
+  }
+
+  let response;
+  try {
+    response = await fetch(`${NEON_API_BASE}/projects/${encodeURIComponent(projectId)}`, {
+      headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' },
+      cache: 'no-store',
+    });
+  } catch (error) {
+    console.error('Neon project lookup failed:', error);
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: 'Could not connect to the Neon API to read plan capacity.',
+    };
+  }
+  if (!response.ok) {
+    console.error(`Neon project lookup returned HTTP ${response.status}.`);
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: `Neon API returned HTTP ${response.status}. Check the API key and project ID.`,
+    };
+  }
+
+  let project;
+  try {
+    ({ project } = await response.json());
+  } catch (error) {
+    console.error('Neon project response could not be parsed:', error);
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: 'Neon returned an invalid project response.',
+    };
+  }
+
+  const subscriptionType = project?.owner?.subscription_type;
+  if (typeof subscriptionType !== 'string' || !subscriptionType) {
+    console.error('Neon project response is missing its subscription type.');
+    return {
+      planName: null,
+      capacityType: 'unavailable',
+      limitBytes: null,
+      capacityError: 'Neon did not return a plan for this project.',
+    };
+  }
+
+  const planKey = subscriptionType.toLowerCase().split('_')[0];
+  const planName = planKey.charAt(0).toUpperCase() + planKey.slice(1);
+  if (planKey === 'free') {
+    return {
+      planName,
+      capacityType: 'fixed',
+      limitBytes: FREE_PLAN_PROJECT_STORAGE_BYTES,
+      capacityError: null,
+    };
+  }
+  if (['launch', 'scale', 'agent', 'business', 'enterprise'].includes(planKey)) {
+    return { planName, capacityType: 'usage-based', limitBytes: null, capacityError: null };
+  }
+
+  console.error(`Neon returned an unsupported subscription type: ${subscriptionType}.`);
+  return {
+    planName,
+    capacityType: 'unavailable',
+    limitBytes: null,
+    capacityError: 'The Neon plan type is not recognized by the storage display.',
+  };
+}
 
 async function authorize() {
   const admin = await getAdmin();
@@ -14,12 +108,13 @@ async function authorize() {
 export async function GET() {
   const auth = await authorize();
   if (auth.error) return auth.error;
-  const [admins, modules, audit, counts, storage] = await Promise.all([
+  const [admins, modules, audit, counts, storage, capacity] = await Promise.all([
     sql`select email, role, created_at, created_by from admin_users order by role desc, email`,
     sql`select key, enabled, updated_at, updated_by from workspace_modules order by key`,
     sql`select id, actor_email, action, target, details, created_at from admin_audit_log order by created_at desc limit 100`,
     sql`select count(*)::int as candidates, count(*) filter (where status = 'complete')::int as onboarding from candidates`,
     sql`select pg_database_size(current_database())::text as used_bytes`,
+    getNeonStorageCapacity(),
   ]);
 
   const usedBytes = Number(storage[0]?.used_bytes);
@@ -27,25 +122,12 @@ export async function GET() {
     throw new Error('Database returned an invalid storage size.');
   }
 
-  const configuredLimit = process.env.DATABASE_STORAGE_LIMIT_GB?.trim() || '';
-  let limitBytes = null;
-  let storageConfigError = null;
-  if (configuredLimit) {
-    const limitGb = Number(configuredLimit);
-    const parsedLimitBytes = Math.round(limitGb * 1_000_000_000);
-    if (!/^\d+(?:\.\d+)?$/.test(configuredLimit) || !Number.isSafeInteger(parsedLimitBytes) || parsedLimitBytes <= 0) {
-      storageConfigError = 'DATABASE_STORAGE_LIMIT_GB must be a positive number.';
-    } else {
-      limitBytes = parsedLimitBytes;
-    }
-  }
-
   return Response.json({
     admins,
     modules,
     audit,
     counts: counts[0],
-    storage: { usedBytes, limitBytes, configError: storageConfigError },
+    storage: { usedBytes, ...capacity },
   });
 }
 

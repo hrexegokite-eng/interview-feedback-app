@@ -52,6 +52,9 @@ export default function SuperAdmin() {
   }, [router]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (tab === 'storage') load();
+  }, [tab, load]);
 
   async function addAdmin(event) {
     event.preventDefault();
@@ -111,12 +114,13 @@ export default function SuperAdmin() {
   }
 
   const storage = data?.storage;
-  const storagePercent = storage?.limitBytes
+  const hasFixedCapacity = storage?.capacityType === 'fixed' && storage.limitBytes > 0;
+  const storagePercent = hasFixedCapacity
     ? (storage.usedBytes / storage.limitBytes) * 100
     : null;
   const storageProgress = storagePercent === null ? 0 : Math.min(Math.max(storagePercent, 0), 100);
   const storageColor = storagePercent >= 90 ? 'var(--no)' : storagePercent >= 75 ? 'var(--hd)' : 'var(--acc)';
-  const storageRemaining = storage?.limitBytes
+  const storageRemaining = hasFixedCapacity
     ? Math.max(storage.limitBytes - storage.usedBytes, 0)
     : null;
 
@@ -162,7 +166,9 @@ export default function SuperAdmin() {
           <section className="card database-storage">
             <div>
               <h2>Database storage</h2>
-              <p className="sm mut">Current PostgreSQL database size and configured capacity.</p>
+              <p className="sm mut">
+                Current database size and Neon {storage?.planName ? `${storage.planName} plan` : 'plan'} capacity.
+              </p>
             </div>
             <div className="storage-metrics">
               <div className="storage-metric">
@@ -170,14 +176,20 @@ export default function SuperAdmin() {
                 <strong>{formatStorage(storage?.usedBytes)}</strong>
               </div>
               <div className="storage-metric">
-                <span className="sm mut">Configured capacity</span>
-                <strong>{storage?.limitBytes ? formatStorage(storage.limitBytes) : 'Not configured'}</strong>
+                <span className="sm mut">Neon capacity</span>
+                <strong>
+                  {hasFixedCapacity
+                    ? formatStorage(storage.limitBytes)
+                    : storage?.capacityType === 'usage-based'
+                      ? 'No hard cap'
+                      : 'Unavailable'}
+                </strong>
               </div>
               <div className="storage-metric">
                 <span className="sm mut">{storagePercent !== null && storagePercent > 100 ? 'Over capacity' : 'Available'}</span>
                 <strong>
                   {storagePercent === null
-                    ? '—'
+                    ? storage?.capacityType === 'usage-based' ? 'Usage-based' : '—'
                     : storagePercent > 100
                       ? formatStorage(storage.usedBytes - storage.limitBytes)
                       : formatStorage(storageRemaining)}
@@ -198,15 +210,19 @@ export default function SuperAdmin() {
                   <span style={{ width: `${storageProgress}%`, background: storageColor }} />
                 </div>
                 <p className="sm mut storage-caption">
-                  {storagePercent.toFixed(1)}% of configured capacity used.
+                  {storagePercent.toFixed(1)}% of Neon project capacity used.
                 </p>
               </>
             )}
-            {storage?.configError ? (
-              <p className="storage-warning" role="alert">{storage.configError}</p>
-            ) : !storage?.limitBytes ? (
+            {storage?.capacityError ? (
+              <p className="storage-warning" role="alert">{storage.capacityError}</p>
+            ) : storage?.capacityType === 'usage-based' ? (
               <p className="sm mut storage-caption">
-                Set <code>DATABASE_STORAGE_LIMIT_GB</code> to display a capacity and usage bar. The configured capacity is informational and does not enforce a database quota.
+                Neon {storage.planName} storage is usage-based and has no fixed project capacity.
+              </p>
+            ) : !hasFixedCapacity ? (
+              <p className="sm mut storage-caption">
+                Add a read-access Neon API key and project ID to the server environment to load this project&apos;s plan capacity.
               </p>
             ) : null}
           </section>

@@ -18,7 +18,8 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 | `AUTH_SECRET` | 32+ character random secret for JWT signing |
 | `SUPER_ADMIN_EMAIL` | *(Optional)* Initial super admin email (defaults to `hrops@gokitetours.com`) |
 | `DATABASE_URL` | PostgreSQL connection string (e.g. Neon Postgres) |
-| `DATABASE_STORAGE_LIMIT_GB` | *(Optional)* Informational database capacity shown in Super Admin (decimal GB) |
+| `NEON_API_KEY` | Neon API key with read access to the project |
+| `NEON_PROJECT_ID` | Neon project ID used to read the plan and storage capacity |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
 
@@ -41,6 +42,6 @@ Production requires a persistent PostgreSQL database. Create a database (for exa
 
 After deployment, verify the database connection at `/api/db-check`; it should report `Neon Serverless Postgres` and `status: connected`. Candidate, interview-round, and uploaded-file data are stored in that shared PostgreSQL database, so authorized users see the same records from different devices.
 
-The Super Admin workspace settings display actual database size using PostgreSQL's `pg_database_size`. Set `DATABASE_STORAGE_LIMIT_GB` to show a configured capacity and usage bar; this value is informational and does not enforce a storage quota.
+The Super Admin database storage tab reads current database size from PostgreSQL and plan capacity from the Neon API. Configure `NEON_API_KEY` and `NEON_PROJECT_ID` in the server environment. Free-plan projects show their 1 GB project allowance; usage-based Neon plans show that there is no fixed capacity.
 
 The app no longer inserts sample candidates automatically. Existing records are not deleted when deploying this change; review and remove any old demo records from the production database separately if needed.
