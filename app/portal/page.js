@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { startRegistration } from '@simplewebauthn/browser';
 import { Logo, Av, Icon, LoadingState, api } from '@/components/ui';
 
 export default function Portal() {
@@ -9,6 +10,9 @@ export default function Portal() {
   const [loading, setLoading] = useState(true);
   const [modules, setModules] = useState({});
   const [moduleError, setModuleError] = useState('');
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [passkeyMessage, setPasskeyMessage] = useState('');
+  const [passkeyError, setPasskeyError] = useState('');
 
   useEffect(() => {
     api('/api/auth/me')
@@ -33,6 +37,27 @@ export default function Portal() {
     router.replace('/login');
   }
 
+  async function addPasskey() {
+    setPasskeyMessage('');
+    setPasskeyError('');
+    if (!window.isSecureContext || !window.PublicKeyCredential || !navigator.credentials) {
+      setPasskeyError('Passkey registration requires a supported browser and a secure connection.');
+      return;
+    }
+
+    setPasskeyBusy(true);
+    try {
+      const options = await api('/api/auth/passkey/register/options', { method: 'POST' });
+      const registration = await startRegistration({ optionsJSON: options });
+      await api('/api/auth/passkey/register/verify', { method: 'POST', body: registration });
+      setPasskeyMessage('Passkey added. You can now use it to sign in.');
+    } catch (error) {
+      setPasskeyError(error.name === 'NotAllowedError' ? 'Passkey registration was cancelled.' : error.message);
+    } finally {
+      setPasskeyBusy(false);
+    }
+  }
+
   if (loading) {
     return <LoadingState label="Loading workspace modules" />;
   }
@@ -52,10 +77,16 @@ export default function Portal() {
           <div className="me">
             <Av name={me?.name || me?.email} small />
             <span>{me?.email}</span>
+            <button className="btn ghost" onClick={addPasskey} disabled={passkeyBusy}>
+              {passkeyBusy ? 'Adding passkey…' : <><Icon n="lock" s={14} /> Add passkey</>}
+            </button>
             {me?.role === 'superadmin' && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
             <button className="btn ghost" onClick={logout}>Sign out</button>
           </div>
         </div>
+
+        {passkeyMessage && <p className="passkey-success" role="status">{passkeyMessage}</p>}
+        {passkeyError && <p className="err" role="alert">{passkeyError}</p>}
 
         <section className="dashboard-hero">
           <div className="dashboard-hero-copy">

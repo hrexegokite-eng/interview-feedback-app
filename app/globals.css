@@ -1713,6 +1713,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .login-content .btn.google:disabled { cursor: progress; opacity: .75; }
+.login-content .btn.google.login-passkey { margin-top: 12px; }
 
 .login-assurance {
   display: flex;
@@ -1725,6 +1726,15 @@ input:focus, textarea:focus, select:focus {
 
 .login-assurance svg { flex: none; color: #4a8298; }
 .login-error { margin-top: 18px; text-align: center; }
+.passkey-success {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+  border-radius: 9px;
+  background: var(--okb);
+  color: var(--ok);
+  font-size: 13px;
+}
 
 @keyframes login-panel-enter {
   from { opacity: 0; transform: translateY(14px) scale(.985); }

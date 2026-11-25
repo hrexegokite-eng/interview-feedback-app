@@ -1,6 +1,7 @@
 'use client';
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { startAuthentication } from '@simplewebauthn/browser';
 import { Logo, Icon, LoadingState } from '@/components/ui';
 
 function GoogleIcon() {
@@ -56,6 +57,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [err, setErr] = useState('');
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
   const [googleStatus, setGoogleStatus] = useState(null);
   const [showDevGoogle, setShowDevGoogle] = useState(false);
   const [googleEmail, setGoogleEmail] = useState('hrops@gokitetours.com');
@@ -80,6 +82,34 @@ function LoginForm() {
       }, soundPlayed ? 600 : 0);
     } else {
       setShowDevGoogle(true);
+    }
+  }
+
+  async function handlePasskeyClick() {
+    setErr('');
+    if (!window.isSecureContext || !window.PublicKeyCredential || !navigator.credentials) {
+      setErr('Passkey sign-in requires a supported browser and a secure connection.');
+      return;
+    }
+
+    setPasskeyBusy(true);
+    try {
+      const optionsResponse = await fetch('/api/auth/passkey/login/options', { method: 'POST' });
+      const options = await optionsResponse.json();
+      if (!optionsResponse.ok) throw new Error(options.error || 'Unable to start passkey sign-in.');
+
+      const assertion = await startAuthentication({ optionsJSON: options });
+      const verifyResponse = await fetch('/api/auth/passkey/login/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assertion),
+      });
+      const result = await verifyResponse.json();
+      if (!verifyResponse.ok) throw new Error(result.error || 'Passkey sign-in failed.');
+      router.replace('/portal');
+    } catch (error) {
+      setErr(error.name === 'NotAllowedError' ? 'Passkey sign-in was cancelled.' : error.message);
+      setPasskeyBusy(false);
     }
   }
 
@@ -143,7 +173,7 @@ function LoginForm() {
             <button
               type="button"
               className="btn google full"
-              disabled={googleBusy}
+              disabled={googleBusy || passkeyBusy}
               onClick={handleGoogleClick}
             >
               {googleBusy ? (
@@ -153,9 +183,22 @@ function LoginForm() {
               )}
             </button>
 
+            <button
+              type="button"
+              className="btn google full login-passkey"
+              disabled={googleBusy || passkeyBusy}
+              onClick={handlePasskeyClick}
+            >
+              {passkeyBusy ? (
+                <><span className="btn-spinner" aria-hidden="true" />Checking passkey…</>
+              ) : (
+                <><Icon n="lock" s={17} />Sign in with a passkey</>
+              )}
+            </button>
+
             <div className="login-assurance">
               <Icon n="lock" s={14} />
-              <span>Secure sign-in with Google</span>
+              <span>Secure sign-in with Google or passkey</span>
             </div>
 
             {err && <p className="err shake login-error" role="alert">{err}</p>}

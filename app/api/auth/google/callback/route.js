@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { createSession, isAdminEmail } from '@/lib/auth';
+import { createSession, isAdminEmail, sessionCookieOptions } from '@/lib/auth';
 
 function getRedirectUri(req) {
   if (process.env.APP_URL) {
@@ -73,13 +73,7 @@ export async function GET(req) {
     });
 
     const res = NextResponse.redirect(new URL('/portal', baseUrl));
-    res.cookies.set('session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    res.cookies.set('session', sessionToken, sessionCookieOptions());
     res.cookies.delete('oauth_state');
     return res;
   } catch (err) {
