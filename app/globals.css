@@ -1861,8 +1861,7 @@ a:focus-visible,
 
 .dashboard-hero-copy,
 .dashboard-hero-action { position: relative; z-index: 1; }
-.dashboard-eyebrow,
-.portal-eyebrow {
+.dashboard-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1873,7 +1872,6 @@ a:focus-visible,
 }
 
 .dashboard-eyebrow > span,
-.portal-eyebrow > span,
 .dashboard-live > i {
   width: 7px;
   height: 7px;
@@ -1965,27 +1963,6 @@ a:focus-visible,
 .candidate-results { padding: clamp(16px, 2.4vw, 24px); }
 .schedule-form-card { scroll-margin-top: 28px; }
 
-.portal-intro {
-  position: relative;
-  overflow: hidden;
-  margin: 12px 0 28px;
-  padding: clamp(24px, 4vw, 38px);
-  border: 1px solid rgba(133, 190, 185, .18);
-  border-radius: 22px;
-  background:
-    radial-gradient(ellipse at 90% 0%, rgba(84, 198, 185, .15), transparent 38%),
-    linear-gradient(115deg, rgba(19, 42, 47, .82), rgba(18, 30, 39, .92));
-}
-
-.portal-intro h1 {
-  margin-top: 12px;
-  color: #f1f7f5;
-  font-size: clamp(28px, 4vw, 38px);
-  letter-spacing: -.045em;
-}
-
-.portal-intro p { margin-top: 9px; color: rgba(224, 239, 235, .68); font-size: 14px; }
-
 .portal-module {
   min-height: 250px;
   padding: 28px !important;
@@ -2017,7 +1994,6 @@ a:focus-visible,
   .dashboard-filters .dashboard-filter-label { width: 100%; }
   .dashboard-stat { min-height: 124px; padding: 14px; }
   .dashboard-stat-value { font-size: 30px; }
-  .portal-intro { margin-top: 4px; padding: 24px 20px; }
   .portal-module { min-height: 230px; padding: 22px !important; }
 }
 

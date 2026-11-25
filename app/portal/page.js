@@ -38,11 +38,12 @@ export default function Portal() {
   }
 
   const displayName = me?.name || me?.email?.split('@')[0] || 'Admin';
+  const activeModuleCount = Object.values(modules).filter(Boolean).length;
 
   return (
     <div className="page-shell">
       <div className="shell-panel workspace-panel">
-        <div className="bar" style={{ marginBottom: 36 }}>
+        <div className="bar">
           <div className="brand" style={{ margin: 0, gap: 14 }}>
             <Logo h={44} />
             <span style={{ fontWeight: 600, fontSize: 15, borderLeft: '1px solid var(--line)', paddingLeft: 14 }}>
@@ -57,17 +58,19 @@ export default function Portal() {
           </div>
         </div>
 
-        <div className="portal-intro">
-          <div className="portal-eyebrow"><span /> YOUR WORKSPACE</div>
-          <h1>
-            Welcome back, {displayName}
-          </h1>
-          <p className="mut">
-            Your tools, thoughtfully brought together. Choose a module to continue.
-          </p>
-        </div>
+        <section className="dashboard-hero">
+          <div className="dashboard-hero-copy">
+            <span className="dashboard-eyebrow"><span /> YOUR WORKSPACE</span>
+            <h1>Welcome back, {displayName}</h1>
+            <p>Your tools, thoughtfully brought together. Choose a module to continue.</p>
+          </div>
+          <div className="dashboard-hero-action">
+            {!moduleError && <span className="dashboard-live"><i /> {activeModuleCount} active {activeModuleCount === 1 ? 'module' : 'modules'}</span>}
+            <a className="btn primary" href="#workspace-modules">Explore modules</a>
+          </div>
+        </section>
 
-        <div className="portal-grid">
+        <div className="portal-grid" id="workspace-modules">
         {moduleError && <p className="err" role="alert">{moduleError}</p>}
         {/* Active Module: Interview Feedback */}
         {modules['interview-feedback'] && <div
