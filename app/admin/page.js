@@ -824,7 +824,7 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
         <div className="chips" style={{ marginTop: 18 }}>
           {c.status === 'proceed' && R.length > 0 && !pend && (
             <button className="btn primary" disabled={movingToOnboarding} onClick={markReadyForOnboarding}>
-              {movingToOnboarding ? <><Spinner />Moving…</> : 'Mark ready for onboarding'}
+              {movingToOnboarding ? <><Spinner />Moving…</> : 'Mark as onboarded'}
             </button>
           )}
           {c.status !== 'complete' && !pend && ['proceed', 'hold', 'reject'].filter((k) => k !== c.status).map((k) => <button key={k} className="btn ghost" onClick={() => move(c.id, k)}>{k === 'proceed' ? 'Mark shortlisted for next round' : 'Mark ' + LBL[k].toLowerCase()}</button>)}
