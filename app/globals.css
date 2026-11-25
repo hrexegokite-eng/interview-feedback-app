@@ -1451,10 +1451,10 @@ input:focus, textarea:focus, select:focus {
   min-height: 100svh;
   place-items: center;
   overflow: hidden;
-  padding: clamp(20px, 4vw, 52px);
+  padding: clamp(20px, 4vw, 48px);
   background:
-    radial-gradient(ellipse at 50% 48%, rgba(47, 91, 116, .2), transparent 48%),
-    linear-gradient(145deg, #101923 0%, #182936 52%, #101a24 100%);
+    radial-gradient(ellipse at 50% 48%, rgba(35, 76, 103, .16), transparent 48%),
+    linear-gradient(145deg, #07101a 0%, #0b1a29 52%, #08131e 100%);
 }
 
 .login-atmosphere {
@@ -1492,15 +1492,15 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(380px, .94fr);
-  width: min(100%, 1180px);
-  min-height: min(680px, calc(100svh - 64px));
+  grid-template-columns: minmax(0, 1.06fr) minmax(350px, .94fr);
+  width: min(100%, 1240px);
+  min-height: min(620px, calc(100svh - 64px));
   padding: 0;
   overflow: hidden;
-  border: 1px solid rgba(213, 225, 233, .34);
-  border-radius: 24px;
-  background: #f7f9fa;
-  box-shadow: 0 36px 100px rgba(0, 0, 0, .34), 0 2px 8px rgba(4, 17, 26, .12);
+  border: 1px solid rgba(154, 187, 205, .16);
+  border-radius: 12px;
+  background: #091421;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .32), 0 2px 8px rgba(4, 17, 26, .12);
   animation: login-panel-enter .65s var(--ease-std) both;
 }
 
@@ -1524,7 +1524,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: clamp(38px, 5vw, 66px);
+  padding: clamp(32px, 4vw, 58px);
   overflow: hidden;
   background:
     radial-gradient(440px circle at var(--spotlight-x, 48%) var(--spotlight-y, 42%), rgba(73, 128, 154, .22), transparent 82%),
@@ -1559,7 +1559,7 @@ input:focus, textarea:focus, select:focus {
 .login-story-copy {
   max-width: 470px;
   margin: auto 0;
-  padding: 48px 0;
+  padding: 36px 0;
 }
 
 .login-story-copy > span {
@@ -1571,10 +1571,10 @@ input:focus, textarea:focus, select:focus {
 
 .login-story-copy h1 {
   max-width: 9ch;
-  margin-top: 21px;
+  margin-top: 16px;
   color: #f4f7f8;
   font-family: 'Google Sans', sans-serif;
-  font-size: clamp(48px, 5.2vw, 68px);
+  font-size: clamp(46px, 4.7vw, 64px);
   font-weight: 400;
   line-height: 1.04;
   letter-spacing: -.035em;
@@ -1587,7 +1587,7 @@ input:focus, textarea:focus, select:focus {
 
 .login-story-copy p {
   max-width: 370px;
-  margin-top: 20px;
+  margin-top: 16px;
   color: #b1c0c8;
   font-size: 14px;
   line-height: 1.7;
@@ -1623,9 +1623,9 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   min-width: 0;
   align-items: center;
-  padding: clamp(42px, 6vw, 76px) clamp(34px, 5.5vw, 72px);
-  background: #f7f9fa;
-  color: #1b2b38;
+  padding: clamp(36px, 5vw, 64px) clamp(34px, 5vw, 58px);
+  background: #091421;
+  color: #edf5f8;
 }
 
 .login-content-inner {
@@ -1637,7 +1637,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #617b89;
+  color: #78a3b5;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: .16em;
@@ -1655,33 +1655,33 @@ input:focus, textarea:focus, select:focus {
 .login-content-head { margin-top: 24px; }
 
 .login-content-head h2 {
-  color: #1b2b38;
-  font-size: clamp(32px, 3.2vw, 40px);
+  color: #eef6fa;
+  font-size: clamp(30px, 3vw, 38px);
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -.05em;
 }
 
 .login-content-head p {
-  margin-top: 10px;
-  color: #667580;
-  font-size: 14px;
+  margin-top: 8px;
+  color: #9fb4c0;
+  font-size: 13px;
   line-height: 1.55;
 }
 
 .login-content .btn.google {
   display: flex;
-  min-height: 56px;
+  min-height: 52px;
   align-items: center;
   justify-content: center;
   gap: 11px;
-  margin-top: 32px;
-  padding: 12px 18px;
-  border: 1px solid #d7e0e5;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #fff, #f8fafb);
-  box-shadow: 0 3px 8px rgba(24, 48, 64, .06), inset 0 1px 0 #fff;
-  color: #273845;
+  margin-top: 28px;
+  padding: 10px 18px;
+  border: 1px solid #26384a;
+  border-radius: 8px;
+  background: #111f2d;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .18), inset 0 1px 0 rgba(255, 255, 255, .025);
+  color: #eaf1f5;
   font-size: 14px;
   font-weight: 600;
   overflow: hidden;
@@ -1700,8 +1700,8 @@ input:focus, textarea:focus, select:focus {
 
 .login-content .btn.google:hover {
   transform: translateY(-2px);
-  border-color: #9abac7;
-  box-shadow: 0 9px 22px rgba(24, 62, 82, .12);
+  border-color: #3d5d72;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .24);
 }
 
 .login-content .btn.google:hover::before { animation: login-button-shine .8s ease-out; }
@@ -1718,9 +1718,9 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 18px;
-  color: #6b7983;
-  font-size: 12px;
+  margin-top: 14px;
+  color: #7e96a4;
+  font-size: 11.5px;
 }
 
 .login-assurance svg { flex: none; color: #4a8298; }
