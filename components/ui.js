@@ -60,7 +60,7 @@ export function LoadingState({ label = 'Preparing your workspace' }) {
   );
 }
 
-export const LBL = { proceed: 'Proceed', hold: 'Hold', reject: 'Rejected', scheduled: 'Awaiting feedback', complete: 'Ready for onboarding' };
+export const LBL = { proceed: 'Proceed', hold: 'Hold', reject: 'Rejected', scheduled: 'Awaiting feedback', complete: 'Onboarded' };
 export const ICO = { proceed: 'check', hold: 'pause', reject: 'x' };
 export const COL = { scheduled: ['acc', 'accb'], proceed: ['ok', 'okb'], hold: ['hd', 'hdb'], reject: ['no', 'nob'] };
 export const DESC = { proceed: 'Move to the next stage', hold: 'Need more time or information', reject: 'Not the right fit right now' };

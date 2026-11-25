@@ -118,7 +118,7 @@ export default function SuperAdmin() {
             <h1 style={{ margin: 0, fontSize: 25 }}>Workspace administration</h1>
             <p className="sm mut" style={{ marginTop: 6 }}>Manage workspace access, SBU-specific feedback forms, and recent activity.</p>
             <p className="sm mut" style={{ marginTop: 4 }}>
-              {data?.counts.candidates ?? 0} candidate records · {data?.counts.onboarding ?? 0} ready for onboarding
+              {data?.counts.candidates ?? 0} candidate records · {data?.counts.onboarding ?? 0} onboarded
             </p>
           </div>
           <button className="btn primary" onClick={() => router.push('/admin')}><Icon n="user" s={15} />Manage candidates</button>

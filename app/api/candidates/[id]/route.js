@@ -33,9 +33,9 @@ export async function PATCH(req, { params }) {
           group by c.id
         `;
         if (!eligibility.length) return bad('Candidate not found.', 404);
-        if (eligibility[0].status !== 'proceed') return bad('Shortlist the candidate before marking them ready for onboarding.', 409);
+        if (eligibility[0].status !== 'proceed') return bad('Shortlist the candidate before marking them as onboarded.', 409);
         if (!eligibility[0].round_count) return bad('Schedule at least one interview round before onboarding.', 409);
-        if (eligibility[0].pending_rounds) return bad('Complete all interview rounds before marking the candidate ready for onboarding.', 409);
+        if (eligibility[0].pending_rounds) return bad('Complete all interview rounds before marking the candidate as onboarded.', 409);
         return bad('Candidate status changed. Refresh and try again.', 409);
       }
       await logAdminAction(admin.email, 'candidate.status_changed', id, { status: body.status });
