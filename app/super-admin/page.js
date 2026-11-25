@@ -9,6 +9,19 @@ const MODULE_NAMES = {
   'exit-form': 'Exit Form',
 };
 
+function formatStorage(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return 'Unavailable';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  let value = bytes;
+  let unitIndex = 0;
+  while (value >= 1000 && unitIndex < units.length - 1) {
+    value /= 1000;
+    unitIndex += 1;
+  }
+  const digits = value < 10 && unitIndex > 0 ? 2 : value < 100 && unitIndex > 0 ? 1 : 0;
+  return `${new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(value)} ${units[unitIndex]}`;
+}
+
 export default function SuperAdmin() {
   const router = useRouter();
   const [me, setMe] = useState(null);
@@ -97,6 +110,16 @@ export default function SuperAdmin() {
     return <LoadingState label="Loading super admin panel" />;
   }
 
+  const storage = data?.storage;
+  const storagePercent = storage?.limitBytes
+    ? (storage.usedBytes / storage.limitBytes) * 100
+    : null;
+  const storageProgress = storagePercent === null ? 0 : Math.min(Math.max(storagePercent, 0), 100);
+  const storageColor = storagePercent >= 90 ? 'var(--no)' : storagePercent >= 75 ? 'var(--hd)' : 'var(--acc)';
+  const storageRemaining = storage?.limitBytes
+    ? Math.max(storage.limitBytes - storage.usedBytes, 0)
+    : null;
+
   return (
     <div className="page-shell">
       <div className="shell-panel workspace-panel">
@@ -180,6 +203,58 @@ export default function SuperAdmin() {
             </div>
           </section>
         </div>
+
+        <section className="card database-storage">
+          <div>
+            <h2>Database storage</h2>
+            <p className="sm mut">Current PostgreSQL database size and configured capacity.</p>
+          </div>
+          <div className="storage-metrics">
+            <div className="storage-metric">
+              <span className="sm mut">Used</span>
+              <strong>{formatStorage(storage?.usedBytes)}</strong>
+            </div>
+            <div className="storage-metric">
+              <span className="sm mut">Configured capacity</span>
+              <strong>{storage?.limitBytes ? formatStorage(storage.limitBytes) : 'Not configured'}</strong>
+            </div>
+            <div className="storage-metric">
+              <span className="sm mut">{storagePercent !== null && storagePercent > 100 ? 'Over capacity' : 'Available'}</span>
+              <strong>
+                {storagePercent === null
+                  ? '—'
+                  : storagePercent > 100
+                    ? formatStorage(storage.usedBytes - storage.limitBytes)
+                    : formatStorage(storageRemaining)}
+              </strong>
+            </div>
+          </div>
+          {storagePercent !== null && (
+            <>
+              <div
+                className="storage-meter"
+                role="progressbar"
+                aria-label="Database storage used"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(storageProgress)}
+                aria-valuetext={`${formatStorage(storage.usedBytes)} of ${formatStorage(storage.limitBytes)} used`}
+              >
+                <span style={{ width: `${storageProgress}%`, background: storageColor }} />
+              </div>
+              <p className="sm mut storage-caption">
+                {storagePercent.toFixed(1)}% of configured capacity used.
+              </p>
+            </>
+          )}
+          {storage?.configError ? (
+            <p className="storage-warning" role="alert">{storage.configError}</p>
+          ) : !storage?.limitBytes ? (
+            <p className="sm mut storage-caption">
+              Set <code>DATABASE_STORAGE_LIMIT_GB</code> to display a capacity and usage bar. The configured capacity is informational and does not enforce a database quota.
+            </p>
+          ) : null}
+        </section>
 
         <section className="card" style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>

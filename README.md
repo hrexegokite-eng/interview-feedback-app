@@ -18,6 +18,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 | `AUTH_SECRET` | 32+ character random secret for JWT signing |
 | `SUPER_ADMIN_EMAIL` | *(Optional)* Initial super admin email (defaults to `hrops@gokitetours.com`) |
 | `DATABASE_URL` | PostgreSQL connection string (e.g. Neon Postgres) |
+| `DATABASE_STORAGE_LIMIT_GB` | *(Optional)* Informational database capacity shown in Super Admin (decimal GB) |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
 
@@ -39,5 +40,7 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 Production requires a persistent PostgreSQL database. Create a database (for example, on Neon), then add its connection string as `DATABASE_URL` in the hosting provider's production environment variables. On Vercel, configure it under **Project Settings → Environment Variables** and redeploy. Do not rely on the local PGlite database for production: production requests fail clearly if `DATABASE_URL` is missing or invalid rather than silently using temporary storage.
 
 After deployment, verify the database connection at `/api/db-check`; it should report `Neon Serverless Postgres` and `status: connected`. Candidate, interview-round, and uploaded-file data are stored in that shared PostgreSQL database, so authorized users see the same records from different devices.
+
+The Super Admin workspace settings display actual database size using PostgreSQL's `pg_database_size`. Set `DATABASE_STORAGE_LIMIT_GB` to show a configured capacity and usage bar; this value is informational and does not enforce a storage quota.
 
 The app no longer inserts sample candidates automatically. Existing records are not deleted when deploying this change; review and remove any old demo records from the production database separately if needed.

@@ -14,13 +14,39 @@ async function authorize() {
 export async function GET() {
   const auth = await authorize();
   if (auth.error) return auth.error;
-  const [admins, modules, audit, counts] = await Promise.all([
+  const [admins, modules, audit, counts, storage] = await Promise.all([
     sql`select email, role, created_at, created_by from admin_users order by role desc, email`,
     sql`select key, enabled, updated_at, updated_by from workspace_modules order by key`,
     sql`select id, actor_email, action, target, details, created_at from admin_audit_log order by created_at desc limit 100`,
     sql`select count(*)::int as candidates, count(*) filter (where status = 'complete')::int as onboarding from candidates`,
+    sql`select pg_database_size(current_database())::text as used_bytes`,
   ]);
-  return Response.json({ admins, modules, audit, counts: counts[0] });
+
+  const usedBytes = Number(storage[0]?.used_bytes);
+  if (!Number.isSafeInteger(usedBytes) || usedBytes < 0) {
+    throw new Error('Database returned an invalid storage size.');
+  }
+
+  const configuredLimit = process.env.DATABASE_STORAGE_LIMIT_GB?.trim() || '';
+  let limitBytes = null;
+  let storageConfigError = null;
+  if (configuredLimit) {
+    const limitGb = Number(configuredLimit);
+    const parsedLimitBytes = Math.round(limitGb * 1_000_000_000);
+    if (!/^\d+(?:\.\d+)?$/.test(configuredLimit) || !Number.isSafeInteger(parsedLimitBytes) || parsedLimitBytes <= 0) {
+      storageConfigError = 'DATABASE_STORAGE_LIMIT_GB must be a positive number.';
+    } else {
+      limitBytes = parsedLimitBytes;
+    }
+  }
+
+  return Response.json({
+    admins,
+    modules,
+    audit,
+    counts: counts[0],
+    storage: { usedBytes, limitBytes, configError: storageConfigError },
+  });
 }
 
 export async function POST(req) {
