@@ -1939,9 +1939,9 @@ a:focus-visible,
 
 .dashboard-stat {
   display: grid;
-  min-height: 142px;
-  grid-template-rows: 5px auto 1fr auto;
-  gap: 12px;
+  min-height: 158px;
+  grid-template-rows: 5px auto 1fr auto auto;
+  gap: 10px;
   padding: 17px 18px;
   border-radius: 17px;
   text-align: left;
@@ -1957,6 +1957,7 @@ a:focus-visible,
 
 .dashboard-stat-label { color: var(--mut); font-size: 12px; font-weight: 600; }
 .dashboard-stat-value { align-self: end; color: var(--ink); font-size: 34px; font-weight: 650; letter-spacing: -.055em; line-height: 1; }
+.dashboard-stat-detail { color: var(--mut); font-size: 11px; }
 .dashboard-stat-hint { display: inline-flex; align-items: center; gap: 5px; color: color-mix(in srgb, var(--metric-color, var(--acc)) 78%, var(--ink)); font-size: 11px; font-weight: 600; }
 .dashboard-stat-hint svg { opacity: .8; }
 .dashboard-stat:hover { border-color: color-mix(in srgb, var(--metric-color, var(--acc)) 42%, var(--line)); }

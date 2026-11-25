@@ -366,12 +366,11 @@ export default function Admin() {
   const scheduledInterviews = invalidRange ? 0 : cands.reduce((total, candidate) => total + candidate.rounds
     .filter((round) => matchesInterviewDate(round.scheduled_at, dateFilter, dateFrom, dateTo)).length, 0);
   const stats = [
-    ['Scheduled interviews', scheduledInterviews, 'var(--acc)', 'schedule', 'all'],
-    ['Pending feedback', cnt('scheduled'), 'var(--hd)', 'schedule', 'all'],
-    ['Rejected', cnt('reject'), 'var(--no)', 'other', 'reject'],
-    ['Selected', cnt('proceed'), 'var(--ok)', 'proceed', 'all'],
+    ['Schedule', scheduledInterviews, `${cnt('scheduled')} pending feedback`, 'var(--acc)', 'schedule', 'all'],
+    ['Shortlisted for next round', cnt('proceed'), 'Candidates selected', 'var(--ok)', 'proceed', 'all'],
+    ['Hold & Rejected', cnt('hold') + cnt('reject'), `${cnt('hold')} on hold · ${cnt('reject')} rejected`, 'var(--no)', 'other', 'all'],
+    ['Onboarded', cnt('complete'), 'Candidates onboarded', 'var(--ok)', 'complete', 'all'],
   ];
-  const tabs = [['schedule', 'Schedule'], ['proceed', 'Shortlisted for next round', cnt('proceed')], ['other', 'Hold & Rejected', cnt('hold') + cnt('reject')], ['complete', 'Onboarded', cnt('complete')]];
   const open = (id) => setProf(id);
   const profile = cands.find((c) => c.id === prof);
   const feedbackCount = cands.reduce((total, candidate) => total + candidate.rounds.filter((round) => round.decision).length, 0);
@@ -431,19 +430,14 @@ export default function Admin() {
         {dateFilter === 'range' && !dateFrom && !dateTo && <p className="sm mut">Choose a start date, an end date, or both to apply the range.</p>}
 
         <div className="stats">
-          {stats.map(([label, value, color, targetTab, targetFilter]) => (
+          {stats.map(([label, value, detail, color, targetTab, targetFilter]) => (
             <button key={label} className="stat dashboard-stat" style={{ '--metric-color': color }} onClick={() => { setTab(targetTab); setFilt(targetFilter); setQ(''); }}>
               <span className="dashboard-stat-accent" />
               <span className="dashboard-stat-label">{label}</span>
               <span className="dashboard-stat-value">{value}</span>
+              <span className="dashboard-stat-detail">{detail}</span>
               <span className="dashboard-stat-hint">View pipeline <Icon n="external" s={13} /></span>
             </button>
-          ))}
-        </div>
-
-        <div className="seg" role="tablist">
-          {tabs.map(([k, l, c]) => (
-            <button key={k} role="tab" aria-selected={tab === k} onClick={() => { setTab(k); if (k !== 'other') setFilt('all'); setQ(''); }}>{l}{c != null && <b>{c}</b>}</button>
           ))}
         </div>
 
