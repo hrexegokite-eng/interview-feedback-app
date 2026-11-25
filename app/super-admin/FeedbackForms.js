@@ -171,8 +171,8 @@ export default function FeedbackForms() {
       <section className="card feedback-form-list">
         <div className="feedback-form-list-head">
           <div>
-            <h2 style={{ marginBottom: 4 }}>BCU feedback forms</h2>
-            <p className="sm mut">Create named forms for the BCU dropdown. Editing a form affects new interview links only.</p>
+            <h2 style={{ marginBottom: 4 }}>SBU feedback forms</h2>
+            <p className="sm mut">Create named forms for the SBU dropdown. Editing a form affects new interview links only.</p>
           </div>
           <div className="feedback-form-list-actions">
             <button className="btn ghost" disabled={busy} onClick={() => { setError(''); setMessage(''); setForm(blankB2CForm()); }}>
@@ -198,7 +198,7 @@ export default function FeedbackForms() {
             </button>
             <button className="btn ghost danger" disabled={busy} onClick={() => remove(item)}>Delete</button>
           </div>
-        )) : <p className="sm mut" style={{ marginTop: 16 }}>No feedback forms yet. Create one to add named options to the BCU dropdown.</p>}
+        )) : <p className="sm mut" style={{ marginTop: 16 }}>No feedback forms yet. Create one to add named options to the SBU dropdown.</p>}
       </section>
 
       {form && (
@@ -206,7 +206,7 @@ export default function FeedbackForms() {
           <h2>{form.id ? 'Edit feedback form' : 'Create feedback form'}</h2>
           <p className="sm mut">Choose an answer type and optional segment for each question. Long text / comments adds a comment field.</p>
           <div className="f">
-            <label htmlFor="feedback-form-name">Form name / BCU</label>
+            <label htmlFor="feedback-form-name">Form name / SBU</label>
             <input id="feedback-form-name" required maxLength={120} value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
           </div>
 

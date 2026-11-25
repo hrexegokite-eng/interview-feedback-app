@@ -272,7 +272,7 @@ export default function Admin() {
     setExporting(true);
     try {
       const date = new Date().toISOString().slice(0, 10);
-      const headers = ['Candidate', 'BCU', 'Role', 'Interview Round', 'Interviewer', 'Decision', 'Comments', 'Evaluation', 'Submitted At'];
+      const headers = ['Candidate', 'SBU', 'Role', 'Interview Round', 'Interviewer', 'Decision', 'Comments', 'Evaluation', 'Submitted At'];
       if (format === 'excel') {
         const ExcelJS = (await import('exceljs')).default;
         const workbook = new ExcelJS.Workbook();
@@ -549,7 +549,7 @@ function Schedule({ cands, forms, reload, flash, open }) {
         <h2>Add candidate &amp; schedule Round 1</h2>
         <div className="f"><label htmlFor="nm">Candidate name <span className="req">*</span></label><input id="nm" required className={badName ? 'bad' : ''} placeholder="e.g. Priya Sharma" autoComplete="off" value={f.name} onChange={on('name')} /></div>
         <div className="f">
-          <label htmlFor="bcu">BCU / feedback form</label>
+          <label htmlFor="bcu">SBU / feedback form</label>
           <select id="bcu" value={f.feedbackFormId} onChange={on('feedbackFormId')}>
             <option value="">Standard interview assessment</option>
             {forms.filter((form) => form.active).map((form) => <option key={form.id} value={form.id}>{form.name}</option>)}
@@ -587,7 +587,7 @@ function Schedule({ cands, forms, reload, flash, open }) {
                 <Av name={c.name} small />
                 <div className="grow">
                   <b>{c.name}</b>
-                  <div className="sm mut">{[c.bcu ? 'BCU: ' + c.bcu : '', rname(r), c.role, r.interviewer, fmt(r.scheduled_at)].filter(Boolean).join(' · ')}</div>
+                  <div className="sm mut">{[c.bcu ? 'SBU: ' + c.bcu : '', rname(r), c.role, r.interviewer, fmt(r.scheduled_at)].filter(Boolean).join(' · ')}</div>
                   {(r.meet_link || r.cv_url) && (
                     <div className="resource-bar" onClick={(e) => e.stopPropagation()}>
                       {r.meet_link && <a href={r.meet_link} target="_blank" rel="noreferrer" className="meet-link"><Icon n="video" s={13} className="field-icon" />Join Meet</a>}
@@ -701,7 +701,7 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
       <div className="profile-header"><button className="profile-back" onClick={close} aria-label="Back to candidate list"><Icon n="x" s={14} />Back</button><span className="sm mut">Candidate profile</span></div>
         <div className="who" style={{ marginTop: 18 }}>
           <Av name={c.name} />
-          <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{[c.bcu ? 'BCU: ' + c.bcu : '', c.role || 'Candidate', R.length + (R.length === 1 ? ' round' : ' rounds')].filter(Boolean).join(' · ')}</p></div>
+          <div><h1 style={{ fontSize: 22 }}>{c.name}</h1><p className="mut sm">{[c.bcu ? 'SBU: ' + c.bcu : '', c.role || 'Candidate', R.length + (R.length === 1 ? ' round' : ' rounds')].filter(Boolean).join(' · ')}</p></div>
           <span className={'badge ' + c.status} style={{ marginLeft: 'auto' }}>{LBL[c.status]}</span>
         </div>
         <div style={{ marginTop: 12 }}>
@@ -714,7 +714,7 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
             <h2>Candidate details</h2>
             <div className="f"><label htmlFor="edit-candidate-name">Candidate name</label><input id="edit-candidate-name" required maxLength={200} value={candidateForm.name} onChange={(e) => setCandidateForm({ ...candidateForm, name: e.target.value })} /></div>
             <div className="f">
-              <label htmlFor="edit-candidate-bcu">BCU / feedback form</label>
+              <label htmlFor="edit-candidate-bcu">SBU / feedback form</label>
               <select
                 id="edit-candidate-bcu"
                 value={candidateForm.feedbackFormId}
@@ -725,12 +725,12 @@ function Profile({ c, forms, close, reload, flash, move, remove }) {
                 })}
               >
                 <option value="">Standard interview assessment</option>
-                {candidateForm.feedbackFormId === '__legacy_bcu__' && <option value="__legacy_bcu__">Legacy BCU: {c.bcu}</option>}
+                {candidateForm.feedbackFormId === '__legacy_bcu__' && <option value="__legacy_bcu__">Legacy SBU: {c.bcu}</option>}
                 {forms.filter((form) => form.active || form.id === c.feedback_form_id).map((form) => (
                   <option key={form.id} value={form.id}>{form.name}{form.active ? '' : ' (archived)'}</option>
                 ))}
               </select>
-              {candidateForm.feedbackFormId === '' && candidateForm.legacyBcu && <span className="sm mut">Saving will keep the current legacy BCU.</span>}
+              {candidateForm.feedbackFormId === '' && candidateForm.legacyBcu && <span className="sm mut">Saving will keep the current legacy SBU.</span>}
             </div>
             <div className="f"><label htmlFor="edit-candidate-role">Role</label><input id="edit-candidate-role" maxLength={200} value={candidateForm.role} onChange={(e) => setCandidateForm({ ...candidateForm, role: e.target.value })} /></div>
             <button className="btn primary" type="submit" disabled={savingEdit}>{savingEdit ? 'Saving…' : 'Save candidate details'}</button>

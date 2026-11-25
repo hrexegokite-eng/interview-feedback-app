@@ -44,7 +44,7 @@ export async function POST(req) {
   if (feedbackFormId && !formRows.length) return bad('That feedback form is unavailable.', 404);
   const form = formRows[0];
   const legacyBcu = typeof b.bcu === 'string' ? b.bcu.trim() : '';
-  if (legacyBcu.length > 120) return bad('BCU must be 120 characters or fewer.');
+  if (legacyBcu.length > 120) return bad('SBU must be 120 characters or fewer.');
   const snapshot = form ? { id: form.id, name: form.name, version: form.version, questions: form.questions } : null;
   const rows = await sql`
     with c as (
