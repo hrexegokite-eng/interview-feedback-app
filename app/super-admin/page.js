@@ -153,9 +153,66 @@ export default function SuperAdmin() {
         <div className="seg" role="tablist" aria-label="Super admin sections" style={{ marginBottom: 18 }}>
           <button role="tab" aria-selected={tab === 'settings'} onClick={() => setTab('settings')}>Workspace settings</button>
           <button role="tab" aria-selected={tab === 'forms'} onClick={() => setTab('forms')}>Feedback forms</button>
+          <button role="tab" aria-selected={tab === 'storage'} onClick={() => setTab('storage')}>Database storage</button>
         </div>
 
-        {tab === 'forms' ? <FeedbackForms /> : <>
+        {tab === 'forms' && <FeedbackForms />}
+
+        {tab === 'storage' && (
+          <section className="card database-storage">
+            <div>
+              <h2>Database storage</h2>
+              <p className="sm mut">Current PostgreSQL database size and configured capacity.</p>
+            </div>
+            <div className="storage-metrics">
+              <div className="storage-metric">
+                <span className="sm mut">Used</span>
+                <strong>{formatStorage(storage?.usedBytes)}</strong>
+              </div>
+              <div className="storage-metric">
+                <span className="sm mut">Configured capacity</span>
+                <strong>{storage?.limitBytes ? formatStorage(storage.limitBytes) : 'Not configured'}</strong>
+              </div>
+              <div className="storage-metric">
+                <span className="sm mut">{storagePercent !== null && storagePercent > 100 ? 'Over capacity' : 'Available'}</span>
+                <strong>
+                  {storagePercent === null
+                    ? '—'
+                    : storagePercent > 100
+                      ? formatStorage(storage.usedBytes - storage.limitBytes)
+                      : formatStorage(storageRemaining)}
+                </strong>
+              </div>
+            </div>
+            {storagePercent !== null && (
+              <>
+                <div
+                  className="storage-meter"
+                  role="progressbar"
+                  aria-label="Database storage used"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(storageProgress)}
+                  aria-valuetext={`${formatStorage(storage.usedBytes)} of ${formatStorage(storage.limitBytes)} used`}
+                >
+                  <span style={{ width: `${storageProgress}%`, background: storageColor }} />
+                </div>
+                <p className="sm mut storage-caption">
+                  {storagePercent.toFixed(1)}% of configured capacity used.
+                </p>
+              </>
+            )}
+            {storage?.configError ? (
+              <p className="storage-warning" role="alert">{storage.configError}</p>
+            ) : !storage?.limitBytes ? (
+              <p className="sm mut storage-caption">
+                Set <code>DATABASE_STORAGE_LIMIT_GB</code> to display a capacity and usage bar. The configured capacity is informational and does not enforce a database quota.
+              </p>
+            ) : null}
+          </section>
+        )}
+
+        {tab === 'settings' && <>
         <div className="split">
           <section className="card">
             <h2>Admin access</h2>
@@ -203,58 +260,6 @@ export default function SuperAdmin() {
             </div>
           </section>
         </div>
-
-        <section className="card database-storage">
-          <div>
-            <h2>Database storage</h2>
-            <p className="sm mut">Current PostgreSQL database size and configured capacity.</p>
-          </div>
-          <div className="storage-metrics">
-            <div className="storage-metric">
-              <span className="sm mut">Used</span>
-              <strong>{formatStorage(storage?.usedBytes)}</strong>
-            </div>
-            <div className="storage-metric">
-              <span className="sm mut">Configured capacity</span>
-              <strong>{storage?.limitBytes ? formatStorage(storage.limitBytes) : 'Not configured'}</strong>
-            </div>
-            <div className="storage-metric">
-              <span className="sm mut">{storagePercent !== null && storagePercent > 100 ? 'Over capacity' : 'Available'}</span>
-              <strong>
-                {storagePercent === null
-                  ? '—'
-                  : storagePercent > 100
-                    ? formatStorage(storage.usedBytes - storage.limitBytes)
-                    : formatStorage(storageRemaining)}
-              </strong>
-            </div>
-          </div>
-          {storagePercent !== null && (
-            <>
-              <div
-                className="storage-meter"
-                role="progressbar"
-                aria-label="Database storage used"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(storageProgress)}
-                aria-valuetext={`${formatStorage(storage.usedBytes)} of ${formatStorage(storage.limitBytes)} used`}
-              >
-                <span style={{ width: `${storageProgress}%`, background: storageColor }} />
-              </div>
-              <p className="sm mut storage-caption">
-                {storagePercent.toFixed(1)}% of configured capacity used.
-              </p>
-            </>
-          )}
-          {storage?.configError ? (
-            <p className="storage-warning" role="alert">{storage.configError}</p>
-          ) : !storage?.limitBytes ? (
-            <p className="sm mut storage-caption">
-              Set <code>DATABASE_STORAGE_LIMIT_GB</code> to display a capacity and usage bar. The configured capacity is informational and does not enforce a database quota.
-            </p>
-          ) : null}
-        </section>
 
         <section className="card" style={{ marginTop: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
