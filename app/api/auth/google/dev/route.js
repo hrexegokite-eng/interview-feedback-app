@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { createSession, isAdminEmail, sessionCookieOptions } from '@/lib/auth';
+import { createSession, isAdminEmail } from '@/lib/auth';
 
 export async function POST(req) {
   if (process.env.NODE_ENV === 'production') {
@@ -18,7 +18,13 @@ export async function POST(req) {
     name: name || trimmed.split('@')[0],
   });
 
-  (await cookies()).set('session', sessionToken, sessionCookieOptions());
+  (await cookies()).set('session', sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24 * 7,
+  });
 
   return Response.json({ ok: true, email: trimmed });
 }

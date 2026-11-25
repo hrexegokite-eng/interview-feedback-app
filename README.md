@@ -8,7 +8,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 - 📹 **Google Meet Integration**: Add Google Meet links per round; accessible by interviewers with one click.
 - 📄 **CV / Resume Upload**: Upload candidate resumes (PDF, DOC, images) attached directly to candidates and interview rounds.
 - 💬 **Interviewer Feedback Portal**: Dedicated tokenized feedback links (`/f/[token]`) for interviewers to record recommendations (Proceed, Hold, Reject) and notes.
-- 🔒 **Authentication**: Admin sign-in with **Google OAuth 2.0** or an enrolled passkey (with dev fallback for local testing).
+- 🔒 **Authentication**: Admin dashboard authentication with **Google OAuth 2.0** (with dev fallback for local testing).
 - 📊 **Hiring Dashboard**: View candidate pipeline status (Scheduled, Shortlisted for next round, On Hold, Rejected) with candidate profiles and timeline history.
 
 ## Environment Variables
@@ -18,13 +18,10 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 | `AUTH_SECRET` | 32+ character random secret for JWT signing |
 | `SUPER_ADMIN_EMAIL` | *(Optional)* Initial super admin email (defaults to `hrops@gokitetours.com`) |
 | `DATABASE_URL` | PostgreSQL connection string (e.g. Neon Postgres) |
-| `APP_URL` | Public app URL; configure the stable HTTPS URL for passkey sign-in in production |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
 
 The configured super admin email is seeded into the database automatically. Only that account and admins explicitly added from **Super Admin** can access the workspace. Set `SUPER_ADMIN_EMAIL` in production before the first deployment; it defaults to `hrops@gokitetours.com`. Development sign-in is disabled in production.
-
-Admins enroll a passkey from **Add passkey** in the workspace portal after signing in with Google. Passkey registration and sign-in require a secure context; production deployments should set `APP_URL` to the stable public HTTPS origin.
 
 ## Getting Started
 
