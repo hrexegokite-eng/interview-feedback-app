@@ -589,7 +589,12 @@ export default function FnfPage() {
             <span className="fnf-brand-title">HROps · Full &amp; Final Settlement</span>
           </div>
           <div className="me">
-            <button className="btn ghost" onClick={() => router.push('/hrops')}>HROps</button>
+            <button className="btn ghost" aria-label="Back to HROps" onClick={() => router.push('/hrops')}>
+              <Icon n="back" s={15} />Back
+            </button>
+            <button className="btn ghost" aria-label="Go to workspace home" onClick={() => router.push('/portal')}>
+              <Icon n="home" s={15} />Home
+            </button>
             {isSuperAdmin && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
           </div>
         </div>

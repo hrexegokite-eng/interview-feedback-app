@@ -57,7 +57,9 @@ export default function HropsHome() {
             <span className="hrops-brand-title">HROps</span>
           </div>
           <div className="me">
-            <button className="btn ghost" onClick={() => router.push('/portal')}>Workspace</button>
+            <button className="btn ghost" aria-label="Go to workspace home" onClick={() => router.push('/portal')}>
+              <Icon n="home" s={15} />Home
+            </button>
             {isSuperAdmin && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
           </div>
         </div>
