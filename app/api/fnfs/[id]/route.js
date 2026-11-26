@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(_request, { params }) {
-  const { error } = await getModuleAdmin('fnf');
+  const { error } = await getModuleAdmin('hrops');
   if (error) return error;
   const { id } = await params;
   if (!UUID.test(id)) return bad('Settlement not found.', 404);
@@ -21,7 +21,7 @@ export async function GET(_request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { error } = await getModuleAdmin('fnf');
+  const { error } = await getModuleAdmin('hrops');
   if (error) return error;
   const { id } = await params;
   if (!UUID.test(id)) return bad('Settlement not found.', 404);
@@ -44,7 +44,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(_request, { params }) {
-  const { error } = await getModuleAdmin('fnf');
+  const { error } = await getModuleAdmin('hrops');
   if (error) return error;
   const { id } = await params;
   if (!UUID.test(id)) return bad('Settlement not found.', 404);

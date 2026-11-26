@@ -7,7 +7,7 @@ import FeedbackForms from './FeedbackForms';
 const MODULE_NAMES = {
   'interview-feedback': 'Interview Feedback',
   'exit-form': 'Exit Form',
-  fnf: 'Full & Final Settlement',
+  hrops: 'HROps',
 };
 
 function formatStorage(bytes) {
@@ -291,6 +291,7 @@ export default function SuperAdmin() {
                           <span className="grow">
                             <b>{MODULE_NAMES[module.key] || module.key}</b>
                             <span className="sm mut" style={{ display: 'block' }}>
+                              {module.key === 'hrops' ? 'Includes Full & Final Settlement (FNF) · ' : ''}
                               {module.enabled ? 'Workspace active' : 'Disabled workspace-wide'}
                             </span>
                           </span>

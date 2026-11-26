@@ -195,18 +195,7 @@ export default function Portal() {
           </div>
         </div>}
 
-        {modules.fnf && <div
-          role="button"
-          tabIndex={0}
-          onClick={() => router.push('/fnf')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              router.push('/fnf');
-            }
-          }}
-          className="card portal-module"
-        >
+        {modules.hrops && <div className="card portal-module">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div style={{
               width: 52,
@@ -230,14 +219,23 @@ export default function Portal() {
           </div>
 
           <h2 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.01em' }}>
-            Full &amp; Final Settlement
+            HROps
           </h2>
           <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: '0 0 22px' }}>
-            Calculate employee final pay, apply deductions, save settlements, and print statements.
+            Human resources operations tools for employee lifecycle workflows.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid var(--line)' }}>
-            <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--mut)' }}>Settlement builder &amp; records</span>
-            <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open Module →</span>
+          <div style={{ paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <button
+              className="btn ghost"
+              onClick={() => router.push('/fnf')}
+              style={{ width: '100%', justifyContent: 'space-between' }}
+            >
+              <span style={{ textAlign: 'left' }}>
+                <b style={{ display: 'block' }}>Full &amp; Final Settlement</b>
+                <span className="sm mut">FNF</span>
+              </span>
+              <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open →</span>
+            </button>
           </div>
         </div>}
 

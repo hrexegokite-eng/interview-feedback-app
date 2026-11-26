@@ -5,7 +5,7 @@ import { readSettlement } from '@/lib/fnf';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { error } = await getModuleAdmin('fnf');
+  const { error } = await getModuleAdmin('hrops');
   if (error) return error;
   const records = await sql`
     SELECT id, company_name, employee_name, employee_id, created_at, updated_at
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const { admin, error } = await getModuleAdmin('fnf');
+  const { admin, error } = await getModuleAdmin('hrops');
   if (error) return error;
   const parsed = await readSettlement(request);
   if (parsed.error) return bad(parsed.error, parsed.status);

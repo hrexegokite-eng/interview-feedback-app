@@ -400,7 +400,7 @@ export default function FnfPage() {
     Promise.all([api('/api/auth/me'), api('/api/workspace-modules')])
       .then(async ([admin, modules]) => {
         setIsSuperAdmin(admin.role === 'superadmin');
-        if (!modules.some((module) => module.key === 'fnf' && module.enabled)) {
+        if (!modules.some((module) => module.key === 'hrops' && module.enabled)) {
           router.replace('/portal');
           return;
         }
@@ -562,7 +562,7 @@ export default function FnfPage() {
         <div className="bar">
           <div className="brand" style={{ margin: 0, gap: 14 }}>
             <Logo h={44} />
-            <span className="fnf-brand-title">Full &amp; Final Settlement</span>
+            <span className="fnf-brand-title">HROps · Full &amp; Final Settlement</span>
           </div>
           <div className="me">
             <button className="btn ghost" onClick={() => router.push('/portal')}>Workspace</button>

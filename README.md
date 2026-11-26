@@ -8,7 +8,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 - 📹 **Google Meet Integration**: Add Google Meet links per round; accessible by interviewers with one click.
 - 📄 **CV / Resume Upload**: Upload candidate resumes (PDF, DOC, images) attached directly to candidates and interview rounds.
 - 💬 **Interviewer Feedback Portal**: Dedicated tokenized feedback links (`/f/[token]`) for interviewers to record recommendations (Proceed, Hold, Reject) and notes.
-- 💼 **Full & Final Settlement**: Calculate prorated final salary, payments, and deductions; save employee settlements and reopen or print them as PDFs.
+- 💼 **HROps**: Includes the Full & Final (FNF) settlement tool for prorated salary, payments, deductions, saved records, and PDF printing.
 - 🔒 **Authentication**: Admin dashboard authentication with **Google OAuth 2.0** (with dev fallback for local testing).
 - 📊 **Hiring Dashboard**: View candidate pipeline status (Scheduled, Shortlisted for next round, On Hold, Rejected) with candidate profiles and timeline history.
 
@@ -26,7 +26,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 
 The configured super admin email is seeded into the database automatically. Only that account and admins explicitly added from **Super Admin** can access the workspace. Super admins can allocate active workspace modules to each admin individually. Set `SUPER_ADMIN_EMAIL` in production before the first deployment; it defaults to `hrops@gokitetours.com`. Development sign-in is disabled in production.
 
-The **Full & Final Settlement** module is available from the workspace portal. Admins can save each settlement to the shared database, reopen and update saved records, delete them, or print the statement to PDF. Super admins can enable or disable the module from **Active workspace modules**.
+The **HROps** module is available from the workspace portal and currently contains **Full & Final Settlement (FNF)**. Admins can save each settlement to the shared database, reopen and update saved records, delete them, or print the statement to PDF. Super admins can enable HROps workspace-wide and allocate it to individual admins.
 
 ## Getting Started
 
