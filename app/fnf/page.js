@@ -4,8 +4,11 @@ import { useRouter } from 'next/navigation';
 import { Icon, Logo, LoadingState, api } from '@/components/ui';
 import { amountInWords, calculateFnf as calculate } from '@/lib/fnf-calculations';
 import {
+  ALL_FOLDERS_ZIP_CONFIRMATION,
+  FOLDER_PDF_CONFIRMATION,
   canShareHropsFolderPdf,
   downloadHropsFolderPdf,
+  prepareAllHropsFoldersZip,
   prepareHropsFolderPdf,
   sharePreparedHropsFolderPdf,
 } from '@/lib/hrops-folder-pdf';
@@ -287,7 +290,22 @@ function SettlementPaper({ data, totals }) {
   );
 }
 
-function SavedSettlements({ records, busyId, sharingId, preparedShareId, onOpen, onDelete, onCreate, onShare }) {
+function SavedSettlements({
+  people,
+  records,
+  busyId,
+  sharingId,
+  downloadingId,
+  preparedShareId,
+  bulkDownloading,
+  bulkDownloadProgress,
+  onOpen,
+  onDelete,
+  onCreate,
+  onShare,
+  onDownload,
+  onDownloadAll,
+}) {
   const [openFolderKey, setOpenFolderKey] = useState(null);
   if (!records.length) {
     return (
@@ -295,7 +313,14 @@ function SavedSettlements({ records, busyId, sharingId, preparedShareId, onOpen,
         <Icon n="inbox" s={30} />
         <h2>No saved settlements</h2>
         <p>Created F&amp;F statements will be kept here for later viewing, editing, and printing.</p>
-        <button className="btn primary" onClick={onCreate}>Create your first settlement</button>
+        <div className="hrops-folder-bulk-actions">
+          {people.length > 0 && (
+            <button className="btn ghost" disabled={bulkDownloading} onClick={onDownloadAll}>
+              <Icon n="download" s={15} />{bulkDownloading ? bulkDownloadProgress || 'Preparing ZIP…' : 'Download all folders (ZIP)'}
+            </button>
+          )}
+          <button className="btn primary" onClick={onCreate}>Create your first settlement</button>
+        </div>
       </div>
     );
   }
@@ -316,7 +341,12 @@ function SavedSettlements({ records, busyId, sharingId, preparedShareId, onOpen,
           <h2>Employee folders</h2>
           <p className="sm mut">{folders.size} people · {records.length} saved {records.length === 1 ? 'settlement' : 'settlements'}</p>
         </div>
-        <button className="btn primary" onClick={onCreate}><Icon n="plus" s={15} /> New settlement</button>
+        <div className="hrops-folder-bulk-actions">
+          <button className="btn ghost" disabled={bulkDownloading} onClick={onDownloadAll}>
+            <Icon n="download" s={15} />{bulkDownloading ? bulkDownloadProgress || 'Preparing ZIP…' : 'Download all folders (ZIP)'}
+          </button>
+          <button className="btn primary" onClick={onCreate}><Icon n="plus" s={15} /> New settlement</button>
+        </div>
       </div>
       {selectedPerson ? (
         <>
@@ -333,12 +363,17 @@ function SavedSettlements({ records, busyId, sharingId, preparedShareId, onOpen,
               <span className="sm mut">{selectedRecords.length} {selectedRecords.length === 1 ? 'settlement' : 'settlements'}</span>
             </div>
             {selectedPerson.person_id && (
-              <button className="btn ghost" disabled={sharingId === selectedPerson.person_id} onClick={() => onShare(selectedPerson.person_id)}>
-                <Icon n={preparedShareId === selectedPerson.person_id ? 'external' : 'download'} s={15} />
-                {sharingId === selectedPerson.person_id
-                  ? preparedShareId === selectedPerson.person_id ? 'Opening share menu…' : 'Preparing PDF…'
-                  : preparedShareId === selectedPerson.person_id ? 'Share PDF now' : 'Share folder PDF'}
-              </button>
+              <div className="hrops-folder-toolbar-actions">
+                <button className="btn ghost" disabled={sharingId === selectedPerson.person_id || downloadingId === selectedPerson.person_id} onClick={() => onDownload(selectedPerson.person_id)}>
+                  <Icon n="download" s={15} />{downloadingId === selectedPerson.person_id ? 'Preparing PDF…' : 'Download PDF'}
+                </button>
+                <button className="btn ghost" disabled={sharingId === selectedPerson.person_id || downloadingId === selectedPerson.person_id} onClick={() => onShare(selectedPerson.person_id)}>
+                  <Icon n="share" s={15} />
+                  {sharingId === selectedPerson.person_id
+                    ? preparedShareId === selectedPerson.person_id ? 'Opening share menu…' : 'Preparing PDF…'
+                    : preparedShareId === selectedPerson.person_id ? 'Share PDF now' : 'Share folder PDF'}
+                </button>
+              </div>
             )}
           </div>
           <div className="hrops-files-grid">
@@ -390,7 +425,10 @@ export default function FnfPage() {
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState('');
   const [sharingId, setSharingId] = useState('');
+  const [downloadingId, setDownloadingId] = useState('');
   const [preparedShare, setPreparedShare] = useState(null);
+  const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [bulkDownloadProgress, setBulkDownloadProgress] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const totals = useMemo(() => calculate(form), [form]);
@@ -488,7 +526,7 @@ export default function FnfPage() {
       return;
     }
 
-    if (!window.confirm('This PDF contains all saved FNF settlements and payslips for this employee, including salary and bank details. Continue only if the recipient is authorized.')) return;
+    if (!window.confirm(FOLDER_PDF_CONFIRMATION)) return;
     setPreparedShare(null);
     setSharingId(personId);
     setError('');
@@ -506,6 +544,47 @@ export default function FnfPage() {
       setError(shareError.message || 'Could not prepare this employee folder PDF.');
     } finally {
       setSharingId('');
+    }
+  }
+
+  async function downloadFolderPdf(personId) {
+    if (!window.confirm(FOLDER_PDF_CONFIRMATION)) return;
+    setDownloadingId(personId);
+    setError('');
+    setNotice('');
+    try {
+      const prepared = preparedShare?.personId === personId
+        ? preparedShare
+        : await prepareHropsFolderPdf(personId);
+      downloadHropsFolderPdf(prepared.file);
+      setPreparedShare(null);
+      setNotice('Employee folder PDF downloaded.');
+    } catch (downloadError) {
+      setError(downloadError.message || 'Could not download this employee folder PDF.');
+    } finally {
+      setDownloadingId('');
+    }
+  }
+
+  async function downloadAllFolders() {
+    if (!window.confirm(ALL_FOLDERS_ZIP_CONFIRMATION)) return;
+    setBulkDownloading(true);
+    setBulkDownloadProgress('Fetching folders…');
+    setError('');
+    setNotice('');
+    try {
+      const zipFile = await prepareAllHropsFoldersZip((progress) => {
+        setBulkDownloadProgress(progress.phase === 'folders'
+          ? `Preparing folders ${progress.completed}/${progress.total}…`
+          : `Compressing ZIP ${Math.floor(progress.percent || 0)}%…`);
+      });
+      downloadHropsFolderPdf(zipFile);
+      setNotice('All employee folders downloaded as a ZIP.');
+    } catch (downloadError) {
+      setError(downloadError.message || 'Could not download all employee folders.');
+    } finally {
+      setBulkDownloading(false);
+      setBulkDownloadProgress('');
     }
   }
 
@@ -669,14 +748,20 @@ export default function FnfPage() {
 
         {tab === 'saved' ? (
           <SavedSettlements
+            people={people}
             records={records}
             busyId={busyId}
             sharingId={sharingId}
+            downloadingId={downloadingId}
             preparedShareId={preparedShare?.personId}
+            bulkDownloading={bulkDownloading}
+            bulkDownloadProgress={bulkDownloadProgress}
             onOpen={openRecord}
             onDelete={deleteSettlement}
             onCreate={startNew}
             onShare={shareFolder}
+            onDownload={downloadFolderPdf}
+            onDownloadAll={downloadAllFolders}
           />
         ) : (
           <div className="fnf-builder">

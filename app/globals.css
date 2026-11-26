@@ -2637,6 +2637,8 @@ textarea { min-height: 120px; }
   margin: 14px 0;
 }
 
+.hrops-folder-toolbar-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.hrops-folder-bulk-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .hrops-folder-toolbar-copy strong { font-size: 13px; }
 .hrops-folder-toolbar-copy span { line-height: 1.4; }
 
@@ -2702,7 +2704,10 @@ textarea { min-height: 120px; }
   .hrops-file-manager-nav { gap: 6px; font-size: 12px; }
   .hrops-file-manager-nav .btn { padding-inline: 8px; }
   .hrops-folder-toolbar { align-items: stretch; flex-direction: column; }
-  .hrops-folder-toolbar > .btn { width: 100%; justify-content: center; }
+  .hrops-folder-toolbar-actions { width: 100%; flex-direction: column; }
+  .hrops-folder-toolbar-actions .btn { width: 100%; justify-content: center; }
+  .hrops-folder-bulk-actions { width: 100%; flex-direction: column; }
+  .hrops-folder-bulk-actions .btn { width: 100%; justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
