@@ -351,29 +351,50 @@ function SavedSettlements({ records, busyId, onOpen, onDelete, onCreate }) {
     );
   }
 
+  const folders = records.reduce((groups, record) => {
+    const key = record.person_id || `${record.employee_id || ''}:${record.employee_name || ''}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(record);
+    return groups;
+  }, new Map());
+
   return (
     <section className="fnf-records card">
       <div className="fnf-records-heading">
         <div>
-          <h2>Saved Full &amp; Final settlements</h2>
-          <p className="sm mut">{records.length} saved {records.length === 1 ? 'settlement' : 'settlements'}</p>
+          <h2>Employee folders</h2>
+          <p className="sm mut">{folders.size} people · {records.length} saved {records.length === 1 ? 'settlement' : 'settlements'}</p>
         </div>
         <button className="btn primary" onClick={onCreate}><Icon n="plus" s={15} /> New settlement</button>
       </div>
-      {records.map((record) => (
-        <div className="fnf-record-row" key={record.id}>
-          <div className="fnf-record-info">
-            <strong>{record.employee_name || 'Unnamed employee'}</strong>
-            <span className="sm mut">
-              {record.employee_id ? `${record.employee_id} · ` : ''}{record.company_name} · Updated {new Date(record.updated_at).toLocaleString()}
-            </span>
-          </div>
-          <div className="fnf-record-actions">
-            <button className="btn ghost" disabled={busyId === record.id} onClick={() => onOpen(record.id)}>Open</button>
-            <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
-          </div>
-        </div>
-      ))}
+      {[...folders.entries()].map(([key, personRecords]) => {
+        const person = personRecords[0];
+        return (
+          <details className="fnf-person-folder" key={key}>
+            <summary>
+              <span>
+                <strong>{person.employee_name || 'Unnamed employee'}</strong>
+                <span className="sm mut">{person.employee_id ? ` · ${person.employee_id}` : ''} · Employee folder</span>
+              </span>
+              <span className="sm mut">{personRecords.length} {personRecords.length === 1 ? 'settlement' : 'settlements'}</span>
+            </summary>
+            <div className="fnf-folder-records">
+              {personRecords.map((record) => (
+                <div className="fnf-record-row" key={record.id}>
+                  <div className="fnf-record-info">
+                    <strong>Full &amp; Final Settlement</strong>
+                    <span className="sm mut">{record.company_name} · Updated {new Date(record.updated_at).toLocaleString()}</span>
+                  </div>
+                  <div className="fnf-record-actions">
+                    <button className="btn ghost" disabled={busyId === record.id} onClick={() => onOpen(record.id)}>Open</button>
+                    <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </details>
+        );
+      })}
     </section>
   );
 }
@@ -565,7 +586,7 @@ export default function FnfPage() {
             <span className="fnf-brand-title">HROps · Full &amp; Final Settlement</span>
           </div>
           <div className="me">
-            <button className="btn ghost" onClick={() => router.push('/portal')}>Workspace</button>
+            <button className="btn ghost" onClick={() => router.push('/hrops')}>HROps</button>
             {isSuperAdmin && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
           </div>
         </div>

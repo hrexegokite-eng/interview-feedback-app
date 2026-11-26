@@ -195,7 +195,18 @@ export default function Portal() {
           </div>
         </div>}
 
-        {modules.hrops && <div className="card portal-module">
+        {modules.hrops && <div
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push('/hrops')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              router.push('/hrops');
+            }
+          }}
+          className="card portal-module"
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div style={{
               width: 52,
@@ -224,18 +235,9 @@ export default function Portal() {
           <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: '0 0 22px' }}>
             Human resources operations tools for employee lifecycle workflows.
           </p>
-          <div style={{ paddingTop: 16, borderTop: '1px solid var(--line)' }}>
-            <button
-              className="btn ghost"
-              onClick={() => router.push('/fnf')}
-              style={{ width: '100%', justifyContent: 'space-between' }}
-            >
-              <span style={{ textAlign: 'left' }}>
-                <b style={{ display: 'block' }}>Full &amp; Final Settlement</b>
-                <span className="sm mut">FNF</span>
-              </span>
-              <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open →</span>
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--mut)' }}>FNF &amp; Payslip Generator</span>
+            <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open HROps →</span>
           </div>
         </div>}
 

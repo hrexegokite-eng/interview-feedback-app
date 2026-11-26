@@ -1,6 +1,7 @@
 import { bad, getModuleAdmin } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import { readSettlement } from '@/lib/fnf';
+import { saveHropsPerson } from '@/lib/hrops';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export async function GET(_request, { params }) {
   const { id } = await params;
   if (!UUID.test(id)) return bad('Settlement not found.', 404);
   const records = await sql`
-    SELECT id, company_name, employee_name, employee_id, data, created_at, updated_at
+    SELECT id, person_id, company_name, employee_name, employee_id, data, created_at, updated_at
     FROM fnf_settlements
     WHERE id = ${id}::uuid
   `;
@@ -21,7 +22,7 @@ export async function GET(_request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  const { error } = await getModuleAdmin('hrops');
+  const { admin, error } = await getModuleAdmin('hrops');
   if (error) return error;
   const { id } = await params;
   if (!UUID.test(id)) return bad('Settlement not found.', 404);
@@ -29,15 +30,18 @@ export async function PUT(request, { params }) {
   if (parsed.error) return bad(parsed.error, parsed.status);
 
   const data = parsed.data;
+  const personId = await saveHropsPerson(data, admin.email);
+  if (!personId) return bad('Could not create or find the employee folder.', 400);
   const records = await sql`
     UPDATE fnf_settlements
-    SET company_name = ${data.companyName.trim()},
+    SET person_id = ${personId}::uuid,
+        company_name = ${data.companyName.trim()},
         employee_name = ${data.employeeName.trim()},
         employee_id = ${data.employeeId.trim()},
         data = ${JSON.stringify(data)}::jsonb,
         updated_at = now()
     WHERE id = ${id}::uuid
-    RETURNING id, company_name, employee_name, employee_id, created_at, updated_at
+    RETURNING id, person_id, company_name, employee_name, employee_id, created_at, updated_at
   `;
   if (!records.length) return bad('Settlement not found.', 404);
   return Response.json(records[0]);

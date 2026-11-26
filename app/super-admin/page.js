@@ -291,7 +291,7 @@ export default function SuperAdmin() {
                           <span className="grow">
                             <b>{MODULE_NAMES[module.key] || module.key}</b>
                             <span className="sm mut" style={{ display: 'block' }}>
-                              {module.key === 'hrops' ? 'Includes Full & Final Settlement (FNF) · ' : ''}
+                              {module.key === 'hrops' ? 'Includes FNF and Payslip Generator · ' : ''}
                               {module.enabled ? 'Workspace active' : 'Disabled workspace-wide'}
                             </span>
                           </span>
