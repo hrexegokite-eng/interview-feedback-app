@@ -242,6 +242,8 @@ export default function PayslipGenerator() {
   const [records, setRecords] = useState([]);
   const [recordId, setRecordId] = useState('');
   const [tab, setTab] = useState('create');
+  const [mobileView, setMobileView] = useState('details');
+  const [previewScale, setPreviewScale] = useState(1);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -250,6 +252,7 @@ export default function PayslipGenerator() {
   const [notice, setNotice] = useState('');
   const [generatedAt, setGeneratedAt] = useState(() => new Date());
   const logoInput = useRef(null);
+  const previewViewport = useRef(null);
   const totals = useMemo(() => calculate(form), [form]);
   const loadRecords = useCallback(async () => {
     const [employeeFolders, payslips] = await Promise.all([
@@ -290,6 +293,21 @@ export default function PayslipGenerator() {
     };
   }, []);
 
+  useEffect(() => {
+    if (tab !== 'create') return undefined;
+    const viewport = previewViewport.current;
+    if (!viewport) return undefined;
+
+    const measure = () => {
+      const width = viewport.getBoundingClientRect().width;
+      setPreviewScale(width > 0 ? Math.min(1, width / 794) : 1);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(viewport);
+    measure();
+    return () => observer.disconnect();
+  }, [mobileView, tab]);
+
   function updateField(key, value) {
     setForm((current) => {
       const next = { ...current, [key]: value };
@@ -328,6 +346,7 @@ export default function PayslipGenerator() {
     setForm(createDefaultForm());
     setRecordId('');
     setTab('create');
+    setMobileView('details');
     setError('');
     setNotice('');
     if (logoInput.current) logoInput.current.value = '';
@@ -396,6 +415,7 @@ export default function PayslipGenerator() {
       setForm({ ...saved.data, personId: saved.person_id });
       setRecordId(saved.id);
       setTab('create');
+      setMobileView('details');
       setNotice('Saved payslip loaded. Save changes to update it.');
     } catch (loadError) {
       setError(loadError.message || 'Could not open this payslip.');
@@ -509,6 +529,14 @@ export default function PayslipGenerator() {
             <h1>{tab === 'create' ? 'Salary slip generator' : 'Saved payslips'}</h1>
             <p className="sm mut">{tab === 'create' ? 'Review attendance and salary details in the live A4 preview, then save or print as PDF.' : 'Open payslips from employee folders, or create a new one.'}</p>
           </div>
+          {tab === 'create' && (
+            <div className="payslip-heading-actions">
+              <button className="btn primary" disabled={busy} onClick={savePayslip}>
+                <Icon n="file" s={15} />{busy ? 'Saving…' : recordId ? 'Save changes' : 'Save payslip'}
+              </button>
+              <button className="btn ghost" onClick={printPayslip}><Icon n="file" s={15} />Print / PDF</button>
+            </div>
+          )}
         </div>
 
         {error && <p className="err" role="alert">{error}</p>}
@@ -526,7 +554,12 @@ export default function PayslipGenerator() {
         {tab === 'saved' ? (
           <SavedPayslips records={records} busyId={busyId} onOpen={openPayslip} onDelete={deletePayslip} onCreate={startNew} />
         ) : (
-        <div className="payslip-layout">
+        <>
+        <div className="payslip-responsive-tabs" role="tablist" aria-label="Payslip editor views">
+          <button role="tab" aria-selected={mobileView === 'details'} className={mobileView === 'details' ? 'active' : ''} onClick={() => setMobileView('details')}>Details</button>
+          <button role="tab" aria-selected={mobileView === 'preview'} className={mobileView === 'preview' ? 'active' : ''} onClick={() => setMobileView('preview')}>Live preview</button>
+        </div>
+        <div className={`payslip-layout ${mobileView === 'preview' ? 'preview-active' : ''}`}>
           <aside className="payslip-panel card" aria-label="Payslip details">
             <h2>Salary slip details</h2>
             <label htmlFor="payslip-company">Company name</label>
@@ -557,20 +590,15 @@ export default function PayslipGenerator() {
               ))}
             </select>
             <p className="payslip-hint">{form.personId ? 'This payslip will be saved in the selected employee folder.' : 'Enter a name to create a new employee folder when saving.'}</p>
-            <label htmlFor="payslip-name">Name</label>
-            <input id="payslip-name" maxLength={180} value={form.name} disabled={Boolean(form.personId)} onChange={(event) => updateField('name', event.target.value)} />
-            <label htmlFor="payslip-employee-id">Employee ID</label>
-            <input id="payslip-employee-id" maxLength={80} value={form.employeeId} disabled={Boolean(form.personId)} onChange={(event) => updateField('employeeId', event.target.value)} />
-            <label htmlFor="payslip-designation">Designation</label>
-            <input id="payslip-designation" maxLength={120} value={form.designation} onChange={(event) => updateField('designation', event.target.value)} />
-            <label htmlFor="payslip-location">Work location</label>
-            <input id="payslip-location" maxLength={180} value={form.location} onChange={(event) => updateField('location', event.target.value)} />
-            <label htmlFor="payslip-joined">Date joined</label>
-            <input id="payslip-joined" type="date" value={form.joined} onChange={(event) => updateField('joined', event.target.value)} />
-            <label htmlFor="payslip-account">Bank account number</label>
-            <input id="payslip-account" maxLength={40} value={form.account} onChange={(event) => updateField('account', event.target.value)} />
-            <label htmlFor="payslip-bank">Bank name</label>
-            <input id="payslip-bank" maxLength={120} value={form.bank} onChange={(event) => updateField('bank', event.target.value)} />
+            <div className="payslip-employee-grid">
+              <div><label htmlFor="payslip-name">Name</label><input id="payslip-name" maxLength={180} value={form.name} disabled={Boolean(form.personId)} onChange={(event) => updateField('name', event.target.value)} /></div>
+              <div><label htmlFor="payslip-employee-id">Employee ID</label><input id="payslip-employee-id" maxLength={80} value={form.employeeId} disabled={Boolean(form.personId)} onChange={(event) => updateField('employeeId', event.target.value)} /></div>
+              <div><label htmlFor="payslip-designation">Designation</label><input id="payslip-designation" maxLength={120} value={form.designation} onChange={(event) => updateField('designation', event.target.value)} /></div>
+              <div><label htmlFor="payslip-location">Work location</label><input id="payslip-location" maxLength={180} value={form.location} onChange={(event) => updateField('location', event.target.value)} /></div>
+              <div><label htmlFor="payslip-joined">Date joined</label><input id="payslip-joined" type="date" value={form.joined} onChange={(event) => updateField('joined', event.target.value)} /></div>
+              <div><label htmlFor="payslip-account">Bank account number</label><input id="payslip-account" maxLength={40} value={form.account} onChange={(event) => updateField('account', event.target.value)} /></div>
+              <div><label htmlFor="payslip-bank">Bank name</label><input id="payslip-bank" maxLength={120} value={form.bank} onChange={(event) => updateField('bank', event.target.value)} /></div>
+            </div>
 
             <h3>Week offs (added to leaves)</h3>
             <div className="payslip-weekdays">
@@ -620,15 +648,11 @@ export default function PayslipGenerator() {
             />
 
             <p className="payslip-hint">The footer timestamp updates automatically when you print or save.</p>
-            <button className="btn primary" disabled={busy} onClick={savePayslip}>
-              <Icon n="file" s={15} />{busy ? 'Saving…' : recordId ? 'Save changes' : 'Save payslip'}
-            </button>
-            <button className="btn primary" onClick={printPayslip}><Icon n="file" s={15} />Print / Save as PDF</button>
             <button className="btn ghost payslip-reset" onClick={resetForm}>Clear draft</button>
           </aside>
 
-          <main className="payslip-preview" aria-label="Payslip preview">
-            <article className="payslip-paper">
+          <main className="payslip-preview" aria-label="Payslip preview" ref={previewViewport}>
+            <article className="payslip-paper" style={{ '--payslip-scale': previewScale }}>
               <div className="payslip-company">{form.company || 'Company name'}</div>
               <div className="payslip-logo">
                 {form.logo
@@ -690,6 +714,7 @@ export default function PayslipGenerator() {
             </article>
           </main>
         </div>
+        </>
         )}
       </div>
     </div>

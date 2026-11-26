@@ -6,26 +6,25 @@
   font-size: 15px;
   font-weight: 600;
 }
-.payslip-heading { margin: 22px 0 18px; }
+.payslip-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 22px 0 18px; }
 .payslip-heading h1 { margin: 0; font-size: 25px; }
 .payslip-heading p { margin: 6px 0 0; }
+.payslip-heading-actions { display: flex; flex: none; flex-wrap: wrap; gap: 8px; }
 .payslip-notice { margin: 0 0 12px; color: var(--ok); font-size: 13px; }
 .payslip-tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
 .payslip-tabs button { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--mut); cursor: pointer; }
 .payslip-tabs button.active { border-bottom-color: var(--acc); color: var(--acc); font-weight: 700; }
 .payslip-tabs button span { min-width: 20px; padding: 2px 6px; border-radius: 12px; background: var(--hd); color: var(--ink); font-size: 11px; }
+.payslip-responsive-tabs { display: none; }
 .payslip-layout {
   display: grid;
-  grid-template-columns: minmax(330px, 390px) minmax(0, 1fr);
+  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
   align-items: start;
-  gap: 22px;
+  gap: 24px;
 }
 .payslip-panel {
-  position: sticky;
-  top: 12px;
-  max-height: calc(100vh - 24px);
-  overflow: auto;
-  padding: 18px;
+  min-width: 0;
+  padding: 20px;
 }
 .payslip-panel h2 { margin: 0 0 12px; font-size: 17px; }
 .payslip-panel h3 { margin: 18px 0 7px; color: var(--mut); font-size: 13px; }
@@ -42,6 +41,8 @@
   min-width: 0;
 }
 .payslip-panel input[type="file"] { font-size: 12px; }
+.payslip-employee-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+.payslip-employee-grid label { display: block; margin: 9px 0 3px; color: var(--mut); font-size: 11px; }
 .payslip-grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .payslip-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .payslip-grid-3 input { padding: 7px 6px; }
@@ -68,7 +69,6 @@
 .payslip-edit-row button { padding: 4px; color: var(--no); }
 .payslip-add-row { margin-top: 4px; border: 0; background: transparent; color: var(--acc); padding: 4px 0; }
 .payslip-reset { width: 100%; margin-top: 8px; }
-.payslip-panel > .btn.primary { width: 100%; justify-content: center; margin-top: 14px; }
 .payslip-panel select { width: 100%; }
 .payslip-saved { padding: 20px; }
 .payslip-saved-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
@@ -87,12 +87,13 @@
 .payslip-empty h2,
 .payslip-empty p { margin: 0; }
 .payslip-empty h2 { color: var(--ink); font-size: 17px; }
-.payslip-preview { min-width: 0; overflow: auto; }
+.payslip-preview { min-width: 0; overflow: hidden; }
 .payslip-paper {
   position: relative;
   width: 794px;
   min-height: 1123px;
   margin: 0 auto;
+  zoom: var(--payslip-scale, 1);
   padding: 92px 66px 40px;
   overflow: hidden;
   background: #fff;
@@ -139,14 +140,21 @@
 
 @media (max-width: 1100px) {
   .payslip-layout { grid-template-columns: 1fr; }
-  .payslip-panel { position: static; max-height: none; }
+  .payslip-responsive-tabs { display: flex; gap: 8px; margin: 0 0 14px; border-bottom: 1px solid var(--line); }
+  .payslip-responsive-tabs button { padding: 9px 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--mut); cursor: pointer; }
+  .payslip-responsive-tabs button.active { border-bottom-color: var(--acc); color: var(--acc); font-weight: 700; }
+  .payslip-layout.preview-active .payslip-panel,
+  .payslip-layout:not(.preview-active) .payslip-preview { display: none; }
 }
 @media (max-width: 900px) {
   .payslip-brand-title { padding-left: 9px; font-size: 12px; }
-  .payslip-preview { overflow: hidden; }
-  .payslip-paper { margin-left: 0; zoom: .46; }
 }
 @media (max-width: 560px) {
+  .payslip-heading { align-items: stretch; flex-direction: column; }
+  .payslip-heading-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .payslip-heading-actions .btn { justify-content: center; }
+  .payslip-panel { padding: 16px; }
+  .payslip-employee-grid { grid-template-columns: 1fr; }
   .payslip-saved { padding: 14px; }
   .payslip-saved-heading,
   .payslip-record-row,
@@ -156,6 +164,9 @@
 @media print {
   @page { size: A4; margin: 0; }
   body { background: #fff !important; }
+  .payslip-responsive-tabs { display: none !important; }
+  .payslip-layout,
+  .payslip-preview { display: block !important; }
   body * { visibility: hidden !important; }
   .payslip-paper,
   .payslip-paper * { visibility: visible !important; }
