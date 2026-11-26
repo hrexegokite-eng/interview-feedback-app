@@ -2512,3 +2512,194 @@ textarea { min-height: 120px; }
 @media (prefers-reduced-motion: reduce) {
   .login-panel { animation: none; }
 }
+
+.hrops-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  align-items: start;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.hrops-person-folder {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.hrops-person-folder:hover,
+.hrops-person-folder[open] {
+  border-color: color-mix(in srgb, var(--acc) 42%, var(--line));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+}
+
+.hrops-person-folder[open] { grid-column: 1 / -1; }
+
+.hrops-folder-summary {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto 10px;
+  align-items: center;
+  gap: 12px;
+  min-height: 100px;
+  padding: 16px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--acc) 8%, var(--card)), var(--card));
+  cursor: pointer;
+  list-style: none;
+}
+
+.hrops-folder-summary::-webkit-details-marker { display: none; }
+.hrops-folder-summary:hover { background: linear-gradient(135deg, color-mix(in srgb, var(--acc) 13%, var(--card)), var(--card)); }
+.hrops-folder-summary:focus-visible { outline: 3px solid color-mix(in srgb, var(--acc) 45%, transparent); outline-offset: -3px; }
+.hrops-person-folder[open] > .hrops-folder-summary { border-bottom: 1px solid var(--line); }
+
+.hrops-folder-icon {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 38px;
+  place-items: center;
+  margin-top: 4px;
+  border: 1px solid rgba(148, 112, 39, .24);
+  border-radius: 5px 7px 6px 6px;
+  background: linear-gradient(145deg, #f3d989, #d9ad4f);
+  box-shadow: 0 4px 9px rgba(151, 111, 32, .2);
+  color: #806020;
+}
+
+.hrops-folder-icon::before {
+  position: absolute;
+  top: -6px;
+  left: 3px;
+  width: 22px;
+  height: 7px;
+  border-radius: 4px 4px 0 0;
+  background: #e8c468;
+  content: '';
+}
+
+.hrops-folder-icon svg { position: relative; z-index: 1; }
+
+.hrops-folder-info,
+.hrops-folder-toolbar-copy,
+.hrops-file-info {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.hrops-folder-info strong,
+.hrops-file-info strong {
+  overflow-wrap: anywhere;
+}
+
+.hrops-folder-info > span { line-height: 1.4; }
+
+.hrops-folder-count {
+  display: grid;
+  min-width: 38px;
+  justify-items: center;
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--card2) 76%, transparent);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.hrops-folder-count small { color: var(--mut); font-size: 9px; font-weight: 500; }
+
+.hrops-folder-chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid var(--mut);
+  border-bottom: 1.5px solid var(--mut);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 180ms ease;
+}
+
+.hrops-person-folder[open] .hrops-folder-chevron { transform: rotate(225deg) translate(-2px, -1px); }
+
+.hrops-folder-content { padding: 16px; }
+
+.hrops-folder-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hrops-folder-toolbar-copy strong { font-size: 13px; }
+.hrops-folder-toolbar-copy span { line-height: 1.4; }
+
+.hrops-files-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  align-items: stretch;
+  gap: 12px;
+}
+
+.hrops-file-tile {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  min-height: 132px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--card2) 72%, var(--card));
+  transition: border-color 180ms ease, transform 180ms ease;
+}
+
+.hrops-file-tile:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--acc) 35%, var(--line));
+}
+
+.hrops-file-icon {
+  display: grid;
+  width: 38px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--acc) 22%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--acc) 10%, var(--card));
+  color: var(--acc);
+}
+
+.hrops-file-info { align-content: start; }
+.hrops-file-info strong { line-height: 1.4; }
+.hrops-file-info span { line-height: 1.45; overflow-wrap: anywhere; }
+
+.hrops-file-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 8px;
+  align-self: end;
+  margin-top: 4px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+}
+
+.hrops-file-actions .btn { flex: 1; justify-content: center; }
+
+@media (max-width: 560px) {
+  .hrops-folder-summary { grid-template-columns: 46px minmax(0, 1fr) auto 8px; gap: 9px; padding: 13px; }
+  .hrops-folder-icon { width: 44px; height: 36px; }
+  .hrops-folder-content { padding: 12px; }
+  .hrops-folder-toolbar { align-items: stretch; flex-direction: column; }
+  .hrops-folder-toolbar > .btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hrops-person-folder,
+  .hrops-folder-chevron,
+  .hrops-file-tile { transition: none; }
+  .hrops-file-tile:hover { transform: none; }
+}

@@ -310,42 +310,52 @@ function SavedSettlements({ records, busyId, sharingId, onOpen, onDelete, onCrea
         </div>
         <button className="btn primary" onClick={onCreate}><Icon n="plus" s={15} /> New settlement</button>
       </div>
-      {[...folders.entries()].map(([key, personRecords]) => {
-        const person = personRecords[0];
-        return (
-          <details className="fnf-person-folder" key={key}>
-            <summary>
-              <span>
-                <strong>{person.employee_name || 'Unnamed employee'}</strong>
-                <span className="sm mut">{person.employee_id ? ` · ${person.employee_id}` : ''} · Employee folder</span>
-              </span>
-              <span className="sm mut">{personRecords.length} {personRecords.length === 1 ? 'settlement' : 'settlements'}</span>
-            </summary>
-            {person.person_id && (
-              <div className="fnf-folder-share">
-                <span className="sm mut">Share all FNF settlements and payslips in this employee folder.</span>
-                <button className="btn ghost" disabled={sharingId === person.person_id} onClick={() => onShare(person.person_id)}>
-                  <Icon n="download" s={15} />{sharingId === person.person_id ? 'Preparing PDF…' : 'Share folder PDF'}
-                </button>
-              </div>
-            )}
-            <div className="fnf-folder-records">
-              {personRecords.map((record) => (
-                <div className="fnf-record-row" key={record.id}>
-                  <div className="fnf-record-info">
-                    <strong>Full &amp; Final Settlement</strong>
-                    <span className="sm mut">{record.company_name} · Updated {new Date(record.updated_at).toLocaleString()}</span>
+      <div className="hrops-folder-grid">
+        {[...folders.entries()].map(([key, personRecords]) => {
+          const person = personRecords[0];
+          return (
+            <details className="hrops-person-folder" key={key}>
+              <summary className="hrops-folder-summary">
+                <span className="hrops-folder-icon"><Icon n="folder" s={30} /></span>
+                <span className="hrops-folder-info">
+                  <strong>{person.employee_name || 'Unnamed employee'}</strong>
+                  <span className="sm mut">{person.employee_id ? `ID ${person.employee_id} · ` : ''}Employee folder</span>
+                </span>
+                <span className="hrops-folder-count">{personRecords.length}<small>{personRecords.length === 1 ? 'file' : 'files'}</small></span>
+                <span className="hrops-folder-chevron" aria-hidden="true" />
+              </summary>
+              <div className="hrops-folder-content">
+                <div className="hrops-folder-toolbar">
+                  <div className="hrops-folder-toolbar-copy">
+                    <strong>Files in this folder</strong>
+                    <span className="sm mut">{personRecords.length} {personRecords.length === 1 ? 'settlement' : 'settlements'}</span>
                   </div>
-                  <div className="fnf-record-actions">
-                    <button className="btn ghost" disabled={busyId === record.id} onClick={() => onOpen(record.id)}>Open</button>
-                    <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
-                  </div>
+                  {person.person_id && (
+                    <button className="btn ghost" disabled={sharingId === person.person_id} onClick={() => onShare(person.person_id)}>
+                      <Icon n="download" s={15} />{sharingId === person.person_id ? 'Preparing PDF…' : 'Share folder PDF'}
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          </details>
-        );
-      })}
+                <div className="hrops-files-grid">
+                  {personRecords.map((record) => (
+                    <article className="hrops-file-tile" key={record.id}>
+                      <span className="hrops-file-icon"><Icon n="file" s={23} /></span>
+                      <div className="hrops-file-info">
+                        <strong>Full &amp; Final Settlement</strong>
+                        <span className="sm mut">{record.company_name} · Updated {new Date(record.updated_at).toLocaleString()}</span>
+                      </div>
+                      <div className="hrops-file-actions">
+                        <button className="btn ghost" disabled={busyId === record.id} onClick={() => onOpen(record.id)}>Open</button>
+                        <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </details>
+          );
+        })}
+      </div>
     </section>
   );
 }

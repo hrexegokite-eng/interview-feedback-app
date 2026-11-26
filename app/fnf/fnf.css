@@ -205,18 +205,6 @@
 .fnf-records-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .fnf-records-heading h2 { margin: 0 0 4px; }
 .fnf-records-heading p { margin: 0; }
-.fnf-record-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
-.fnf-record-info { display: grid; gap: 4px; min-width: 0; }
-.fnf-record-info strong { overflow-wrap: anywhere; }
-.fnf-record-info span { line-height: 1.5; }
-.fnf-record-actions { display: flex; flex: none; gap: 8px; }
-.fnf-person-folder { border-top: 1px solid var(--line); }
-.fnf-person-folder > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 2px; cursor: pointer; }
-.fnf-person-folder > summary > span:first-child { display: grid; gap: 3px; }
-.fnf-person-folder > summary > span:last-child { flex: none; }
-.fnf-folder-share { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 12px 18px; }
-.fnf-folder-share .btn { flex: none; }
-.fnf-folder-records { padding-left: 18px; border-left: 2px solid var(--line); }
 .fnf-empty { display: grid; justify-items: center; gap: 8px; padding: 56px 20px; text-align: center; color: var(--mut); }
 .fnf-empty h2 { margin: 4px 0 0; color: var(--ink); }
 .fnf-empty p { max-width: 440px; margin: 0 0 8px; }
@@ -234,12 +222,8 @@
   .fnf-controls { padding: 14px; }
   .fnf-preview { padding: 6px; }
   .fnf-paper { margin-left: 0; zoom: .48; }
-  .fnf-records-heading,
-  .fnf-record-row,
-  .fnf-person-folder > summary { align-items: stretch; flex-direction: column; }
-  .fnf-folder-share { align-items: stretch; flex-direction: column; padding-left: 0; }
+  .fnf-records-heading { align-items: stretch; flex-direction: column; }
   .fnf-records-heading .btn { width: 100%; }
-  .fnf-record-actions > .btn { flex: 1; }
 }
 
 @media print {

@@ -74,17 +74,6 @@
 .payslip-saved-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .payslip-saved-heading h2 { margin: 0; font-size: 17px; }
 .payslip-saved-heading p { margin: 5px 0 0; }
-.payslip-person-folder { border-top: 1px solid var(--line); }
-.payslip-person-folder > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 2px; cursor: pointer; }
-.payslip-person-folder > summary > span:first-child { display: grid; gap: 3px; }
-.payslip-person-folder > summary > span:last-child { flex: none; }
-.payslip-folder-share { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 12px 18px; }
-.payslip-folder-share .btn { flex: none; }
-.payslip-folder-records { padding-left: 18px; border-left: 2px solid var(--line); }
-.payslip-record-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
-.payslip-record-row > div:first-child { display: grid; gap: 4px; min-width: 0; }
-.payslip-record-actions { display: flex; flex: none; gap: 6px; }
-.payslip-record-actions .danger { color: var(--no); }
 .payslip-empty { display: grid; justify-items: center; gap: 10px; padding: 44px 12px; color: var(--mut); text-align: center; }
 .payslip-empty h2,
 .payslip-empty p { margin: 0; }
@@ -158,11 +147,7 @@
   .payslip-panel { padding: 16px; }
   .payslip-employee-grid { grid-template-columns: 1fr; }
   .payslip-saved { padding: 14px; }
-  .payslip-saved-heading,
-  .payslip-record-row,
-  .payslip-person-folder > summary { align-items: stretch; flex-direction: column; }
-  .payslip-folder-share { align-items: stretch; flex-direction: column; padding-left: 0; }
-  .payslip-record-actions { justify-content: flex-start; }
+  .payslip-saved-heading { align-items: stretch; flex-direction: column; }
 }
 @media print {
   @page { size: A4; margin: 0; }
