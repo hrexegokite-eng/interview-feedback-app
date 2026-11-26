@@ -7,6 +7,7 @@ import FeedbackForms from './FeedbackForms';
 const MODULE_NAMES = {
   'interview-feedback': 'Interview Feedback',
   'exit-form': 'Exit Form',
+  fnf: 'Full & Final Settlement',
 };
 
 function formatStorage(bytes) {

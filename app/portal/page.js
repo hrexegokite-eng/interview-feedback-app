@@ -195,6 +195,52 @@ export default function Portal() {
           </div>
         </div>}
 
+        {modules.fnf && <div
+          role="button"
+          tabIndex={0}
+          onClick={() => router.push('/fnf')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              router.push('/fnf');
+            }
+          }}
+          className="card portal-module"
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: 'linear-gradient(135deg, var(--acc), var(--acc2))',
+              display: 'grid',
+              placeItems: 'center',
+              color: '#fff',
+            }}>
+              <Icon n="file" s={24} />
+            </div>
+            <span style={{
+              padding: '4px 10px',
+              borderRadius: 99,
+              fontSize: 11.5,
+              fontWeight: 600,
+              background: 'var(--okb)',
+              color: 'var(--ok)',
+            }}>● Active Module</span>
+          </div>
+
+          <h2 style={{ fontSize: 20, fontWeight: 700, margin: '0 0 8px', letterSpacing: '-0.01em' }}>
+            Full &amp; Final Settlement
+          </h2>
+          <p className="mut" style={{ fontSize: 13.5, lineHeight: 1.55, margin: '0 0 22px' }}>
+            Calculate employee final pay, apply deductions, save settlements, and print statements.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+            <span style={{ fontSize: 12.5, fontWeight: 500, color: 'var(--mut)' }}>Settlement builder &amp; records</span>
+            <span style={{ color: 'var(--acc)', fontWeight: 600 }}>Open Module →</span>
+          </div>
+        </div>}
+
         {/* Future Module Placeholder 1: Employee Directory */}
         <div
           className="card portal-module-coming"

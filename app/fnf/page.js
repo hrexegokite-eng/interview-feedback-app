@@ -1,0 +1,703 @@
+'use client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Icon, Logo, LoadingState, api } from '@/components/ui';
+import './fnf.css';
+
+const DEFAULT_COMPONENTS = [
+  ['BASIC', 15012],
+  ['HRA', 5000],
+  ['DA', 4888],
+  ['CONVEYANCE ALLOWANCE', 1500],
+  ['MEDICAL ALLOWANCE', 1500],
+  ['SPECIAL ALLOWANCE', 2100],
+];
+const DEFAULT_DEDUCTIONS = [
+  ['Professional Tax', 0],
+  ['Asset Recovery', 0],
+  ['Advanced Deduction', 0],
+  ['Other Deduction', 0],
+];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const ROUNDING = { near: Math.round, down: Math.floor, up: Math.ceil };
+const NUMBER_FORMAT = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
+const inr = (value) => NUMBER_FORMAT.format(Number.isFinite(value) ? value : 0);
+const dateParts = (value) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || '');
+  return match ? { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) } : null;
+};
+const displayDate = (value) => {
+  const date = dateParts(value);
+  return date ? `${String(date.day).padStart(2, '0')}-${String(date.month).padStart(2, '0')}-${date.year}` : '—';
+};
+const monthLabel = (month) => {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) return '—';
+  return `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+};
+const daysInCalendarMonth = (month) => {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) return 30;
+  return new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate();
+};
+
+function automaticPayableDays(month, data) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) return 0;
+  const year = Number(month.slice(0, 4));
+  const monthNumber = Number(month.slice(5, 7));
+  const monthIndex = year * 12 + monthNumber;
+  const calendarDays = daysInCalendarMonth(month);
+  let startDay = 1;
+  let endDay = calendarDays;
+  const joining = dateParts(data.dateOfJoining);
+  const lastDay = dateParts(data.lastWorkingDay);
+
+  if (joining) {
+    const joiningMonth = joining.year * 12 + joining.month;
+    if (joiningMonth > monthIndex) endDay = 0;
+    else if (joiningMonth === monthIndex) startDay = joining.day;
+  }
+  if (lastDay) {
+    const leavingMonth = lastDay.year * 12 + lastDay.month;
+    if (leavingMonth < monthIndex) endDay = 0;
+    else if (leavingMonth === monthIndex) endDay = Math.min(endDay, lastDay.day);
+  }
+
+  let payableDays = Math.max(0, endDay - startDay + 1);
+  if (data.basis !== 'cal') {
+    const fixedBasis = Number(data.basis);
+    payableDays = startDay === 1 && endDay === calendarDays
+      ? fixedBasis
+      : Math.min(payableDays, fixedBasis);
+  }
+  return payableDays;
+}
+
+function makePeriod(month, data, payableDaysTouched = false) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) {
+    return {
+      month: '',
+      payableDays: 0,
+      daysInMonth: data.basis === 'cal' ? 30 : Number(data.basis),
+      payableDaysTouched: false,
+    };
+  }
+  const daysInMonth = data.basis === 'cal' ? daysInCalendarMonth(month) : Number(data.basis);
+  return {
+    month,
+    payableDays: payableDaysTouched ? 0 : automaticPayableDays(month, data),
+    daysInMonth,
+    payableDaysTouched,
+  };
+}
+
+function createDefaultData() {
+  const today = new Date();
+  const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const data = {
+    companyName: 'Go Kite Travel & Tours LLP',
+    companyLogo: '',
+    employeeName: '',
+    employeeId: '',
+    department: '',
+    designation: '',
+    dateOfJoining: '',
+    lastWorkingDay: '',
+    periods: [],
+    rounding: 'near',
+    basis: 'cal',
+    components: DEFAULT_COMPONENTS.map((row) => [...row]),
+    additionalPayments: [],
+    deductions: DEFAULT_DEDUCTIONS.map((row) => [...row]),
+    lineSpacing: 'normal',
+    watermarkEnabled: false,
+    watermarkType: 'logo',
+    watermarkText: 'CONFIDENTIAL',
+    watermarkStrength: 10,
+    footerNote: '',
+    noteTouched: false,
+  };
+  data.periods = [makePeriod(month, data)];
+  return data;
+}
+
+function amountInWords(value) {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const twoDigits = (number) => number < 20
+    ? ones[number]
+    : `${tens[Math.floor(number / 10)]}${number % 10 ? ` ${ones[number % 10]}` : ''}`;
+  const threeDigits = (number) => {
+    if (number >= 1000) {
+      return `${threeDigits(Math.floor(number / 1000))} Thousand${number % 1000 ? ` ${threeDigits(number % 1000)}` : ''}`;
+    }
+    const hundreds = Math.floor(number / 100);
+    const remainder = number % 100;
+    return `${hundreds ? `${ones[hundreds]} Hundred` : ''}${hundreds && remainder ? ' ' : ''}${remainder ? twoDigits(remainder) : ''}`;
+  };
+  let number = Math.abs(Math.round(value));
+  if (!number) return 'Zero';
+  const parts = [[10_000_000, 'Crore'], [100_000, 'Lakh'], [1_000, 'Thousand'], [100, 'Hundred']];
+  const words = [];
+  for (const [unit, label] of parts) {
+    const count = Math.floor(number / unit);
+    if (count) {
+      words.push(`${threeDigits(count)} ${label}`);
+      number %= unit;
+    }
+  }
+  if (number) words.push(twoDigits(number));
+  return words.join(' ');
+}
+
+function calculate(data) {
+  const periods = [...data.periods].sort((a, b) => a.month.localeCompare(b.month));
+  const round = ROUNDING[data.rounding] || Math.round;
+  const earnedPerPeriod = (gross, period) => period.daysInMonth > 0
+    ? round(Number((gross * period.payableDays / period.daysInMonth).toFixed(6)))
+    : 0;
+  const earned = (gross) => periods.reduce((total, period) => total + earnedPerPeriod(gross, period), 0);
+  const components = data.components.filter(([name, amount]) => name.trim() || amount);
+  const additionalPayments = data.additionalPayments.filter(([name, amount]) => name.trim() || amount);
+  const deductions = data.deductions.filter(([name, amount]) => name.trim() || amount);
+  const grossSalary = components.reduce((total, [, amount]) => total + amount, 0);
+  const earnings = components.reduce((total, [, amount]) => total + earned(amount), 0);
+  const totalAdditional = additionalPayments.reduce((total, [, amount]) => total + amount, 0);
+  const totalDeductions = deductions.reduce((total, [, amount]) => total + amount, 0);
+  const net = Math.round((earnings + totalAdditional - totalDeductions) * 100) / 100;
+  return {
+    periods,
+    components,
+    additionalPayments,
+    deductions,
+    grossSalary,
+    earnings,
+    totalAdditional,
+    totalDeductions,
+    net,
+    earnedPerPeriod,
+    earned,
+    totalPayableDays: periods.reduce((total, period) => total + period.payableDays, 0),
+  };
+}
+
+function updateRows(rows, index, column, value) {
+  return rows.map((row, rowIndex) => rowIndex === index
+    ? row.map((cell, cellIndex) => cellIndex === column ? value : cell)
+    : row);
+}
+
+function RowsEditor({ title, rows, onChange, addLabel }) {
+  return (
+    <fieldset>
+      <legend>{title}</legend>
+      {rows.map(([name, amount], index) => (
+        <div className="fnf-edit-row" key={`${title}-${index}`}>
+          <input
+            aria-label={`${title} name ${index + 1}`}
+            value={name}
+            maxLength={120}
+            onChange={(event) => onChange(updateRows(rows, index, 0, event.target.value))}
+          />
+          <input
+            aria-label={`${title} amount ${index + 1}`}
+            type="number"
+            min="0"
+            max="1000000000"
+            step="0.01"
+            value={amount}
+            onChange={(event) => onChange(updateRows(rows, index, 1, Number(event.target.value) || 0))}
+          />
+          <button type="button" aria-label={`Remove ${title.toLowerCase()} ${index + 1}`} onClick={() => onChange(rows.filter((_, rowIndex) => rowIndex !== index))}>×</button>
+        </div>
+      ))}
+      <button type="button" className="fnf-add-row" onClick={() => onChange([...rows, ['', 0]])}>+ {addLabel}</button>
+    </fieldset>
+  );
+}
+
+function SettlementPaper({ data, totals }) {
+  const multiplePeriods = totals.periods.length > 1;
+  const note = data.noteTouched
+    ? data.footerNote
+    : `Please note that this calculation of amount payable by the employee is arrived at based on the data available in ${data.companyName.trim() || 'the company'}’s record. This is a system-generated F&F settlement statement and does not require signature or company seal.`;
+  const spacing = {
+    compact: { lineHeight: 1.4, cellPadding: '4px 8px' },
+    normal: { lineHeight: 1.65, cellPadding: '8px 10px' },
+    roomy: { lineHeight: 1.9, cellPadding: '11px 12px' },
+  }[data.lineSpacing] || { lineHeight: 1.65, cellPadding: '8px 10px' };
+  const netLabel = totals.net < 0 ? 'Net Recoverable from Employee' : 'Net Payable Amount';
+  const paymentFormula = totals.totalAdditional ? '(A + C − B)' : '(A − B)';
+  const logoWatermark = data.watermarkType === 'logo' && data.companyLogo;
+
+  return (
+    <article
+      className="fnf-paper"
+      style={{ '--fnf-line-height': spacing.lineHeight, '--fnf-cell-padding': spacing.cellPadding }}
+    >
+      {data.watermarkEnabled && (
+        <div className="fnf-watermark" style={{ opacity: data.watermarkStrength / 100 }}>
+          {logoWatermark
+            ? <img src={data.companyLogo} alt="" />
+            : <span>{data.watermarkType === 'logo' ? data.companyName : data.watermarkText}</span>}
+        </div>
+      )}
+      <div className="fnf-paper-content">
+        <div className="fnf-paper-head">
+          <div className="fnf-company">{data.companyName || 'Company name'}</div>
+          {data.companyLogo
+            ? <img className="fnf-logo" src={data.companyLogo} alt={`${data.companyName} logo`} />
+            : <div className="fnf-logo-placeholder">{(data.companyName.trim().split(/\s+/).slice(0, 2).join(' ') || 'Logo')}</div>}
+        </div>
+
+        <h1>Full &amp; Final Settlement</h1>
+        <h2>Employee Details</h2>
+        <div className="fnf-employee-tables">
+          <table>
+            <tbody>
+              <tr><td>Employee Name</td><td>{data.employeeName || '—'}</td></tr>
+              <tr><td>Employee ID</td><td>{data.employeeId || '—'}</td></tr>
+              <tr><td>Designation</td><td>{data.designation || '—'}</td></tr>
+              <tr><td>Department</td><td>{data.department || '—'}</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <tbody>
+              <tr><td>DOJ</td><td>{displayDate(data.dateOfJoining)}</td></tr>
+              <tr><td>LWD</td><td>{displayDate(data.lastWorkingDay)}</td></tr>
+              <tr>
+                <td>Payable days</td>
+                <td>{multiplePeriods
+                  ? `${totals.totalPayableDays} (${totals.periods.map((period) => period.payableDays).join(' + ')})`
+                  : totals.totalPayableDays}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Salary to Pay</h2>
+        <table className="fnf-salary-table">
+          <thead>
+            <tr>
+              <th>Particulars</th>
+              <th>Gross Salary (₹)</th>
+              {multiplePeriods && totals.periods.map((period) => (
+                <th key={period.month}>{monthLabel(period.month)}<small>{period.payableDays} of {period.daysInMonth} days</small></th>
+              ))}
+              <th>{multiplePeriods ? 'Total ' : ''}Earnings (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {totals.components.map(([name, amount], index) => (
+              <tr key={`${name}-${index}`}>
+                <td>{name || '—'}</td>
+                <td className="fnf-center">{inr(amount)}</td>
+                {multiplePeriods && totals.periods.map((period) => (
+                  <td className="fnf-center" key={period.month}>{inr(totals.earnedPerPeriod(amount, period))}</td>
+                ))}
+                <td className="fnf-center">{inr(totals.earned(amount))}</td>
+              </tr>
+            ))}
+            <tr className="fnf-total-row">
+              <td>TOTAL (A)</td>
+              <td className="fnf-center">{inr(totals.grossSalary)}</td>
+              {multiplePeriods && totals.periods.map((period) => (
+                <td className="fnf-center" key={period.month}>
+                  {inr(totals.components.reduce((sum, [, amount]) => sum + totals.earnedPerPeriod(amount, period), 0))}
+                </td>
+              ))}
+              <td className="fnf-center">{inr(totals.earnings)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {totals.additionalPayments.length > 0 && (
+          <table className="fnf-extra-table">
+            <thead><tr><th>Additional Payments</th><th>Amount (₹)</th></tr></thead>
+            <tbody>
+              {totals.additionalPayments.map(([name, amount], index) => (
+                <tr key={`${name}-${index}`}><td>{name || '—'}</td><td className="fnf-center">{inr(amount)}</td></tr>
+              ))}
+              <tr className="fnf-total-row"><td>Total Additional Payments (C)</td><td className="fnf-center">{inr(totals.totalAdditional)}</td></tr>
+            </tbody>
+          </table>
+        )}
+
+        <table className="fnf-extra-table">
+          <thead><tr><th>Deductions</th><th>Amount (₹)</th></tr></thead>
+          <tbody>
+            {totals.deductions.map(([name, amount], index) => (
+              <tr key={`${name}-${index}`}><td>{name || '—'}</td><td className="fnf-center">{amount ? inr(amount) : 'NIL'}</td></tr>
+            ))}
+            <tr className="fnf-total-row"><td>Total Deductions (B)</td><td className="fnf-center">{totals.totalDeductions ? inr(totals.totalDeductions) : 'NIL'}</td></tr>
+          </tbody>
+        </table>
+
+        <p className="fnf-net">{netLabel} {paymentFormula}: <strong>₹ {inr(Math.abs(totals.net))}</strong></p>
+        <p className="fnf-words">Rupees {amountInWords(totals.net)} Only</p>
+        {note && <p className="fnf-note">{note}</p>}
+      </div>
+    </article>
+  );
+}
+
+function SavedSettlements({ records, busyId, onOpen, onDelete, onCreate }) {
+  if (!records.length) {
+    return (
+      <div className="fnf-empty">
+        <Icon n="inbox" s={30} />
+        <h2>No saved settlements</h2>
+        <p>Created F&amp;F statements will be kept here for later viewing, editing, and printing.</p>
+        <button className="btn primary" onClick={onCreate}>Create your first settlement</button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="fnf-records card">
+      <div className="fnf-records-heading">
+        <div>
+          <h2>Saved Full &amp; Final settlements</h2>
+          <p className="sm mut">{records.length} saved {records.length === 1 ? 'settlement' : 'settlements'}</p>
+        </div>
+        <button className="btn primary" onClick={onCreate}><Icon n="plus" s={15} /> New settlement</button>
+      </div>
+      {records.map((record) => (
+        <div className="fnf-record-row" key={record.id}>
+          <div className="fnf-record-info">
+            <strong>{record.employee_name || 'Unnamed employee'}</strong>
+            <span className="sm mut">
+              {record.employee_id ? `${record.employee_id} · ` : ''}{record.company_name} · Updated {new Date(record.updated_at).toLocaleString()}
+            </span>
+          </div>
+          <div className="fnf-record-actions">
+            <button className="btn ghost" disabled={busyId === record.id} onClick={() => onOpen(record.id)}>Open</button>
+            <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+export default function FnfPage() {
+  const router = useRouter();
+  const [form, setForm] = useState(createDefaultData);
+  const [records, setRecords] = useState([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [recordId, setRecordId] = useState('');
+  const [tab, setTab] = useState('create');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [busyId, setBusyId] = useState('');
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const totals = useMemo(() => calculate(form), [form]);
+
+  const loadRecords = useCallback(async () => {
+    setRecords(await api('/api/fnfs'));
+  }, []);
+
+  useEffect(() => {
+    Promise.all([api('/api/auth/me'), api('/api/workspace-modules')])
+      .then(async ([admin, modules]) => {
+        setIsSuperAdmin(admin.role === 'superadmin');
+        if (!modules.some((module) => module.key === 'fnf' && module.enabled)) {
+          router.replace('/portal');
+          return;
+        }
+        await loadRecords();
+        setLoading(false);
+      })
+      .catch((loadError) => {
+        if (loadError.status === 401) router.replace('/login');
+        else {
+          setError(loadError.message || 'Could not load F&F settlements.');
+          setLoading(false);
+        }
+      });
+  }, [loadRecords, router]);
+
+  function startNew() {
+    setForm(createDefaultData());
+    setRecordId('');
+    setTab('create');
+    setError('');
+    setNotice('');
+  }
+
+  async function openRecord(id) {
+    setBusyId(id);
+    setError('');
+    try {
+      const record = await api(`/api/fnfs/${id}`);
+      setForm(record.data);
+      setRecordId(record.id);
+      setTab('create');
+      setNotice('Saved settlement loaded. Save changes to update this record.');
+    } catch (loadError) {
+      setError(loadError.message || 'Could not open this settlement.');
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  async function saveSettlement() {
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const saved = await api(recordId ? `/api/fnfs/${recordId}` : '/api/fnfs', {
+        method: recordId ? 'PUT' : 'POST',
+        body: form,
+      });
+      setRecordId(saved.id);
+      setNotice(recordId ? 'Settlement changes saved.' : 'Settlement saved to your records.');
+      await loadRecords();
+    } catch (saveError) {
+      setError(saveError.message || 'Could not save this settlement.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteSettlement(record) {
+    if (!window.confirm(`Delete the F&F settlement for ${record.employee_name || 'this employee'}? This cannot be undone.`)) return;
+    setBusyId(record.id);
+    setError('');
+    try {
+      await api(`/api/fnfs/${record.id}`, { method: 'DELETE' });
+      setRecords((current) => current.filter((item) => item.id !== record.id));
+      if (recordId === record.id) startNew();
+    } catch (deleteError) {
+      setError(deleteError.message || 'Could not delete this settlement.');
+    } finally {
+      setBusyId('');
+    }
+  }
+
+  function updateField(key, value) {
+    setForm((current) => {
+      const next = { ...current, [key]: value };
+      if (key === 'dateOfJoining' || key === 'lastWorkingDay') {
+        next.periods = current.periods.map((period) => period.payableDaysTouched
+          ? period
+          : makePeriod(period.month, next));
+      }
+      if (key === 'basis') {
+        next.periods = current.periods.map((period) => makePeriod(period.month, next));
+      }
+      return next;
+    });
+  }
+
+  function updatePeriod(index, key, value) {
+    setForm((current) => ({
+      ...current,
+      periods: current.periods.map((period, periodIndex) => {
+        if (periodIndex !== index) return period;
+        if (key === 'month') return makePeriod(value, current);
+        return {
+          ...period,
+          [key]: value,
+          ...(key === 'payableDays' ? { payableDaysTouched: true } : {}),
+        };
+      }),
+    }));
+  }
+
+  function addMonth() {
+    setForm((current) => {
+      const existing = current.periods.map((period) => period.month).filter(Boolean).sort();
+      const date = existing.length ? new Date(`${existing[existing.length - 1]}-01T00:00:00`) : new Date();
+      date.setMonth(date.getMonth() + 1);
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      return { ...current, periods: [...current.periods, makePeriod(month, current)] };
+    });
+  }
+
+  async function updateLogo(file) {
+    if (!file) return;
+    setError('');
+    if (!file.type.startsWith('image/') || file.size > 5_000_000) {
+      setError('Choose an image smaller than 5 MB.');
+      return;
+    }
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      let logo;
+      try {
+        const image = new Image();
+        image.src = objectUrl;
+        await new Promise((resolve, reject) => {
+          image.onload = resolve;
+          image.onerror = () => reject(new Error('Could not read the selected image.'));
+        });
+        const scale = Math.min(1, 1000 / Math.max(image.naturalWidth, image.naturalHeight));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Could not process the selected image.');
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        logo = canvas.toDataURL('image/webp', 0.82);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+      if (logo.length > 700_000) throw new Error('Logo image is still too large. Choose a smaller image.');
+      setForm((current) => ({ ...current, companyLogo: logo }));
+    } catch (logoError) {
+      setError(logoError.message || 'Could not process the logo image.');
+    }
+  }
+
+  function clearForm() {
+    if (!window.confirm('Clear this settlement and start a blank one? Unsaved edits will be lost.')) return;
+    startNew();
+  }
+
+  if (loading) return <LoadingState label="Loading F&F settlements" />;
+
+  return (
+    <div className="page-shell fnf-page-shell">
+      <div className="shell-panel workspace-panel fnf-workspace-panel">
+        <div className="bar">
+          <div className="brand" style={{ margin: 0, gap: 14 }}>
+            <Logo h={44} />
+            <span className="fnf-brand-title">Full &amp; Final Settlement</span>
+          </div>
+          <div className="me">
+            <button className="btn ghost" onClick={() => router.push('/portal')}>Workspace</button>
+            {isSuperAdmin && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
+          </div>
+        </div>
+
+        <div className="fnf-heading">
+          <div>
+            <h1>Full &amp; Final Settlement</h1>
+            <p className="sm mut">Create, save, and print employee settlement statements.</p>
+          </div>
+          <button className="btn primary" onClick={startNew}><Icon n="plus" s={15} /> New settlement</button>
+        </div>
+
+        {error && <p className="err" role="alert">{error}</p>}
+        {notice && <p className="fnf-notice" role="status">{notice}</p>}
+
+        <div className="seg fnf-tabs" role="tablist" aria-label="F&F sections">
+          <button role="tab" aria-selected={tab === 'create'} onClick={() => setTab('create')}>Create settlement</button>
+          <button role="tab" aria-selected={tab === 'saved'} onClick={() => setTab('saved')}>Saved settlements <b>{records.length}</b></button>
+        </div>
+
+        {tab === 'saved' ? (
+          <SavedSettlements
+            records={records}
+            busyId={busyId}
+            onOpen={openRecord}
+            onDelete={deleteSettlement}
+            onCreate={startNew}
+          />
+        ) : (
+          <div className="fnf-builder">
+            <aside className="fnf-controls">
+              <div className="fnf-edit-heading">
+                <div>
+                  <h2>{recordId ? 'Edit saved settlement' : 'Settlement details'}</h2>
+                  {recordId && <p className="sm mut">Editing a saved record</p>}
+                </div>
+              </div>
+
+              <fieldset>
+                <legend>Company</legend>
+                <label htmlFor="fnf-company">Company name</label>
+                <input id="fnf-company" maxLength={180} value={form.companyName} onChange={(event) => updateField('companyName', event.target.value)} />
+                <label htmlFor="fnf-logo">Logo (optional image)</label>
+                <input id="fnf-logo" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => updateLogo(event.target.files?.[0])} />
+                {form.companyLogo && <button className="fnf-text-button" type="button" onClick={() => updateField('companyLogo', '')}>Remove logo</button>}
+              </fieldset>
+
+              <fieldset>
+                <legend>Employee</legend>
+                <label htmlFor="fnf-name">Employee name</label>
+                <input id="fnf-name" maxLength={180} value={form.employeeName} onChange={(event) => updateField('employeeName', event.target.value)} />
+                <div className="fnf-two-col">
+                  <div><label htmlFor="fnf-id">Employee ID</label><input id="fnf-id" maxLength={80} value={form.employeeId} onChange={(event) => updateField('employeeId', event.target.value)} /></div>
+                  <div><label htmlFor="fnf-dept">Department</label><input id="fnf-dept" maxLength={120} value={form.department} onChange={(event) => updateField('department', event.target.value)} /></div>
+                </div>
+                <label htmlFor="fnf-designation">Designation</label>
+                <input id="fnf-designation" maxLength={120} value={form.designation} onChange={(event) => updateField('designation', event.target.value)} />
+                <div className="fnf-two-col">
+                  <div><label htmlFor="fnf-doj">Date of joining</label><input id="fnf-doj" type="date" value={form.dateOfJoining} onChange={(event) => updateField('dateOfJoining', event.target.value)} /></div>
+                  <div><label htmlFor="fnf-lwd">Last working day</label><input id="fnf-lwd" type="date" value={form.lastWorkingDay} onChange={(event) => updateField('lastWorkingDay', event.target.value)} /></div>
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend>Salary months</legend>
+                <div className="fnf-month-head"><span>Month</span><span>Payable days</span><span>Days in month</span><span /></div>
+                {form.periods.map((period, index) => (
+                  <div className="fnf-month-row" key={`${index}-${period.month}`}>
+                    <input type="month" aria-label={`Salary month ${index + 1}`} value={period.month} onChange={(event) => updatePeriod(index, 'month', event.target.value)} />
+                    <input type="number" aria-label={`Payable days for ${monthLabel(period.month)}`} min="0" max="31" step="0.5" value={period.payableDays} onChange={(event) => updatePeriod(index, 'payableDays', Number(event.target.value) || 0)} />
+                    <input type="number" aria-label={`Days in ${monthLabel(period.month)}`} min="1" max="31" value={period.daysInMonth} onChange={(event) => updatePeriod(index, 'daysInMonth', Number(event.target.value) || 1)} />
+                    <button type="button" aria-label={`Remove ${monthLabel(period.month)}`} disabled={form.periods.length < 2} onClick={() => setForm((current) => ({ ...current, periods: current.periods.filter((_, itemIndex) => itemIndex !== index) }))}>×</button>
+                  </div>
+                ))}
+                <button className="fnf-add-row" type="button" onClick={addMonth}>+ Add month</button>
+                <label htmlFor="fnf-rounding">Rounding</label>
+                <select id="fnf-rounding" value={form.rounding} onChange={(event) => updateField('rounding', event.target.value)}>
+                  <option value="near">Round to nearest rupee</option><option value="down">Round down each line</option><option value="up">Round up each line</option>
+                </select>
+                <label htmlFor="fnf-basis">Days basis</label>
+                <select id="fnf-basis" value={form.basis} onChange={(event) => updateField('basis', event.target.value)}>
+                  <option value="cal">Actual days in the month</option><option value="30">Fixed 30 days</option><option value="26">Fixed 26 days</option>
+                </select>
+                <p className="fnf-hint">Each salary component is prorated for each month. Payable days are calculated from joining and last working dates; adjust them if needed.</p>
+              </fieldset>
+
+              <RowsEditor title="Monthly gross salary" rows={form.components} onChange={(rows) => updateField('components', rows)} addLabel="Add component" />
+              <RowsEditor title="Additional payments" rows={form.additionalPayments} onChange={(rows) => updateField('additionalPayments', rows)} addLabel="Add payment" />
+              <p className="fnf-hint">Leave encashment, bonus, notice pay, and similar payments are added as entered.</p>
+              <RowsEditor title="Deductions" rows={form.deductions} onChange={(rows) => updateField('deductions', rows)} addLabel="Add deduction" />
+
+              <fieldset>
+                <legend>Layout &amp; watermark</legend>
+                <label htmlFor="fnf-spacing">Line spacing</label>
+                <select id="fnf-spacing" value={form.lineSpacing} onChange={(event) => updateField('lineSpacing', event.target.value)}>
+                  <option value="compact">Compact</option><option value="normal">Comfortable</option><option value="roomy">Spacious</option>
+                </select>
+                <label className="fnf-check"><input type="checkbox" checked={form.watermarkEnabled} onChange={(event) => updateField('watermarkEnabled', event.target.checked)} /> Show watermark</label>
+                <label htmlFor="fnf-watermark-type">Watermark type</label>
+                <select id="fnf-watermark-type" value={form.watermarkType} onChange={(event) => updateField('watermarkType', event.target.value)}>
+                  <option value="logo">Company logo</option><option value="text">Custom text</option>
+                </select>
+                {form.watermarkType === 'text' && <>
+                  <label htmlFor="fnf-watermark-text">Watermark text</label>
+                  <input id="fnf-watermark-text" maxLength={120} value={form.watermarkText} onChange={(event) => updateField('watermarkText', event.target.value)} />
+                </>}
+                <label htmlFor="fnf-watermark-strength">Strength: {form.watermarkStrength}%</label>
+                <input id="fnf-watermark-strength" type="range" min="4" max="30" value={form.watermarkStrength} onChange={(event) => updateField('watermarkStrength', Number(event.target.value))} />
+                <p className="fnf-hint">Without an uploaded company logo, the company name is used as the watermark.</p>
+              </fieldset>
+
+              <fieldset>
+                <legend>Footer note</legend>
+                <textarea maxLength={2000} value={form.footerNote} onChange={(event) => setForm((current) => ({ ...current, footerNote: event.target.value, noteTouched: true }))} />
+              </fieldset>
+
+              <div className="fnf-actions">
+                <button className="btn primary" disabled={busy || !form.companyName.trim() || !form.employeeName.trim()} onClick={saveSettlement}>
+                  {busy ? 'Saving…' : recordId ? 'Save changes' : 'Save settlement'}
+                </button>
+                <button className="btn ghost" onClick={() => window.print()}>Print / Save as PDF</button>
+                <button className="btn ghost" onClick={clearForm}>Clear all</button>
+              </div>
+              <p className="fnf-hint">To save a PDF, choose “Save as PDF” in the print dialog.</p>
+            </aside>
+
+            <main className="fnf-preview" aria-label="Settlement preview">
+              <SettlementPaper data={form} totals={totals} />
+            </main>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

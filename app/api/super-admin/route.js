@@ -1,7 +1,7 @@
 import { sql } from '@/lib/db';
 import { bad, getAdmin, logAdminAction } from '@/lib/auth';
 
-const MODULES = ['interview-feedback', 'exit-form'];
+const MODULES = ['interview-feedback', 'exit-form', 'fnf'];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const NEON_API_BASE = 'https://console.neon.tech/api/v2';
 const FREE_PLAN_PROJECT_STORAGE_BYTES = 1_000_000_000;
