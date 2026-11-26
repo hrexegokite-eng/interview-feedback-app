@@ -3,7 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon, Logo, LoadingState, api } from '@/components/ui';
 import { amountInWords, calculateFnf as calculate } from '@/lib/fnf-calculations';
-import { shareHropsFolderPdf } from '@/lib/hrops-folder-pdf';
+import {
+  canShareHropsFolderPdf,
+  downloadHropsFolderPdf,
+  prepareHropsFolderPdf,
+  sharePreparedHropsFolderPdf,
+} from '@/lib/hrops-folder-pdf';
 import './fnf.css';
 
 const DEFAULT_COMPONENTS = [
@@ -282,7 +287,7 @@ function SettlementPaper({ data, totals }) {
   );
 }
 
-function SavedSettlements({ records, busyId, sharingId, onOpen, onDelete, onCreate, onShare }) {
+function SavedSettlements({ records, busyId, sharingId, preparedShareId, onOpen, onDelete, onCreate, onShare }) {
   if (!records.length) {
     return (
       <div className="fnf-empty">
@@ -332,7 +337,10 @@ function SavedSettlements({ records, busyId, sharingId, onOpen, onDelete, onCrea
                   </div>
                   {person.person_id && (
                     <button className="btn ghost" disabled={sharingId === person.person_id} onClick={() => onShare(person.person_id)}>
-                      <Icon n="download" s={15} />{sharingId === person.person_id ? 'Preparing PDF…' : 'Share folder PDF'}
+                      <Icon n={preparedShareId === person.person_id ? 'external' : 'download'} s={15} />
+                      {sharingId === person.person_id
+                        ? preparedShareId === person.person_id ? 'Opening share menu…' : 'Preparing PDF…'
+                        : preparedShareId === person.person_id ? 'Share PDF now' : 'Share folder PDF'}
                     </button>
                   )}
                 </div>
@@ -372,6 +380,7 @@ export default function FnfPage() {
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState('');
   const [sharingId, setSharingId] = useState('');
+  const [preparedShare, setPreparedShare] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const totals = useMemo(() => calculate(form), [form]);
@@ -449,17 +458,40 @@ export default function FnfPage() {
   }
 
   async function shareFolder(personId) {
+    if (preparedShare?.personId === personId) {
+      setSharingId(personId);
+      setError('');
+      setNotice('');
+      try {
+        const result = await sharePreparedHropsFolderPdf(preparedShare);
+        if (result === 'shared') {
+          setPreparedShare(null);
+          setNotice('Employee folder PDF shared.');
+        } else {
+          setNotice('Sharing canceled.');
+        }
+      } catch (shareError) {
+        setError(shareError.message || 'Could not share this employee folder PDF.');
+      } finally {
+        setSharingId('');
+      }
+      return;
+    }
+
     if (!window.confirm('This PDF contains all saved FNF settlements and payslips for this employee, including salary and bank details. Continue only if the recipient is authorized.')) return;
+    setPreparedShare(null);
     setSharingId(personId);
     setError('');
     setNotice('');
     try {
-      const result = await shareHropsFolderPdf(personId);
-      setNotice(result === 'shared'
-        ? 'Employee folder PDF shared.'
-        : result === 'cancelled'
-          ? 'Sharing canceled.'
-          : 'Employee folder PDF downloaded. You can now share the file securely.');
+      const prepared = await prepareHropsFolderPdf(personId);
+      if (canShareHropsFolderPdf(prepared.file)) {
+        setPreparedShare({ personId, ...prepared });
+        setNotice('Employee folder PDF is ready. Tap “Share PDF now” to choose a sharing app.');
+      } else {
+        downloadHropsFolderPdf(prepared.file);
+        setNotice('Employee folder PDF downloaded. You can now share the file securely.');
+      }
     } catch (shareError) {
       setError(shareError.message || 'Could not prepare this employee folder PDF.');
     } finally {
@@ -630,6 +662,7 @@ export default function FnfPage() {
             records={records}
             busyId={busyId}
             sharingId={sharingId}
+            preparedShareId={preparedShare?.personId}
             onOpen={openRecord}
             onDelete={deleteSettlement}
             onCreate={startNew}
