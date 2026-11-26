@@ -214,6 +214,8 @@
 .fnf-person-folder > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 2px; cursor: pointer; }
 .fnf-person-folder > summary > span:first-child { display: grid; gap: 3px; }
 .fnf-person-folder > summary > span:last-child { flex: none; }
+.fnf-folder-share { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 12px 18px; }
+.fnf-folder-share .btn { flex: none; }
 .fnf-folder-records { padding-left: 18px; border-left: 2px solid var(--line); }
 .fnf-empty { display: grid; justify-items: center; gap: 8px; padding: 56px 20px; text-align: center; color: var(--mut); }
 .fnf-empty h2 { margin: 4px 0 0; color: var(--ink); }
@@ -235,6 +237,7 @@
   .fnf-records-heading,
   .fnf-record-row,
   .fnf-person-folder > summary { align-items: stretch; flex-direction: column; }
+  .fnf-folder-share { align-items: stretch; flex-direction: column; padding-left: 0; }
   .fnf-records-heading .btn { width: 100%; }
   .fnf-record-actions > .btn { flex: 1; }
 }

@@ -26,7 +26,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 
 The configured super admin email is seeded into the database automatically. Only that account and admins explicitly added from **Super Admin** can access the workspace. Super admins can allocate active workspace modules to each admin individually. Set `SUPER_ADMIN_EMAIL` in production before the first deployment; it defaults to `hrops@gokitetours.com`. Development sign-in is disabled in production.
 
-The **HROps** module is available from the workspace portal and contains **Full & Final Settlement (FNF)** and **Payslip Generator**. Both tools share employee folders: FNF settlements are grouped by employee, while payslips can be saved to a new or existing employee folder, reopened, updated, deleted, and printed or saved as PDF. Payslips support attendance and week-off calculations, editable earnings and deductions, and optional logos. Super admins can enable HROps workspace-wide and allocate it to individual admins.
+The **HROps** module is available from the workspace portal and contains **Full & Final Settlement (FNF)** and **Payslip Generator**. Both tools share employee folders: FNF settlements and payslips can be saved to a new or existing employee folder, reopened, updated, and deleted. An authorized admin can share an employee folder through the device share sheet where supported, or download a confidential PDF containing all saved FNF settlements and payslips. The PDF is generated on demand and is not published as a public link. Payslips support attendance and week-off calculations, editable earnings and deductions, and optional logos. Super admins can enable HROps workspace-wide and allocate it to individual admins.
 
 ## Getting Started
 

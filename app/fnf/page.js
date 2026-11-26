@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon, Logo, LoadingState, api } from '@/components/ui';
+import { amountInWords, calculateFnf as calculate } from '@/lib/fnf-calculations';
+import { shareHropsFolderPdf } from '@/lib/hrops-folder-pdf';
 import './fnf.css';
 
 const DEFAULT_COMPONENTS = [
@@ -19,7 +21,6 @@ const DEFAULT_DEDUCTIONS = [
   ['Other Deduction', 0],
 ];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const ROUNDING = { near: Math.round, down: Math.floor, up: Math.ceil };
 const NUMBER_FORMAT = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
 const inr = (value) => NUMBER_FORMAT.format(Number.isFinite(value) ? value : 0);
 const dateParts = (value) => {
@@ -93,6 +94,7 @@ function createDefaultData() {
   const today = new Date();
   const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   const data = {
+    personId: '',
     companyName: 'Go Kite Travel & Tours LLP',
     companyLogo: '',
     employeeName: '',
@@ -100,6 +102,7 @@ function createDefaultData() {
     department: '',
     designation: '',
     dateOfJoining: '',
+    lastWorkingDay: '',
     lastWorkingDay: '',
     periods: [],
     rounding: 'near',
@@ -117,66 +120,6 @@ function createDefaultData() {
   };
   data.periods = [makePeriod(month, data)];
   return data;
-}
-
-function amountInWords(value) {
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-  const twoDigits = (number) => number < 20
-    ? ones[number]
-    : `${tens[Math.floor(number / 10)]}${number % 10 ? ` ${ones[number % 10]}` : ''}`;
-  const threeDigits = (number) => {
-    if (number >= 1000) {
-      return `${threeDigits(Math.floor(number / 1000))} Thousand${number % 1000 ? ` ${threeDigits(number % 1000)}` : ''}`;
-    }
-    const hundreds = Math.floor(number / 100);
-    const remainder = number % 100;
-    return `${hundreds ? `${ones[hundreds]} Hundred` : ''}${hundreds && remainder ? ' ' : ''}${remainder ? twoDigits(remainder) : ''}`;
-  };
-  let number = Math.abs(Math.round(value));
-  if (!number) return 'Zero';
-  const parts = [[10_000_000, 'Crore'], [100_000, 'Lakh'], [1_000, 'Thousand'], [100, 'Hundred']];
-  const words = [];
-  for (const [unit, label] of parts) {
-    const count = Math.floor(number / unit);
-    if (count) {
-      words.push(`${threeDigits(count)} ${label}`);
-      number %= unit;
-    }
-  }
-  if (number) words.push(twoDigits(number));
-  return words.join(' ');
-}
-
-function calculate(data) {
-  const periods = [...data.periods].sort((a, b) => a.month.localeCompare(b.month));
-  const round = ROUNDING[data.rounding] || Math.round;
-  const earnedPerPeriod = (gross, period) => period.daysInMonth > 0
-    ? round(Number((gross * period.payableDays / period.daysInMonth).toFixed(6)))
-    : 0;
-  const earned = (gross) => periods.reduce((total, period) => total + earnedPerPeriod(gross, period), 0);
-  const components = data.components.filter(([name, amount]) => name.trim() || amount);
-  const additionalPayments = data.additionalPayments.filter(([name, amount]) => name.trim() || amount);
-  const deductions = data.deductions.filter(([name, amount]) => name.trim() || amount);
-  const grossSalary = components.reduce((total, [, amount]) => total + amount, 0);
-  const earnings = components.reduce((total, [, amount]) => total + earned(amount), 0);
-  const totalAdditional = additionalPayments.reduce((total, [, amount]) => total + amount, 0);
-  const totalDeductions = deductions.reduce((total, [, amount]) => total + amount, 0);
-  const net = Math.round((earnings + totalAdditional - totalDeductions) * 100) / 100;
-  return {
-    periods,
-    components,
-    additionalPayments,
-    deductions,
-    grossSalary,
-    earnings,
-    totalAdditional,
-    totalDeductions,
-    net,
-    earnedPerPeriod,
-    earned,
-    totalPayableDays: periods.reduce((total, period) => total + period.payableDays, 0),
-  };
 }
 
 function updateRows(rows, index, column, value) {
@@ -339,7 +282,7 @@ function SettlementPaper({ data, totals }) {
   );
 }
 
-function SavedSettlements({ records, busyId, onOpen, onDelete, onCreate }) {
+function SavedSettlements({ records, busyId, sharingId, onOpen, onDelete, onCreate, onShare }) {
   if (!records.length) {
     return (
       <div className="fnf-empty">
@@ -378,6 +321,14 @@ function SavedSettlements({ records, busyId, onOpen, onDelete, onCreate }) {
               </span>
               <span className="sm mut">{personRecords.length} {personRecords.length === 1 ? 'settlement' : 'settlements'}</span>
             </summary>
+            {person.person_id && (
+              <div className="fnf-folder-share">
+                <span className="sm mut">Share all FNF settlements and payslips in this employee folder.</span>
+                <button className="btn ghost" disabled={sharingId === person.person_id} onClick={() => onShare(person.person_id)}>
+                  <Icon n="download" s={15} />{sharingId === person.person_id ? 'Preparing PDF…' : 'Share folder PDF'}
+                </button>
+              </div>
+            )}
             <div className="fnf-folder-records">
               {personRecords.map((record) => (
                 <div className="fnf-record-row" key={record.id}>
@@ -403,18 +354,25 @@ export default function FnfPage() {
   const router = useRouter();
   const [form, setForm] = useState(createDefaultData);
   const [records, setRecords] = useState([]);
+  const [people, setPeople] = useState([]);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [recordId, setRecordId] = useState('');
   const [tab, setTab] = useState('create');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState('');
+  const [sharingId, setSharingId] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const totals = useMemo(() => calculate(form), [form]);
 
   const loadRecords = useCallback(async () => {
-    setRecords(await api('/api/fnfs'));
+    const [settlements, employeeFolders] = await Promise.all([
+      api('/api/fnfs'),
+      api('/api/hrops/people'),
+    ]);
+    setRecords(settlements);
+    setPeople(employeeFolders);
   }, []);
 
   useEffect(() => {
@@ -450,7 +408,7 @@ export default function FnfPage() {
     setError('');
     try {
       const record = await api(`/api/fnfs/${id}`);
-      setForm(record.data);
+      setForm({ ...record.data, personId: record.person_id || record.data.personId || '' });
       setRecordId(record.id);
       setTab('create');
       setNotice('Saved settlement loaded. Save changes to update this record.');
@@ -477,6 +435,25 @@ export default function FnfPage() {
       setError(saveError.message || 'Could not save this settlement.');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function shareFolder(personId) {
+    if (!window.confirm('This PDF contains all saved FNF settlements and payslips for this employee, including salary and bank details. Continue only if the recipient is authorized.')) return;
+    setSharingId(personId);
+    setError('');
+    setNotice('');
+    try {
+      const result = await shareHropsFolderPdf(personId);
+      setNotice(result === 'shared'
+        ? 'Employee folder PDF shared.'
+        : result === 'cancelled'
+          ? 'Sharing canceled.'
+          : 'Employee folder PDF downloaded. You can now share the file securely.');
+    } catch (shareError) {
+      setError(shareError.message || 'Could not prepare this employee folder PDF.');
+    } finally {
+      setSharingId('');
     }
   }
 
@@ -508,6 +485,32 @@ export default function FnfPage() {
       }
       return next;
     });
+  }
+
+  function selectPerson(personId) {
+    const person = people.find((item) => item.id === personId);
+    if (!person) {
+      setForm((current) => ({
+        ...current,
+        personId: '',
+        employeeName: '',
+        employeeId: '',
+        department: '',
+        designation: '',
+        dateOfJoining: '',
+      }));
+      return;
+    }
+    const profile = person.profile || {};
+    setForm((current) => ({
+      ...current,
+      personId: person.id,
+      employeeName: person.name,
+      employeeId: person.employee_id || '',
+      department: profile.department || '',
+      designation: profile.designation || '',
+      dateOfJoining: profile.dateJoined || '',
+    }));
   }
 
   function updatePeriod(index, key, value) {
@@ -611,9 +614,11 @@ export default function FnfPage() {
           <SavedSettlements
             records={records}
             busyId={busyId}
+            sharingId={sharingId}
             onOpen={openRecord}
             onDelete={deleteSettlement}
             onCreate={startNew}
+            onShare={shareFolder}
           />
         ) : (
           <div className="fnf-builder">
@@ -636,10 +641,20 @@ export default function FnfPage() {
 
               <fieldset>
                 <legend>Employee</legend>
+                <label htmlFor="fnf-person">Employee folder</label>
+                <select id="fnf-person" value={form.personId || ''} onChange={(event) => selectPerson(event.target.value)}>
+                  <option value="">New employee folder</option>
+                  {people.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.name}{person.employee_id ? ` · ${person.employee_id}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="fnf-hint">{form.personId ? 'This settlement will be saved in the selected employee folder.' : 'Enter an employee name or ID to match or create a folder when saving.'}</p>
                 <label htmlFor="fnf-name">Employee name</label>
-                <input id="fnf-name" maxLength={180} value={form.employeeName} onChange={(event) => updateField('employeeName', event.target.value)} />
+                <input id="fnf-name" maxLength={180} value={form.employeeName} disabled={Boolean(form.personId)} onChange={(event) => updateField('employeeName', event.target.value)} />
                 <div className="fnf-two-col">
-                  <div><label htmlFor="fnf-id">Employee ID</label><input id="fnf-id" maxLength={80} value={form.employeeId} onChange={(event) => updateField('employeeId', event.target.value)} /></div>
+                  <div><label htmlFor="fnf-id">Employee ID</label><input id="fnf-id" maxLength={80} value={form.employeeId} disabled={Boolean(form.personId)} onChange={(event) => updateField('employeeId', event.target.value)} /></div>
                   <div><label htmlFor="fnf-dept">Department</label><input id="fnf-dept" maxLength={120} value={form.department} onChange={(event) => updateField('department', event.target.value)} /></div>
                 </div>
                 <label htmlFor="fnf-designation">Designation</label>

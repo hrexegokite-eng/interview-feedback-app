@@ -23,8 +23,8 @@ export async function POST(request) {
   if (parsed.error) return bad(parsed.error, parsed.status);
 
   const data = parsed.data;
-  const personId = await saveHropsPerson(data, admin.email);
-  if (!personId) return bad('Could not create or find the employee folder.', 400);
+  const personId = await saveHropsPerson(data, admin.email, data.personId || '');
+  if (!personId) return bad('Could not create or find the employee folder.', data.personId ? 404 : 400);
   const records = await sql`
     INSERT INTO fnf_settlements (person_id, company_name, employee_name, employee_id, data, created_by)
     VALUES (

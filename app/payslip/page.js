@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon, LoadingState, Logo, api } from '@/components/ui';
+import { shareHropsFolderPdf } from '@/lib/hrops-folder-pdf';
+import { amount, amountInWords, calculatePayslip as calculate, daysInMonth, weekOffCount } from '@/lib/payslip-calculations';
 import './payslip.css';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -14,29 +16,6 @@ const DEFAULT_EARNINGS = [
   { name: 'Special Allowance', amount: '0' },
 ];
 const INR = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
-const amount = (value) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
-};
-
-function daysInMonth(month) {
-  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month || '');
-  return match ? new Date(Number(match[1]), Number(match[2]), 0).getDate() : 0;
-}
-
-function weekOffCount(month, weekOffs) {
-  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month || '');
-  if (!match) return 0;
-  const year = Number(match[1]);
-  const monthNumber = Number(match[2]);
-  const totalDays = daysInMonth(month);
-  let count = 0;
-  for (let day = 1; day <= totalDays; day += 1) {
-    if (weekOffs.includes(new Date(Date.UTC(year, monthNumber - 1, day)).getUTCDay())) count += 1;
-  }
-  return count;
-}
-
 function createDefaultForm() {
   const today = new Date();
   const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
@@ -65,70 +44,6 @@ function createDefaultForm() {
     earnings: DEFAULT_EARNINGS.map((row) => ({ ...row })),
     deductions: [],
   };
-}
-
-function attendanceFor(form) {
-  const monthDays = daysInMonth(form.month);
-  const absent = amount(form.absent);
-  const halfDays = amount(form.halfDays);
-  const leaves = amount(form.leaves);
-  return {
-    monthDays,
-    payable: Math.max(0, monthDays - absent - (0.5 * halfDays)),
-    present: form.autoPresent
-      ? Math.max(0, monthDays - leaves - absent - halfDays)
-      : amount(form.present),
-  };
-}
-
-function calculate(form) {
-  const attendance = attendanceFor(form);
-  const ratio = form.prorate && attendance.monthDays
-    ? Math.max(0, Math.min(1, attendance.payable / attendance.monthDays))
-    : 1;
-  const earnings = form.earnings.map((row) => {
-    const full = amount(row.amount);
-    return { name: row.name, full, earned: Math.round(full * ratio) };
-  });
-  const deductions = form.deductions.map((row) => ({ name: row.name, amount: amount(row.amount) }));
-  const fixedGross = earnings.reduce((total, row) => total + row.full, 0);
-  const totalEarnings = earnings.reduce((total, row) => total + row.earned, 0);
-  const totalDeductions = deductions.reduce((total, row) => total + row.amount, 0);
-  return {
-    attendance,
-    earnings,
-    deductions,
-    fixedGross,
-    totalEarnings,
-    totalDeductions,
-    net: totalEarnings - totalDeductions,
-  };
-}
-
-function amountInWords(value) {
-  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-  const twoDigits = (number) => number < 20
-    ? ones[number]
-    : `${tens[Math.floor(number / 10)]}${number % 10 ? ` ${ones[number % 10]}` : ''}`;
-  const threeDigits = (number) => {
-    const hundreds = Math.floor(number / 100);
-    const remainder = number % 100;
-    return `${hundreds ? `${ones[hundreds]} Hundred` : ''}${hundreds && remainder ? ' ' : ''}${remainder ? twoDigits(remainder) : ''}`;
-  };
-  let number = Math.abs(Math.round(value));
-  if (!number) return 'Zero';
-  const parts = [[10_000_000, 'Crore'], [100_000, 'Lakh'], [1_000, 'Thousand'], [100, 'Hundred']];
-  const words = [];
-  for (const [unit, label] of parts) {
-    const count = Math.floor(number / unit);
-    if (count) {
-      words.push(`${threeDigits(count)} ${label}`);
-      number %= unit;
-    }
-  }
-  if (number) words.push(twoDigits(number));
-  return `${value < 0 ? 'Minus ' : ''}${words.join(' ')}`;
 }
 
 function displayDate(value) {
@@ -173,7 +88,7 @@ function PayRowEditor({ title, rows, onChange, onAdd }) {
   );
 }
 
-function SavedPayslips({ records, busyId, onOpen, onDelete, onCreate }) {
+function SavedPayslips({ records, busyId, sharingId, onOpen, onDelete, onCreate, onShare }) {
   if (!records.length) {
     return (
       <section className="payslip-saved card">
@@ -214,6 +129,14 @@ function SavedPayslips({ records, busyId, onOpen, onDelete, onCreate }) {
               </span>
               <span className="sm mut">{personRecords.length} {personRecords.length === 1 ? 'payslip' : 'payslips'}</span>
             </summary>
+            {person.person_id && (
+              <div className="payslip-folder-share">
+                <span className="sm mut">Share all FNF settlements and payslips in this employee folder.</span>
+                <button className="btn ghost" disabled={sharingId === person.person_id} onClick={() => onShare(person.person_id)}>
+                  <Icon n="download" s={15} />{sharingId === person.person_id ? 'Preparing PDF…' : 'Share folder PDF'}
+                </button>
+              </div>
+            )}
             <div className="payslip-folder-records">
               {personRecords.map((record) => (
                 <div className="payslip-record-row" key={record.id}>
@@ -248,6 +171,7 @@ export default function PayslipGenerator() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState('');
+  const [sharingId, setSharingId] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [generatedAt, setGeneratedAt] = useState(() => new Date());
@@ -440,6 +364,25 @@ export default function PayslipGenerator() {
     }
   }
 
+  async function shareFolder(personId) {
+    if (!window.confirm('This PDF contains all saved FNF settlements and payslips for this employee, including salary and bank details. Continue only if the recipient is authorized.')) return;
+    setSharingId(personId);
+    setError('');
+    setNotice('');
+    try {
+      const result = await shareHropsFolderPdf(personId);
+      setNotice(result === 'shared'
+        ? 'Employee folder PDF shared.'
+        : result === 'cancelled'
+          ? 'Sharing canceled.'
+          : 'Employee folder PDF downloaded. You can now share the file securely.');
+    } catch (shareError) {
+      setError(shareError.message || 'Could not prepare this employee folder PDF.');
+    } finally {
+      setSharingId('');
+    }
+  }
+
   function resetForm() {
     if (!window.confirm('Clear this draft? Any saved payslip will stay unchanged unless you save over it.')) return;
     setForm(createDefaultForm());
@@ -552,7 +495,7 @@ export default function PayslipGenerator() {
         </div>
 
         {tab === 'saved' ? (
-          <SavedPayslips records={records} busyId={busyId} onOpen={openPayslip} onDelete={deletePayslip} onCreate={startNew} />
+          <SavedPayslips records={records} busyId={busyId} sharingId={sharingId} onOpen={openPayslip} onDelete={deletePayslip} onCreate={startNew} onShare={shareFolder} />
         ) : (
         <>
         <div className="payslip-responsive-tabs" role="tablist" aria-label="Payslip editor views">
