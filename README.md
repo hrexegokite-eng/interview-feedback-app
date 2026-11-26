@@ -24,7 +24,7 @@ A modern interview scheduling and candidate feedback web application for Go Kite
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
 
-The configured super admin email is seeded into the database automatically. Only that account and admins explicitly added from **Super Admin** can access the workspace. Set `SUPER_ADMIN_EMAIL` in production before the first deployment; it defaults to `hrops@gokitetours.com`. Development sign-in is disabled in production.
+The configured super admin email is seeded into the database automatically. Only that account and admins explicitly added from **Super Admin** can access the workspace. Super admins can allocate active workspace modules to each admin individually. Set `SUPER_ADMIN_EMAIL` in production before the first deployment; it defaults to `hrops@gokitetours.com`. Development sign-in is disabled in production.
 
 The **Full & Final Settlement** module is available from the workspace portal. Admins can save each settlement to the shared database, reopen and update saved records, delete them, or print the statement to PDF. Super admins can enable or disable the module from **Active workspace modules**.
 

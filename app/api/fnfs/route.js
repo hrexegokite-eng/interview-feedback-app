@@ -1,11 +1,12 @@
-import { bad, getAdmin } from '@/lib/auth';
+import { bad, getModuleAdmin } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import { readSettlement } from '@/lib/fnf';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const { error } = await getModuleAdmin('fnf');
+  if (error) return error;
   const records = await sql`
     SELECT id, company_name, employee_name, employee_id, created_at, updated_at
     FROM fnf_settlements
@@ -15,8 +16,8 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const admin = await getAdmin();
-  if (!admin) return bad('Unauthorized', 401);
+  const { admin, error } = await getModuleAdmin('fnf');
+  if (error) return error;
   const parsed = await readSettlement(request);
   if (parsed.error) return bad(parsed.error, parsed.status);
 

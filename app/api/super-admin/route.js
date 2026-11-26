@@ -108,9 +108,10 @@ async function authorize() {
 export async function GET() {
   const auth = await authorize();
   if (auth.error) return auth.error;
-  const [admins, modules, audit, counts, storage, capacity] = await Promise.all([
+  const [admins, modules, moduleAccess, audit, counts, storage, capacity] = await Promise.all([
     sql`select email, role, created_at, created_by from admin_users order by role desc, email`,
     sql`select key, enabled, updated_at, updated_by from workspace_modules order by key`,
+    sql`select admin_email, module_key from admin_module_access where enabled = true`,
     sql`select id, actor_email, action, target, details, created_at from admin_audit_log order by created_at desc limit 100`,
     sql`select count(*)::int as candidates, count(*) filter (where status = 'complete')::int as onboarding from candidates`,
     sql`select pg_database_size(current_database())::text as used_bytes`,
@@ -123,7 +124,12 @@ export async function GET() {
   }
 
   return Response.json({
-    admins,
+    admins: admins.map((admin) => ({
+      ...admin,
+      modules: admin.role === 'superadmin'
+        ? modules.filter((module) => module.enabled).map((module) => module.key)
+        : moduleAccess.filter((access) => access.admin_email === admin.email).map((access) => access.module_key),
+    })),
     modules,
     audit,
     counts: counts[0],
@@ -139,10 +145,19 @@ export async function POST(req) {
   if (!EMAIL.test(email) || email.length > 254) return bad('Enter a valid email address.');
 
   const rows = await sql`
-    insert into admin_users (email, role, created_by)
-    values (${email}, 'admin', ${auth.admin.email})
-    on conflict (email) do nothing
-    returning email, role, created_at, created_by
+    with new_admin as (
+      insert into admin_users (email, role, created_by)
+      values (${email}, 'admin', ${auth.admin.email})
+      on conflict (email) do nothing
+      returning email, role, created_at, created_by
+    ), access as (
+      insert into admin_module_access (admin_email, module_key, enabled)
+      select new_admin.email, module.key, module.enabled
+      from new_admin cross join workspace_modules module
+      on conflict (admin_email, module_key) do nothing
+      returning admin_email
+    )
+    select email, role, created_at, created_by from new_admin
   `;
   if (!rows.length) return bad('That email already has admin access.', 409);
   await logAdminAction(auth.admin.email, 'admin.added', email);
@@ -153,6 +168,26 @@ export async function PATCH(req) {
   const auth = await authorize();
   if (auth.error) return auth.error;
   const body = await req.json().catch(() => null);
+  if (Array.isArray(body?.modules)) {
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const modules = body.modules;
+    if (!EMAIL.test(email) || email.length > 254) return bad('Choose a valid admin email address.');
+    if (modules.some((key) => typeof key !== 'string' || !MODULES.includes(key))
+      || new Set(modules).size !== modules.length) {
+      return bad('Choose valid workspace modules.');
+    }
+    const target = await sql`select role from admin_users where email = ${email}`;
+    if (!target.length || target[0].role !== 'admin') return bad('Admin not found or cannot be changed.', 404);
+
+    await sql`
+      update admin_module_access
+      set enabled = module_key = any(${modules}::text[])
+      where admin_email = ${email}
+    `;
+    await logAdminAction(auth.admin.email, 'admin.modules_updated', email, { modules });
+    return Response.json({ email, modules });
+  }
+
   const key = typeof body?.key === 'string' ? body.key : '';
   const enabled = body?.enabled;
   if (!MODULES.includes(key) || typeof enabled !== 'boolean') return bad('Choose a valid workspace module and enabled state.');

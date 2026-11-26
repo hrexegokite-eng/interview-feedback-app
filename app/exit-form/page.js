@@ -86,6 +86,10 @@ export default function ExitFormDashboard() {
         router.replace('/login');
         return;
       }
+      if (e.status === 403) {
+        router.replace('/portal');
+        return;
+      }
       setError(e.message || 'Could not load exit forms.');
     } finally {
       setLoading(false);

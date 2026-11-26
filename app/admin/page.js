@@ -176,6 +176,8 @@ export default function Admin() {
       if (requestVersion !== candidatesLoadVersion.current) return;
       if (e.status === 401) {
         router.replace('/login');
+      } else if (e.status === 403) {
+        router.replace('/portal');
       } else {
         setLoadErr(e.message || 'Failed to load candidates data');
       }

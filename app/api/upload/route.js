@@ -1,10 +1,11 @@
-import { getAdmin, bad } from '@/lib/auth';
+import { getModuleAdmin, bad } from '@/lib/auth';
 import { sql } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const { error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
 
   try {
     const formData = await req.formData();

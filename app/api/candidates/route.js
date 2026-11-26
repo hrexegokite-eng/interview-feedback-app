@@ -1,11 +1,12 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad, logAdminAction } from '@/lib/auth';
+import { getModuleAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 // List every candidate with all their rounds
 export async function GET() {
-  if (!(await getAdmin())) return bad('Unauthorized', 401);
+  const { error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
   const rows = await sql`
     select c.id, c.name, coalesce(f.name, c.bcu) as bcu, c.feedback_form_id, c.role, c.status, c.created_at, c.updated_at,
       coalesce(
@@ -29,8 +30,8 @@ export async function GET() {
 
 // Add a candidate and schedule Round 1
 export async function POST(req) {
-  const admin = await getAdmin();
-  if (!admin) return bad('Unauthorized', 401);
+  const { admin, error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
   const b = await req.json().catch(() => ({}));
   const name = typeof b.name === 'string' ? b.name.trim() : '';
   const interviewer = typeof b.interviewer === 'string' ? b.interviewer.trim() : '';

@@ -33,6 +33,7 @@ export default function SuperAdmin() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [tab, setTab] = useState('settings');
+  const [expandedAdmin, setExpandedAdmin] = useState('');
 
   const load = useCallback(async () => {
     try {
@@ -97,6 +98,27 @@ export default function SuperAdmin() {
     try {
       await api('/api/super-admin', { method: 'PATCH', body: { key, enabled } });
       setMessage(`${MODULE_NAMES[key]} ${enabled ? 'enabled' : 'disabled'}.`);
+      await load();
+    } catch (actionError) {
+      setError(actionError.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setAdminModule(admin, key, enabled) {
+    const assigned = new Set(admin.modules || []);
+    if (enabled) assigned.add(key);
+    else assigned.delete(key);
+    setBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      await api('/api/super-admin', {
+        method: 'PATCH',
+        body: { email: admin.email, modules: [...assigned] },
+      });
+      setMessage(`Module access updated for ${admin.email}.`);
       await load();
     } catch (actionError) {
       setError(actionError.message);
@@ -233,21 +255,56 @@ export default function SuperAdmin() {
         <div className="split">
           <section className="card">
             <h2>Admin access</h2>
-            <p className="sm mut">Only listed accounts can sign in. The super admin account cannot be removed.</p>
+            <p className="sm mut">Only listed accounts can sign in. Allocate workspace modules to each admin below.</p>
             <form onSubmit={addAdmin} style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
               <input aria-label="Admin email address" type="email" required maxLength={254} placeholder="name@company.com" value={email} onChange={(event) => setEmail(event.target.value)} style={{ flex: 1, minWidth: 0 }} />
               <button className="btn primary" type="submit" disabled={busy}>Add admin</button>
             </form>
             <div>
               {data?.admins.map((admin) => (
-                <div key={admin.email} className="row">
-                  <Av name={admin.email} small />
-                  <div className="grow">
-                    <b>{admin.email}</b>
-                    <div className="sm mut">{admin.role === 'superadmin' ? 'Super admin' : 'Admin'} · Added {fmt(admin.created_at)}</div>
+                <div key={admin.email}>
+                  <div className="row">
+                    <Av name={admin.email} small />
+                    <div className="grow">
+                      <b>{admin.email}</b>
+                      <div className="sm mut">{admin.role === 'superadmin' ? 'Super admin' : 'Admin'} · Added {fmt(admin.created_at)}</div>
+                    </div>
+                    {admin.role === 'admin' && (
+                      <button
+                        className="btn ghost"
+                        disabled={busy}
+                        aria-expanded={expandedAdmin === admin.email}
+                        onClick={() => setExpandedAdmin(expandedAdmin === admin.email ? '' : admin.email)}
+                      >
+                        {expandedAdmin === admin.email ? 'Hide modules' : 'Allocate modules'}
+                      </button>
+                    )}
+                    {admin.role !== 'superadmin' && (
+                      <button className="btn ghost danger" disabled={busy} onClick={() => removeAdmin(admin.email)}>Remove</button>
+                    )}
                   </div>
-                  {admin.role !== 'superadmin' && (
-                    <button className="btn ghost danger" disabled={busy} onClick={() => removeAdmin(admin.email)}>Remove</button>
+                  {admin.role === 'admin' && expandedAdmin === admin.email && (
+                    <div style={{ margin: '0 0 12px 42px', padding: 12, border: '1px solid var(--line)', borderRadius: 10 }}>
+                      <p className="sm mut" style={{ margin: '0 0 8px' }}>Choose which active workspace modules this admin can use.</p>
+                      {data?.modules.map((module) => (
+                        <label key={module.key} className="row" style={{ cursor: 'pointer' }}>
+                          <span className="grow">
+                            <b>{MODULE_NAMES[module.key] || module.key}</b>
+                            <span className="sm mut" style={{ display: 'block' }}>
+                              {module.enabled ? 'Workspace active' : 'Disabled workspace-wide'}
+                            </span>
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={(admin.modules || []).includes(module.key)}
+                            disabled={busy}
+                            onChange={(event) => setAdminModule(admin, module.key, event.target.checked)}
+                            aria-label={`${admin.modules?.includes(module.key) ? 'Remove' : 'Grant'} ${MODULE_NAMES[module.key] || module.key} access for ${admin.email}`}
+                            style={{ width: 20, height: 20, accentColor: 'var(--acc)' }}
+                          />
+                        </label>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}

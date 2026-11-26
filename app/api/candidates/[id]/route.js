@@ -1,12 +1,12 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad, logAdminAction } from '@/lib/auth';
+import { getModuleAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 // Change a candidate's status by hand
 export async function PATCH(req, { params }) {
-  const admin = await getAdmin();
-  if (!admin) return bad('Unauthorized', 401);
+  const { admin, error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
   const { id } = await params;
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== 'object' || Array.isArray(body)) return bad('Invalid request.');
@@ -93,8 +93,8 @@ export async function PATCH(req, { params }) {
 
 // Delete a candidate (their rounds are deleted automatically)
 export async function DELETE(_req, { params }) {
-    const admin = await getAdmin();
-    if (!admin) return bad('Unauthorized', 401);
+    const { admin, error } = await getModuleAdmin('interview-feedback');
+    if (error) return error;
     const { id } = await params;
     if (!UUID.test(id)) return bad('Invalid request.');
     const rows = await sql`delete from candidates where id = ${id}::uuid returning id`;

@@ -1,12 +1,12 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad, logAdminAction } from '@/lib/auth';
+import { getModuleAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 // Schedule the next round for an existing candidate
 export async function POST(req, { params }) {
-  const admin = await getAdmin();
-  if (!admin) return bad('Unauthorized', 401);
+  const { admin, error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
   const { id } = await params;
   if (!UUID.test(id)) return bad('Invalid request.');
   const b = await req.json().catch(() => ({}));

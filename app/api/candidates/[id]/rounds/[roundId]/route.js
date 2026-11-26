@@ -1,11 +1,11 @@
 import { sql } from '@/lib/db';
-import { getAdmin, bad, logAdminAction } from '@/lib/auth';
+import { getModuleAdmin, bad, logAdminAction } from '@/lib/auth';
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
 export async function PATCH(req, { params }) {
-  const admin = await getAdmin();
-  if (!admin) return bad('Unauthorized', 401);
+  const { admin, error } = await getModuleAdmin('interview-feedback');
+  if (error) return error;
   const { id, roundId } = await params;
   if (!UUID.test(id) || !UUID.test(roundId)) return bad('Invalid request.');
 
