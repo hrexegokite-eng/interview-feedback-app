@@ -88,10 +88,11 @@ export const rel = (t) => {
 };
 
 export async function api(url, opt = {}) {
+  const isFormData = typeof FormData !== 'undefined' && opt.body instanceof FormData;
   const r = await fetch(url, {
     method: opt.method || 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    body: opt.body ? JSON.stringify(opt.body) : undefined,
+    headers: isFormData ? undefined : { 'Content-Type': 'application/json' },
+    body: isFormData ? opt.body : opt.body ? JSON.stringify(opt.body) : undefined,
   });
   let d = null;
   try { d = await r.json(); } catch {}

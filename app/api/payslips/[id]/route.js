@@ -30,17 +30,20 @@ export async function PUT(request, { params }) {
   if (!UUID.test(id)) return bad('Payslip not found.', 404);
   const parsed = await readPayslip(request);
   if (parsed.error) return bad(parsed.error, parsed.status);
+  if (!parsed.pdf) return bad('Generate the payslip PDF before saving it to the employee folder.', 400);
 
   const data = parsed.data;
   const personId = await saveHropsPerson(data, admin.email, data.personId || '');
   if (!personId) return bad('Choose an existing employee folder or enter a valid employee name.', data.personId ? 404 : 400);
   const storedData = { ...data, personId };
+  const pdfHex = parsed.pdf ? parsed.pdf.toString('hex') : null;
   const records = await sql`
     UPDATE payslips
     SET person_id = ${personId}::uuid,
         company_name = ${data.company},
         month = ${data.month},
         data = ${JSON.stringify(storedData)}::jsonb,
+        pdf_data = COALESCE(decode(${pdfHex}, 'hex'), pdf_data),
         updated_at = now()
     WHERE id = ${id}::uuid
     RETURNING id, person_id, company_name, month, created_at, updated_at

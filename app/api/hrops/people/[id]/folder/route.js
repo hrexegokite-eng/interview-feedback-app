@@ -26,7 +26,7 @@ export async function GET(_request, { params }) {
       ORDER BY updated_at DESC
     `,
     sql`
-      SELECT id, company_name, month, data - 'logo' AS data, created_at, updated_at
+      SELECT id, company_name, month, data, created_at, updated_at, pdf_data IS NOT NULL AS has_pdf
       FROM payslips
       WHERE person_id = ${id}::uuid
       ORDER BY month DESC, updated_at DESC
