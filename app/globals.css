@@ -932,7 +932,7 @@ select { cursor: pointer; }
 }
 
 .candidate-workspace {
-  max-width: 1120px;
+  max-width: 1440px;
   margin: 18px auto 0;
   animation: fadein .24s var(--ease-std);
 }
@@ -2479,7 +2479,7 @@ a:focus-visible,
     calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
-.page-shell.workspace-shell { max-width: 1680px; }
+.page-shell:has(.workspace-panel) { max-width: 1680px; }
 
 .workspace-panel {
   padding: clamp(16px, 2vw, 24px);
@@ -2569,7 +2569,7 @@ textarea { min-height: 120px; }
 }
 
 .feedback-form-editor {
-  max-width: 1040px;
+  max-width: 1440px;
   margin-right: auto;
   margin-left: auto;
 }
@@ -2634,7 +2634,7 @@ textarea { min-height: 120px; }
 .storage-warning { margin-top: 10px; color: var(--no); font-size: 13px; }
 
 .exit-dashboard-content {
-  max-width: 1120px;
+  max-width: none;
   margin: 0 auto;
   padding: clamp(18px, 2.4vw, 28px) 8px 8px;
 }
