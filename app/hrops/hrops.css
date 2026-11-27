@@ -1,34 +1,313 @@
-.hrops-page-shell { max-width: 1240px; }
-.hrops-brand-title { border-left: 1px solid var(--line); padding-left: 14px; font-size: 15px; font-weight: 600; }
-.hrops-heading { margin: 22px 0 18px; }
-.hrops-heading h1 { margin: 0; font-size: 25px; }
-.hrops-heading p { margin: 6px 0 0; }
-.hrops-tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.hrops-tool-card {
-  display: grid;
-  justify-items: start;
+.hrops-page-shell {
+  max-width: 1280px;
+  min-height: 100vh;
+}
+
+.hrops-workspace-panel {
+  position: relative;
+  isolation: isolate;
+  min-height: min(760px, calc(100vh - 64px));
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 36px);
+  border-color: color-mix(in srgb, var(--acc) 25%, var(--line));
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--acc) 9%, transparent), transparent 38%),
+    linear-gradient(155deg, color-mix(in srgb, var(--card) 98%, var(--bg)), var(--bg2));
+}
+
+.hrops-workspace-panel > .hrops-topbar {
+  position: relative;
+  z-index: 1;
+  min-height: 68px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--card) 76%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.hrops-brand {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.hrops-brand .logo { flex: none; }
+
+.hrops-brand-divider {
+  width: 1px;
+  height: 30px;
+  background: var(--line);
+}
+
+.hrops-brand-title {
+  color: var(--ink2);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+
+.hrops-topbar-actions { gap: 8px; }
+
+.hrops-nav-button {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.hrops-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin: clamp(42px, 7vw, 76px) 0 30px;
+}
+
+.hrops-heading-copy { max-width: 680px; }
+
+.hrops-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 13px;
+  color: var(--acc2);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .14em;
+}
+
+.hrops-eyebrow span { color: var(--mut); }
+
+.hrops-heading h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 680;
+  letter-spacing: -.045em;
+  line-height: 1.08;
+}
+
+.hrops-heading-copy > p {
+  margin: 13px 0 0;
+  color: var(--mut);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.hrops-heading-note {
+  display: flex;
+  flex: none;
+  align-items: center;
   gap: 12px;
-  min-height: 220px;
-  padding: 22px;
+  max-width: 285px;
+  padding: 13px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--card) 72%, transparent);
+}
+
+.hrops-heading-note-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--acc) 24%, transparent);
+  border-radius: 12px;
+  background: var(--accb);
+  color: var(--acc2);
+}
+
+.hrops-heading-note > span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.hrops-heading-note strong {
+  color: var(--ink2);
+  font-size: 12px;
+}
+
+.hrops-heading-note small {
+  color: var(--mut);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.hrops-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.hrops-workspace-panel .hrops-tool-card {
+  --tool-accent: var(--acc);
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 286px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+  overflow: hidden;
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid color-mix(in srgb, var(--tool-accent) 24%, var(--line));
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--tool-accent) 11%, transparent), transparent 45%),
+    linear-gradient(145deg, color-mix(in srgb, var(--card2) 85%, transparent), color-mix(in srgb, var(--card) 96%, var(--bg)));
   color: var(--ink);
   text-align: left;
   cursor: pointer;
+  transition: transform var(--dur) var(--ease-std), border-color var(--dur) var(--ease-std), box-shadow var(--dur) var(--ease-std);
 }
-.hrops-tool-card:hover { border-color: var(--acc); transform: translateY(-2px); }
+
+.hrops-workspace-panel .hrops-tool-card-2 { --tool-accent: var(--hd); }
+
+.hrops-workspace-panel .hrops-tool-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--tool-accent) 58%, var(--line));
+  box-shadow: var(--sh-md);
+}
+
+.hrops-workspace-panel .hrops-tool-card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--tool-accent) 60%, transparent);
+  outline-offset: 3px;
+}
+
+.hrops-tool-card-top {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
 .hrops-tool-icon {
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--acc), var(--acc2));
-  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--tool-accent) 28%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--tool-accent) 14%, transparent);
+  color: var(--tool-accent);
 }
-.hrops-tool-label { color: var(--acc); font-size: 11px; font-weight: 700; text-transform: uppercase; }
-.hrops-tool-card strong { font-size: 18px; }
-.hrops-tool-open { align-self: end; color: var(--acc); font-size: 13px; font-weight: 600; }
+
+.hrops-tool-number {
+  color: color-mix(in srgb, var(--mut) 58%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.hrops-tool-label {
+  color: var(--tool-accent);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.hrops-tool-card strong {
+  color: var(--ink);
+  font-size: clamp(19px, 2vw, 22px);
+  font-weight: 650;
+  letter-spacing: -.025em;
+  line-height: 1.3;
+}
+
+.hrops-tool-description {
+  max-width: 50ch;
+  color: var(--mut);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.hrops-tool-open {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 20px;
+  color: var(--tool-accent);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.hrops-tool-arrow {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--tool-accent) 24%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tool-accent) 10%, transparent);
+  font-size: 18px;
+  transition: transform var(--dur) var(--ease-std), background var(--dur) var(--ease-std);
+}
+
+.hrops-tool-card:hover .hrops-tool-arrow {
+  transform: translateX(3px);
+  background: color-mix(in srgb, var(--tool-accent) 18%, transparent);
+}
+
+.hrops-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 30px;
+  padding: 18px 2px 0;
+  border-top: 1px solid var(--line);
+  color: var(--mut);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .12em;
+}
+
+.hrops-footer span:last-child {
+  font-weight: 450;
+  letter-spacing: .02em;
+}
+
+@media (max-width: 760px) {
+  .hrops-workspace-panel { min-height: calc(100vh - 32px); }
+  .hrops-heading { align-items: flex-start; flex-direction: column; }
+  .hrops-heading-note { max-width: none; }
+  .hrops-tools-grid { grid-template-columns: 1fr; }
+  .hrops-workspace-panel .hrops-tool-card { min-height: 255px; }
+}
 
 @media (max-width: 560px) {
-  .hrops-brand-title { padding-left: 9px; font-size: 12px; }
-  .hrops-tool-card { min-height: 180px; }
+  .hrops-workspace-panel { padding: 14px; }
+  .hrops-workspace-panel > .hrops-topbar {
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    padding: 9px;
+  }
+  .hrops-brand { gap: 9px; }
+  .hrops-brand .logo { height: 38px !important; }
+  .hrops-brand-divider { height: 25px; }
+  .hrops-brand-title { padding-left: 0; font-size: 11px; }
+  .hrops-topbar-actions { justify-content: flex-end; gap: 5px; }
+  .hrops-nav-button { min-height: 36px; padding: 7px 9px; font-size: 11px; }
+  .hrops-nav-button svg { width: 13px; height: 13px; }
+  .hrops-heading { gap: 18px; margin: 38px 0 22px; }
+  .hrops-heading h1 { font-size: clamp(28px, 8vw, 36px); }
+  .hrops-heading-copy > p { font-size: 13px; }
+  .hrops-workspace-panel .hrops-tool-card { min-height: 240px; padding: 22px; }
+  .hrops-footer { font-size: 9px; letter-spacing: .08em; }
+}
+
+@media (max-width: 380px) {
+  .hrops-workspace-panel > .hrops-topbar { align-items: flex-start; flex-direction: column; }
+  .hrops-topbar-actions { width: 100%; justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hrops-workspace-panel .hrops-tool-card,
+  .hrops-tool-arrow { transition: none; }
 }

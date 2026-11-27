@@ -50,40 +50,60 @@ export default function HropsHome() {
 
   return (
     <div className="page-shell hrops-page-shell">
-      <div className="shell-panel workspace-panel">
-        <div className="bar">
-          <div className="brand" style={{ margin: 0, gap: 14 }}>
+      <div className="shell-panel workspace-panel hrops-workspace-panel">
+        <div className="bar hrops-topbar">
+          <div className="hrops-brand">
             <Logo h={44} />
-            <span className="hrops-brand-title">HROps</span>
+            <span className="hrops-brand-divider" aria-hidden="true" />
+            <span className="hrops-brand-title">People operations</span>
           </div>
-          <div className="me">
-            <button className="btn ghost" aria-label="Go to workspace home" onClick={() => router.push('/portal')}>
+          <div className="me hrops-topbar-actions">
+            <button className="btn ghost hrops-nav-button" aria-label="Go to workspace home" onClick={() => router.push('/portal')}>
               <Icon n="home" s={15} />Home
             </button>
-            {isSuperAdmin && <button className="btn ghost" onClick={() => router.push('/super-admin')}>Super admin</button>}
+            {isSuperAdmin && <button className="btn ghost hrops-nav-button" onClick={() => router.push('/super-admin')}>Super admin</button>}
           </div>
         </div>
 
         <header className="hrops-heading">
-          <div>
-            <h1>HROps</h1>
-            <p className="sm mut">Choose an employee operations tool.</p>
+          <div className="hrops-heading-copy">
+            <span className="hrops-eyebrow">GO KITE <span aria-hidden="true">/</span> EMPLOYEE SERVICES</span>
+            <h1>Your HROps workspace</h1>
+            <p>Choose a workflow to manage employee documents and payroll.</p>
+          </div>
+          <div className="hrops-heading-note">
+            <span className="hrops-heading-note-icon"><Icon n="user" s={18} /></span>
+            <span><strong>People, made simpler</strong><small>Everyday employee operations in one place</small></span>
           </div>
         </header>
 
         {error && <p className="err" role="alert">{error}</p>}
 
         <section className="hrops-tools-grid" aria-label="HROps tools">
-          {tools.map((tool) => (
-            <button key={tool.route} className="card hrops-tool-card" onClick={() => router.push(tool.route)}>
-              <span className="hrops-tool-icon"><Icon n={tool.icon} s={23} /></span>
+          {tools.map((tool, index) => (
+            <button
+              key={tool.route}
+              className={`card hrops-tool-card hrops-tool-card-${index + 1}`}
+              onClick={() => router.push(tool.route)}
+            >
+              <span className="hrops-tool-card-top">
+                <span className="hrops-tool-icon"><Icon n={tool.icon} s={22} /></span>
+                <span className="hrops-tool-number">0{index + 1}</span>
+              </span>
               <span className="hrops-tool-label">{tool.shortName}</span>
               <strong>{tool.title}</strong>
-              <span className="sm mut">{tool.description}</span>
-              <span className="hrops-tool-open">Open tool →</span>
+              <span className="hrops-tool-description">{tool.description}</span>
+              <span className="hrops-tool-open">
+                <span>Open workspace</span>
+                <span className="hrops-tool-arrow" aria-hidden="true">→</span>
+              </span>
             </button>
           ))}
         </section>
+        <footer className="hrops-footer">
+          <span>GO KITE TRAVEL &amp; TOURS</span>
+          <span>Employee operations</span>
+        </footer>
       </div>
     </div>
   );
