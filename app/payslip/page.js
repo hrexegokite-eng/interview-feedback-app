@@ -97,45 +97,60 @@ function SavedPayslips({
   bulkDownloadProgress,
   onOpen,
   onDelete,
+  onDeleteFolder,
+  deletingPersonId,
   onCreate,
   onShare,
   onDownload,
   onDownloadAll,
 }) {
   const [openFolderKey, setOpenFolderKey] = useState(null);
-  if (!records.length) {
+  if (!people.length && !records.length) {
     return (
       <section className="payslip-saved card">
         <div className="payslip-empty">
           <Icon n="inbox" s={30} />
           <h2>No saved payslips</h2>
           <p>Save a payslip to create or add to an employee folder.</p>
-          {people.length > 0 && (
-            <button className="btn ghost" disabled={bulkDownloading} onClick={onDownloadAll}>
-              <Icon n="download" s={15} />{bulkDownloading ? bulkDownloadProgress || 'Preparing ZIP…' : 'Download all folders (ZIP)'}
-            </button>
-          )}
           <button className="btn primary" onClick={onCreate}>Create a payslip</button>
         </div>
       </section>
     );
   }
 
-  const folders = records.reduce((groups, record) => {
-    const key = record.person_id || `${record.employee_id || ''}:${record.employee_name || ''}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(record);
-    return groups;
-  }, new Map());
-  const selectedRecords = folders.get(openFolderKey);
-  const selectedPerson = selectedRecords?.[0];
+  const folders = people.map((person) => ({
+    key: person.id,
+    person,
+    records: records.filter((record) => record.person_id === person.id),
+  }));
+  const unlinkedFolders = records
+    .filter((record) => !record.person_id)
+    .reduce((groups, record) => {
+      const key = `${record.employee_id || ''}:${record.employee_name || ''}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(record);
+      return groups;
+    }, new Map());
+  for (const [key, unlinkedRecords] of unlinkedFolders) {
+    folders.push({
+      key: `legacy:${key}`,
+      person: {
+        name: unlinkedRecords[0].employee_name,
+        employee_id: unlinkedRecords[0].employee_id,
+      },
+      records: unlinkedRecords,
+    });
+  }
+  const selectedFolder = folders.find((folder) => folder.key === openFolderKey);
+  const selectedPerson = selectedFolder?.person;
+  const selectedRecords = selectedFolder?.records || [];
 
   return (
     <section className="payslip-saved card">
       <div className="payslip-saved-heading">
         <div>
           <h2>Employee folders</h2>
-          <p className="sm mut">{folders.size} people · {records.length} saved {records.length === 1 ? 'payslip' : 'payslips'}</p>
+          <p className="sm mut">{folders.length} people · {records.length} saved {records.length === 1 ? 'payslip' : 'payslips'}</p>
         </div>
         <div className="hrops-folder-bulk-actions">
           <button className="btn ghost" disabled={bulkDownloading} onClick={onDownloadAll}>
@@ -151,29 +166,32 @@ function SavedPayslips({
               <Icon n="back" s={15} /> Employee folders
             </button>
             <span aria-hidden="true">/</span>
-            <span className="hrops-folder-breadcrumb"><Icon n="folder" s={17} />{selectedPerson.employee_name || 'Unnamed employee'}</span>
+            <span className="hrops-folder-breadcrumb"><Icon n="folder" s={17} />{selectedPerson.name || selectedPerson.employee_name || 'Unnamed employee'}</span>
           </nav>
           <div className="hrops-folder-toolbar">
             <div className="hrops-folder-toolbar-copy">
               <strong>Files</strong>
               <span className="sm mut">{selectedRecords.length} {selectedRecords.length === 1 ? 'payslip' : 'payslips'}</span>
             </div>
-            {selectedPerson.person_id && (
+            {selectedPerson.id && (
               <div className="hrops-folder-toolbar-actions">
-                <button className="btn ghost" disabled={sharingId === selectedPerson.person_id || downloadingId === selectedPerson.person_id} onClick={() => onDownload(selectedPerson.person_id)}>
-                  <Icon n="download" s={15} />{downloadingId === selectedPerson.person_id ? 'Preparing PDF…' : 'Download PDF'}
+                <button className="btn ghost" disabled={sharingId === selectedPerson.id || downloadingId === selectedPerson.id} onClick={() => onDownload(selectedPerson.id)}>
+                  <Icon n="download" s={15} />{downloadingId === selectedPerson.id ? 'Preparing PDF…' : 'Download PDF'}
                 </button>
-                <button className="btn ghost" disabled={sharingId === selectedPerson.person_id || downloadingId === selectedPerson.person_id} onClick={() => onShare(selectedPerson.person_id)}>
+                <button className="btn ghost" disabled={sharingId === selectedPerson.id || downloadingId === selectedPerson.id} onClick={() => onShare(selectedPerson.id)}>
                   <Icon n="share" s={15} />
-                  {sharingId === selectedPerson.person_id
-                    ? preparedShareId === selectedPerson.person_id ? 'Opening share menu…' : 'Preparing PDF…'
-                    : preparedShareId === selectedPerson.person_id ? 'Share PDF now' : 'Share folder PDF'}
+                  {sharingId === selectedPerson.id
+                    ? preparedShareId === selectedPerson.id ? 'Opening share menu…' : 'Preparing PDF…'
+                    : preparedShareId === selectedPerson.id ? 'Share PDF now' : 'Share folder PDF'}
+                </button>
+                <button className="btn ghost danger" disabled={deletingPersonId === selectedPerson.id || sharingId === selectedPerson.id || downloadingId === selectedPerson.id} onClick={() => onDeleteFolder(selectedPerson)}>
+                  <Icon n="trash" s={15} />{deletingPersonId === selectedPerson.id ? 'Deleting folder…' : 'Delete folder'}
                 </button>
               </div>
             )}
           </div>
           <div className="hrops-files-grid">
-            {selectedRecords.map((record) => (
+            {selectedRecords.length ? selectedRecords.map((record) => (
               <article className="hrops-file-tile" key={record.id}>
                 <span className="hrops-file-icon"><Icon n="file" s={27} /></span>
                 <div className="hrops-file-info">
@@ -190,19 +208,18 @@ function SavedPayslips({
                   <button className="btn ghost danger" disabled={busyId === record.id} onClick={() => onDelete(record)}>Delete</button>
                 </div>
               </article>
-            ))}
+            )) : <p className="sm mut">No payslips in this folder yet. The employee may have F&amp;F settlements in the F&amp;F Generator.</p>}
           </div>
         </>
       ) : (
         <div className="hrops-folder-grid">
-          {[...folders.entries()].map(([key, personRecords]) => {
-            const person = personRecords[0];
+          {folders.map(({ key, person, records: personRecords }) => {
             return (
               <button type="button" className="hrops-folder-card" key={key} onClick={() => setOpenFolderKey(key)}>
-                <span className="hrops-folder-card-count">{personRecords.length} {personRecords.length === 1 ? 'item' : 'items'}</span>
+                <span className="hrops-folder-card-count">{personRecords.length} {personRecords.length === 1 ? 'payslip' : 'payslips'}</span>
                 <span className="hrops-folder-icon"><Icon n="folder" s={30} /></span>
                 <span className="hrops-folder-info">
-                  <strong>{person.employee_name || 'Unnamed employee'}</strong>
+                  <strong>{person.name || person.employee_name || 'Unnamed employee'}</strong>
                   <span className="sm mut">{person.employee_id ? `ID ${person.employee_id} · ` : ''}Employee folder</span>
                 </span>
               </button>
@@ -227,6 +244,7 @@ export default function PayslipGenerator() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState('');
+  const [deletingPersonId, setDeletingPersonId] = useState('');
   const [sharingId, setSharingId] = useState('');
   const [downloadingId, setDownloadingId] = useState('');
   const [preparedShare, setPreparedShare] = useState(null);
@@ -425,6 +443,26 @@ export default function PayslipGenerator() {
       setError(deleteError.message || 'Could not delete this payslip.');
     } finally {
       setBusyId('');
+    }
+  }
+
+  async function deleteEmployeeFolder(person) {
+    const name = person.name || 'this employee';
+    if (!window.confirm(`Delete the employee folder for ${name}? All F&F settlements and payslips in this folder will be permanently deleted from both modules.`)) return;
+    setDeletingPersonId(person.id);
+    setError('');
+    setNotice('');
+    try {
+      await api(`/api/hrops/people/${person.id}`, { method: 'DELETE' });
+      setPeople((current) => current.filter((item) => item.id !== person.id));
+      setRecords((current) => current.filter((item) => item.person_id !== person.id));
+      if (form.personId === person.id) startNew();
+      if (preparedShare?.personId === person.id) setPreparedShare(null);
+      setNotice(`Employee folder for ${name} and its F&F settlements and payslips were deleted.`);
+    } catch (deleteError) {
+      setError(deleteError.message || 'Could not delete this employee folder.');
+    } finally {
+      setDeletingPersonId('');
     }
   }
 
@@ -639,6 +677,8 @@ export default function PayslipGenerator() {
             bulkDownloadProgress={bulkDownloadProgress}
             onOpen={openPayslip}
             onDelete={deletePayslip}
+            onDeleteFolder={deleteEmployeeFolder}
+            deletingPersonId={deletingPersonId}
             onCreate={startNew}
             onShare={shareFolder}
             onDownload={downloadFolderPdf}
