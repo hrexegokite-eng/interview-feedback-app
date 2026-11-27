@@ -53,7 +53,7 @@ export function LoadingState({ label = 'Preparing your workspace' }) {
   return (
     <div className="loading-screen" role="status" aria-label={label} aria-live="polite">
       <div className="loading-indicator" aria-hidden="true">
-        <Logo src="/loading-kite.png" h={58} />
+        <span className="loading-mark" />
         <span className="loading-dots">
           <i />
           <i />

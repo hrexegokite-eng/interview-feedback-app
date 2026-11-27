@@ -307,10 +307,11 @@ body::before {
 .page-shell .card,
 .page-shell .stat,
 .page-shell .bar,
-.page-shell .seg,
-.page-shell .tools {
+.page-shell .seg {
   background: rgba(22, 30, 36, 0.92);
 }
+
+.page-shell .tools { background: var(--card); }
 
 .login-wrap {
   min-height: calc(100vh - 80px);
@@ -2089,13 +2090,14 @@ a:focus-visible,
   box-shadow: 0 8px 24px rgba(69, 187, 165, .2), inset 0 1px 0 rgba(255,255,255,.55);
 }
 
-.dashboard-filters {
+.page-shell .dashboard-filters {
   min-height: 54px;
   margin: 0 0 14px;
   padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: color-mix(in srgb, var(--card) 76%, transparent);
+  background: color-mix(in srgb, var(--card) 88%, var(--accb));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
 .dashboard-filters .dashboard-filter-label {
@@ -2438,7 +2440,15 @@ a:focus-visible,
 .loading-screen::after { display: none; }
 
 .loading-indicator { display: grid; justify-items: center; gap: 16px; }
-.loading-indicator > .logo { width: auto; opacity: .9; }
+.loading-mark {
+  width: 44px;
+  height: 58px;
+  background: #fff;
+  -webkit-mask: url('/loading-kite.png') center / contain no-repeat;
+  mask: url('/loading-kite.png') center / contain no-repeat;
+  opacity: .9;
+}
+:root[data-theme="light"] .loading-mark { background: var(--acc); }
 
 .loading-dots { display: flex; align-items: center; gap: 7px; height: 7px; }
 .loading-dots i {
@@ -3040,6 +3050,10 @@ textarea { min-height: 120px; }
 :root[data-theme="light"] .feedback-submit-dock {
   background: rgba(248,251,251,.94);
   box-shadow: 0 -12px 32px rgba(56,78,84,.10);
+}
+
+:root[data-theme="light"] .dashboard-filters .dashboard-filter-label {
+  color: var(--ink2);
 }
 
 :root[data-theme="light"] .card:hover,
