@@ -52,7 +52,7 @@ export default function HropsHome() {
     <div className="page-shell hrops-page-shell">
       <div className="shell-panel workspace-panel">
         <div className="bar">
-          <div className="brand hrops-brand">
+          <div className="brand" style={{ margin: 0, gap: 14 }}>
             <Logo h={44} />
             <span className="hrops-brand-title">HROps</span>
           </div>

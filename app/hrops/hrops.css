@@ -1,132 +1,34 @@
 .hrops-page-shell { max-width: 1240px; }
-
-.hrops-page-shell .shell-panel {
-  border-color: rgba(255, 255, 255, .18);
-  background: linear-gradient(145deg, #111, #050505);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
-}
-
-.hrops-page-shell .workspace-panel > .bar {
-  border: 1px solid rgba(255, 255, 255, .14);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, .045);
-}
-
-.hrops-brand { margin: 0; gap: 14px; }
-
-.hrops-brand-title {
-  padding-left: 14px;
-  border-left: 1px solid rgba(255, 255, 255, .28);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.hrops-page-shell .me .btn.ghost {
-  border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: 11px;
-  color: #f5f5f5;
-}
-
-.hrops-page-shell .me .btn.ghost:hover {
-  border-color: rgba(255, 255, 255, .42);
-  background: rgba(255, 255, 255, .09);
-}
-
-.hrops-heading { margin: 26px 0 20px; }
-
-.hrops-heading h1 {
-  margin: 0;
-  color: #fff;
-  font-size: clamp(26px, 3vw, 32px);
-  letter-spacing: -.035em;
-}
-
-.hrops-heading p { margin: 7px 0 0; color: #aaa; }
-
-.hrops-tools-grid {
+.hrops-brand-title { border-left: 1px solid var(--line); padding-left: 14px; font-size: 15px; font-weight: 600; }
+.hrops-heading { margin: 22px 0 18px; }
+.hrops-heading h1 { margin: 0; font-size: 25px; }
+.hrops-heading p { margin: 6px 0 0; }
+.hrops-tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.hrops-tool-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  gap: 16px;
-}
-
-.hrops-page-shell .workspace-panel .hrops-tool-card {
-  display: grid;
-  min-height: 220px;
   justify-items: start;
   gap: 12px;
+  min-height: 220px;
   padding: 22px;
-  border: 1px solid #fff;
-  border-radius: 18px;
-  background: linear-gradient(150deg, #fff, #ededed);
-  color: #111;
+  color: var(--ink);
   text-align: left;
   cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
-
-.hrops-page-shell .workspace-panel .hrops-tool-card:hover {
-  transform: translateY(-3px);
-  background: #fff;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, .3);
-}
-
-.hrops-page-shell .workspace-panel .hrops-tool-card:focus-visible {
-  outline: 3px solid #fff;
-  outline-offset: 4px;
-}
-
+.hrops-tool-card:hover { border-color: var(--acc); transform: translateY(-2px); }
 .hrops-tool-icon {
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   place-items: center;
-  border: 1px solid #111;
-  border-radius: 13px;
-  background: #111;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
   color: #fff;
 }
-
-.hrops-tool-label {
-  color: #555;
-  font-size: 11px;
-  font-weight: 750;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-
-.hrops-page-shell .hrops-tool-card strong {
-  color: #111;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.hrops-page-shell .hrops-tool-card > .mut {
-  color: #555;
-  line-height: 1.6;
-}
-
-.hrops-tool-open {
-  align-self: end;
-  color: #111;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-@media (max-width: 720px) {
-  .hrops-page-shell .workspace-panel > .bar { align-items: flex-start; }
-  .hrops-tools-grid { grid-template-columns: 1fr; }
-}
+.hrops-tool-label { color: var(--acc); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.hrops-tool-card strong { font-size: 18px; }
+.hrops-tool-open { align-self: end; color: var(--acc); font-size: 13px; font-weight: 600; }
 
 @media (max-width: 560px) {
-  .hrops-page-shell .workspace-panel { padding: 14px; }
-  .hrops-page-shell .workspace-panel > .bar { padding: 12px; }
-  .hrops-brand { gap: 9px; }
   .hrops-brand-title { padding-left: 9px; font-size: 12px; }
-  .hrops-page-shell .me { justify-content: flex-start; }
-  .hrops-page-shell .workspace-panel .hrops-tool-card { min-height: 190px; padding: 18px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hrops-page-shell .workspace-panel .hrops-tool-card { transition: none; }
+  .hrops-tool-card { min-height: 180px; }
 }
