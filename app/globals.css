@@ -139,6 +139,77 @@
 .payslip-footer-spacer { height: 32px; }
 .payslip-footer { margin-top: 38px; color: #777; font-size: 7.5px; text-align: center; }
 
+.fnf-paper {
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 16mm 15mm;
+  background: #fff;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, .18);
+  color: #000;
+  font: 13px/var(--fnf-line-height, 1.65) "Times New Roman", Times, serif;
+}
+.fnf-paper-content { position: relative; z-index: 1; }
+.fnf-watermark {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.fnf-watermark span {
+  max-width: 90%;
+  color: #2b8aa6;
+  font: 700 64px/1 Arial, sans-serif;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+  transform: rotate(-30deg);
+}
+.fnf-watermark img { max-width: 60%; max-height: 60%; object-fit: contain; }
+.fnf-paper-head { display: flex; justify-content: space-between; align-items: flex-start; min-height: 96px; }
+.fnf-company { margin-top: 34px; color: #4a72c4; font-size: 17px; }
+.fnf-logo,
+.fnf-logo-placeholder { width: 96px; height: 96px; object-fit: contain; }
+.fnf-logo-placeholder {
+  display: grid;
+  place-items: center;
+  background: #2b8aa6;
+  color: #fff;
+  font-size: 20px;
+  font-style: italic;
+  line-height: 1.1;
+  text-align: center;
+}
+.fnf-paper h1 { margin: 14px 0 22px; font-size: 23px; text-align: center; }
+.fnf-paper h2 { margin: 18px 0 10px; font-size: 16px; }
+.fnf-paper table { width: 100%; border-collapse: collapse; }
+.fnf-paper td,
+.fnf-paper th {
+  padding: var(--fnf-cell-padding, 8px 10px);
+  border: 1px solid #000;
+  color: #000;
+  font-weight: 400;
+  text-align: left;
+  vertical-align: top;
+}
+.fnf-paper th { font-weight: 700; text-align: center; }
+.fnf-paper th small { display: block; font-size: 11px; font-weight: 400; }
+.fnf-paper .fnf-center { text-align: center; }
+.fnf-paper .fnf-total-row td { font-weight: 700; }
+.fnf-employee-tables { display: flex; align-items: flex-start; gap: 18px; }
+.fnf-employee-tables table:first-child { flex: 1.7; }
+.fnf-employee-tables table:last-child { flex: 1; }
+.fnf-extra-table { margin-top: 14px; }
+.fnf-net { margin: 16px 0 4px; font-size: 16px; }
+.fnf-net strong { font-size: 17px; }
+.fnf-words { margin: 0 0 14px; font-size: 12.5px; }
+.fnf-note { margin-top: 22px; color: #e00000; font-size: 12.5px; white-space: pre-wrap; }
+
 /* ═══════════════════════════════════════════
    RESET & BASE
 ═══════════════════════════════════════════ */

@@ -20,7 +20,7 @@ export async function GET(_request, { params }) {
 
   const [settlements, payslips] = await Promise.all([
     sql`
-      SELECT id, company_name, employee_name, employee_id, data - 'companyLogo' AS data, created_at, updated_at
+      SELECT id, company_name, employee_name, employee_id, data, created_at, updated_at
       FROM fnf_settlements
       WHERE person_id = ${id}::uuid
       ORDER BY updated_at DESC
