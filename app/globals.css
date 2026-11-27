@@ -77,14 +77,14 @@
   background: #fff;
   color: #000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
-  font: 10px/1.35 Helvetica, Arial, sans-serif;
+  font: 10px/1.35 'Google Sans', sans-serif;
 }
 .payslip-company { position: absolute; top: 92px; left: 66px; max-width: 490px; overflow-wrap: anywhere; font-size: 9.5px; font-weight: 700; }
 .payslip-logo { position: absolute; top: 92px; right: 66px; display: flex; width: 100px; height: 84px; align-items: center; justify-content: center; }
 .payslip-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.payslip-logo-fallback { display: grid; justify-items: center; color: #1d6f86; font-family: Georgia, serif; }
+.payslip-logo-fallback { display: grid; justify-items: center; color: #1d6f86; font-family: 'Google Sans', sans-serif; }
 .payslip-logo-fallback b { font-size: 22px; font-style: italic; }
-.payslip-logo-fallback span { color: #2a8fa8; font: 8px Arial, sans-serif; }
+.payslip-logo-fallback span { color: #2a8fa8; font: 8px 'Google Sans', sans-serif; }
 .payslip-title { margin: 106px 0 0; text-align: center; font-size: 15.5px; font-weight: 700; }
 .payslip-paper hr { height: 0; margin: 0; border: 0; border-top: 1px solid #b9bdd0; }
 .payslip-rule-spacer { height: 36px; }
@@ -126,7 +126,7 @@
   background: #fff;
   box-shadow: 0 2px 14px rgba(0, 0, 0, .18);
   color: #000;
-  font: 13px/var(--fnf-line-height, 1.65) "Times New Roman", Times, serif;
+  font: 13px/var(--fnf-line-height, 1.65) 'Google Sans', sans-serif;
 }
 .fnf-paper-content { position: relative; z-index: 1; }
 .fnf-watermark {
@@ -141,7 +141,7 @@
 .fnf-watermark span {
   max-width: 90%;
   color: #2b8aa6;
-  font: 700 64px/1 Arial, sans-serif;
+  font: 700 64px/1 'Google Sans', sans-serif;
   text-align: center;
   text-transform: uppercase;
   overflow-wrap: anywhere;
@@ -854,7 +854,7 @@ select { cursor: pointer; }
   animation: fadein .3s var(--ease-std);
 }
 .link { display: flex; gap: 8px; margin-top: 8px; }
-.link input { font-size: 12px; background: var(--card); font-family: 'Google Sans', sans-serif; }
+.link input { font-size: 12px; background: var(--card); }
 
 /* ═══════════════════════════════════════════
    LOGIN PAGE
@@ -1076,7 +1076,8 @@ select { cursor: pointer; }
 .opt b { display: inline-block; font-weight: 600; font-size: 13.5px; color: var(--ink); margin-right: 8px; }
 .opt span.d { display: inline-block; font-size: 12.5px; color: var(--mut); }
 .opt kbd {
-  font: 11px 'Google Sans', sans-serif;
+  font-family: inherit;
+  font-size: 11px;
   color: var(--mut);
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -1742,7 +1743,7 @@ input:focus, textarea:focus, select:focus {
   max-width: 9ch;
   margin-top: 16px;
   color: #f4f7f8;
-  font-family: 'Google Sans', sans-serif;
+  font-family: inherit;
   font-size: clamp(46px, 4.7vw, 64px);
   font-weight: 400;
   line-height: 1.04;
