@@ -2479,6 +2479,8 @@ a:focus-visible,
     calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
+.page-shell.workspace-shell { max-width: 1680px; }
+
 .workspace-panel {
   padding: clamp(16px, 2vw, 24px);
   border-radius: 24px;
@@ -2521,6 +2523,7 @@ a:focus-visible,
 }
 
 .page-shell .card + .card { margin-top: 18px; }
+.page-shell.workspace-shell .portal-grid > .card { margin-top: 0; }
 .page-shell .card h2 { margin-bottom: 8px; line-height: 1.35; }
 
 .f {

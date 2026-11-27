@@ -40,7 +40,7 @@ export default function Portal() {
   const displayName = me?.name || me?.email?.split('@')[0] || 'Admin';
 
   return (
-    <div className="page-shell">
+    <div className="page-shell workspace-shell">
       <div className="shell-panel workspace-panel">
         <div className="bar">
           <div className="brand" style={{ margin: 0, gap: 14 }}>
