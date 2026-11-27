@@ -239,7 +239,7 @@ export default function Feedback({ token }) {
 
           <div className="feedback-success-recommendation">
             <span className="feedback-success-dot" />
-            <span>Recorded recommendation: <b style={{ color: '#94f5c6' }}>{LBL[decisionKey] || 'Submitted'}</b></span>
+            <span>Recorded recommendation: <b style={{ color: 'var(--ok)' }}>{LBL[decisionKey] || 'Submitted'}</b></span>
           </div>
 
           <div className="feedback-success-footer">
@@ -413,9 +413,9 @@ export default function Feedback({ token }) {
           marginTop: 14,
           padding: '22px 20px 18px',
           borderRadius: 18,
-          border: '1px solid rgba(110, 231, 215, 0.18)',
-          background: 'linear-gradient(180deg, rgba(20, 27, 34, 0.98), rgba(15, 21, 27, 0.98))',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 18px 30px rgba(0,0,0,0.18)',
+          border: '1px solid var(--line)',
+          background: 'linear-gradient(180deg, var(--card), var(--card2))',
+          boxShadow: 'var(--sh-md)',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -460,24 +460,13 @@ export default function Feedback({ token }) {
           </div>
           <textarea
             id="n"
+            className="feedback-comment-field"
             value={note}
             maxLength={1500}
             rows={4}
             placeholder="Strengths, concerns, anything the hiring team should know…"
             onChange={(event) => setNote(event.target.value)}
             onKeyDown={(event) => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') submit(); }}
-            style={{
-              width: '100%',
-              borderRadius: 14,
-              fontSize: 13.5,
-              lineHeight: 1.6,
-              border: '1px solid rgba(110, 231, 215, 0.14)',
-              background: 'linear-gradient(180deg, rgba(14,20,26,0.9), rgba(18,28,35,0.8))',
-              color: 'var(--ink)',
-              padding: '12px 14px',
-              resize: 'vertical',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
-            }}
           />
         </div>
 

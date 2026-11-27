@@ -40,7 +40,7 @@
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: color-mix(in srgb, var(--card) 97%, #101a20);
+  background: color-mix(in srgb, var(--card) 97%, var(--bg2));
 }
 .fnf-edit-heading { display: flex; justify-content: space-between; gap: 12px; }
 .fnf-edit-heading h2 { margin: 0; font-size: 18px; }

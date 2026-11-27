@@ -91,7 +91,7 @@ export default function Portal() {
                 display: 'grid',
                 placeItems: 'center',
                 color: '#fff',
-                boxShadow: '0 4px 14px rgba(79,70,229,0.35)',
+                boxShadow: '0 4px 14px color-mix(in srgb, var(--acc) 35%, transparent)',
               }}
             >
               <Icon n="cal" s={24} />

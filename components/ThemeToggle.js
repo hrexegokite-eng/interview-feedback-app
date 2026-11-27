@@ -2,18 +2,26 @@
 
 import { useEffect, useState } from 'react';
 
+function updateThemeColor(theme) {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'light' ? '#f7fafb' : '#0b1218');
+}
+
 export default function ThemeToggle() {
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     const saved = document.documentElement.getAttribute('data-theme');
-    setTheme(saved === 'light' ? 'light' : 'dark');
+    const activeTheme = saved === 'light' ? 'light' : 'dark';
+    setTheme(activeTheme);
+    updateThemeColor(activeTheme);
   }, []);
 
   function toggleTheme() {
     const next = theme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
+    updateThemeColor(next);
     setTheme(next);
   }
 
