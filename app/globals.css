@@ -89,6 +89,33 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  --bg: #eef3f5;
+  --bg2: #e6edef;
+  --card: rgba(255, 255, 255, 0.96);
+  --card2: #f7fafb;
+  --ink: #172126;
+  --ink2: #34474d;
+  --mut: #66777c;
+  --line: rgba(58, 85, 92, 0.16);
+  --soft: #edf3f4;
+  --acc: #087f75;
+  --acc2: #12a99a;
+  --acc3: #168c99;
+  --accb: rgba(8, 127, 117, 0.10);
+  --inv: #ffffff;
+  --ok: #16835a;
+  --okb: rgba(22, 131, 90, 0.10);
+  --hd: #9a6811;
+  --hdb: rgba(154, 104, 17, 0.11);
+  --no: #b64b4b;
+  --nob: rgba(182, 75, 75, 0.10);
+  --sh: 0 1px 2px rgba(40, 62, 67, .08), 0 18px 36px rgba(56, 78, 84, .12), 0 0 0 1px rgba(30, 70, 75, .025);
+  --sh-md: 0 2px 6px rgba(40, 62, 67, .08), 0 20px 42px rgba(56, 78, 84, .10), 0 0 0 1px rgba(30, 70, 75, .035);
+  --sh-lg: 0 10px 20px rgba(40, 62, 67, .10), 0 36px 64px rgba(40, 62, 67, .14);
+  color-scheme: light;
+}
+
 .payslip-paper {
   position: relative;
   width: 794px;
@@ -230,6 +257,68 @@ body {
   -moz-osx-font-smoothing: grayscale;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(18, 169, 154, 0.12), transparent 24%),
+    radial-gradient(circle at 82% 0%, rgba(65, 140, 170, 0.10), transparent 28%),
+    linear-gradient(180deg, #f7fafb 0%, #edf3f4 55%, #e8eff1 100%);
+}
+
+.theme-toggle {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right, 18px));
+  bottom: max(18px, env(safe-area-inset-bottom, 18px));
+  z-index: 1000;
+  width: 72px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--sh-md);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease-std), border-color var(--dur) var(--ease-std), transform var(--dur) var(--ease);
+}
+
+.theme-toggle:hover { transform: translateY(-2px); }
+.theme-toggle:active { transform: scale(.96); }
+.theme-toggle:focus-visible { outline: 3px solid color-mix(in srgb, var(--acc) 38%, transparent); outline-offset: 3px; }
+
+.theme-toggle-track {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 9px;
+  color: var(--mut);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.theme-toggle-icon { position: relative; z-index: 2; }
+.theme-toggle-thumb {
+  position: absolute;
+  z-index: 1;
+  top: 5px;
+  right: 5px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--acc);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .20);
+  transition: transform var(--dur) var(--ease);
+}
+
+:root[data-theme="light"] .theme-toggle-thumb { transform: translateX(-34px); }
+:root[data-theme="dark"] .theme-toggle .moon { color: #fff; }
+:root[data-theme="light"] .theme-toggle .sun { color: #fff; }
+
+@media print {
+  .theme-toggle { display: none !important; }
 }
 
 body::before {
